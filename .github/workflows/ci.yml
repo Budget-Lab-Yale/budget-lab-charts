@@ -1,10 +1,14 @@
 name: CI
 
+# PAUSED (manual-only) until the engine repo is public. While it's private, the Actions
+# runner can't `npm ci` the cross-repo git dependency (git exit 128), so every push fails.
+# When both repos are public: uncomment the push/PR triggers and `gh workflow enable CI`.
 on:
-  push:
-    branches: ["**"]
-  pull_request:
-    branches: ["**"]
+  workflow_dispatch:
+  # push:
+  #   branches: ["**"]
+  # pull_request:
+  #   branches: ["**"]
 
 jobs:
   # ── Deterministic, cross-platform pipeline ────────────────────────────────
