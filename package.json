@@ -1,0 +1,25 @@
+{
+  "name": "budget-lab-charts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Budget Lab chart archive — versioned chart specs/data/baselines, built and locked by budget-lab-chart-engine.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "validate": "node scripts/validate-all.mjs",
+    "snapshot": "node scripts/snapshot-all.mjs",
+    "build": "node scripts/build-all.mjs",
+    "catalog": "node scripts/build-catalog.mjs"
+  },
+  "dependencies": {
+    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v0.1.1"
+  },
+  "devDependencies": {
+    "pixelmatch": "^7.2.0",
+    "playwright": "^1.61.0",
+    "pngjs": "^7.0.0"
+  }
+}

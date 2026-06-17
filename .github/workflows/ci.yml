@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  # ── Deterministic, cross-platform pipeline ────────────────────────────────
+  # validate + build + catalog run on every push/PR. No Playwright required.
+  build:
+    name: Validate / Build / Catalog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true       # pull LFS objects (baselines) so they're available if needed
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate all charts
+        run: npm run validate
+
+      - name: Build all charts
+        run: npm run build
+
+      - name: Build catalog
+        run: npm run catalog
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  # ── Advisory: visual snapshot comparison ─────────────────────────────────
+  # This job compares rendered PNGs against committed baselines. It is ADVISORY
+  # because baselines are platform-specific (font rendering / anti-aliasing
+  # differ by OS). The committed baselines were generated on the developer's
+  # machine and will not match until they are regenerated in this CI environment.
+  #
+  # To fix: run `npm run snapshot -- --update` in this environment, commit the
+  # new baseline.png files (tracked via Git LFS), and push. After that one-time
+  # re-seed, the snapshot gate becomes authoritative for this platform.
+  #
+  # Until then, failures here are expected and do NOT block merge.
+  snapshot:
+    name: Snapshot (advisory — platform-specific baselines)
+    runs-on: ubuntu-latest
+    continue-on-error: true   # advisory: does not block CI
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies (including Playwright)
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run snapshot comparison
+        run: npm run snapshot
+        # NOTE: Expected to fail until baselines are regenerated in this environment.
+        # See comment above.
+
+  # ── Deploy placeholder ────────────────────────────────────────────────────
+  # Hosting is TBD; a deploy step will be added once the target environment is
+  # decided at launch. Uncomment and configure the section below at that time.
+  #
+  # deploy:
+  #   name: Deploy
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: dist
+  #         path: dist/
+  #     - name: Deploy to <target>
+  #       run: |
+  #         # TODO: add deploy commands here
+  #         echo "Deploy step not yet configured."

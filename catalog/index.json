@@ -1,0 +1,35 @@
+[
+  {
+    "id": "2026/06/ai-labor-market/augmented-occupations",
+    "title": "Proportion of Workers in Occupations Augmented by AI by Duration of Unemployment",
+    "eyebrow": "Figure 1",
+    "article": "AI Labor Market Tracker",
+    "date": "2026-06-17",
+    "path": "charts/2026/06/ai-labor-market/augmented-occupations/chart.yaml",
+    "dataPath": "charts/2026/06/ai-labor-market/augmented-occupations/data.csv",
+    "engineVersion": "0.1.1",
+    "tags": []
+  },
+  {
+    "id": "2026/06/ai-labor-market/automated-occupations",
+    "title": "Proportion of Workers in Occupations Automated by AI by Duration of Unemployment",
+    "eyebrow": "Figure 3",
+    "article": "AI Labor Market Tracker",
+    "date": "2026-06-17",
+    "path": "charts/2026/06/ai-labor-market/automated-occupations/chart.yaml",
+    "dataPath": "charts/2026/06/ai-labor-market/automated-occupations/data.csv",
+    "engineVersion": "0.1.1",
+    "tags": []
+  },
+  {
+    "id": "2026/06/ai-labor-market/new-vs-older-grads",
+    "title": "Dissimilarity in the Occupational Mix Between Recent College Graduates (Ages 20-24) and Older College Graduates (Ages 25-34)",
+    "eyebrow": "Figure 2",
+    "article": "AI Labor Market Tracker",
+    "date": "2026-06-17",
+    "path": "charts/2026/06/ai-labor-market/new-vs-older-grads/chart.yaml",
+    "dataPath": "charts/2026/06/ai-labor-market/new-vs-older-grads/data.csv",
+    "engineVersion": "0.1.1",
+    "tags": []
+  }
+]
