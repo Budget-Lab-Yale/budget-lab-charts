@@ -15,7 +15,7 @@
     "catalog": "node scripts/build-catalog.mjs"
   },
   "dependencies": {
-    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v0.1.6"
+    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v0.1.7"
   },
   "devDependencies": {
     "pixelmatch": "^7.2.0",
