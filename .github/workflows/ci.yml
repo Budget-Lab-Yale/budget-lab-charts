@@ -22,6 +22,13 @@ jobs:
           node-version: "20"
           cache: "npm"
 
+      # The engine is a PRIVATE cross-repo git dependency; the default Actions token can't
+      # clone it. ENGINE_REPO_TOKEN must be a (classic repo-scope or fine-grained read)
+      # token with access to Budget-Lab-Yale/budget-lab-chart-engine — add it as a repo
+      # secret. Without it, `npm ci` fails with git exit 128.
+      - name: Authenticate to the private engine repo
+        run: git config --global url."https://x-access-token:${{ secrets.ENGINE_REPO_TOKEN }}@github.com/".insteadOf "https://github.com/"
+
       - name: Install dependencies
         run: npm ci
 
@@ -64,6 +71,9 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
+
+      - name: Authenticate to the private engine repo
+        run: git config --global url."https://x-access-token:${{ secrets.ENGINE_REPO_TOKEN }}@github.com/".insteadOf "https://github.com/"
 
       - name: Install dependencies (including Playwright)
         run: npm ci

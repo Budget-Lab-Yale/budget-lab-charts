@@ -146,6 +146,27 @@ After that one-time re-seed, the snapshot gate will catch unintended visual regr
 
 ---
 
+## Continuous integration
+
+`.github/workflows/ci.yml` runs validate → build → catalog on every push/PR (deterministic,
+cross-platform), plus an **advisory** snapshot job (platform-specific baselines; see caveat
+above).
+
+**Required secret — `ENGINE_REPO_TOKEN`.** The engine is a *private* cross-repo git
+dependency, and the default Actions token cannot clone it, so `npm ci` fails with git exit
+128 until you add a token:
+
+1. Create a token with read access to `Budget-Lab-Yale/budget-lab-chart-engine` — either a
+   classic PAT with the `repo` scope, or a fine-grained token scoped to that repo (Contents:
+   read).
+2. Add it as a repository secret named `ENGINE_REPO_TOKEN`
+   (`gh secret set ENGINE_REPO_TOKEN --repo Budget-Lab-Yale/budget-lab-charts`).
+
+The workflow rewrites `github.com` git URLs to use this token before `npm ci`. (Alternatively,
+making the engine repo public removes the need for the secret.)
+
+---
+
 ## Hosting
 
 Deploy target is TBD at launch. A placeholder step is present but commented out in
