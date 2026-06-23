@@ -10,6 +10,11 @@ on:
   # pull_request:
   #   branches: ["**"]
 
+# Serialize Pages deploys; don't cancel an in-flight one.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   # ── Deterministic, cross-platform pipeline ────────────────────────────────
   # validate + build + catalog run on every push/PR. No Playwright required.
@@ -83,22 +88,52 @@ jobs:
         # NOTE: Expected to fail until baselines are regenerated in this environment.
         # See comment above.
 
-  # ── Deploy placeholder ────────────────────────────────────────────────────
-  # Hosting is TBD; a deploy step will be added once the target environment is
-  # decided at launch. Uncomment and configure the section below at that time.
+  # ── Deploy to GitHub Pages ────────────────────────────────────────────────
+  # Assembles _site/ (landing page + chart pages + catalog + baseline thumbnails)
+  # and publishes it to GitHub Pages. Runs only on main.
   #
-  # deploy:
-  #   name: Deploy
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/main'
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/download-artifact@v4
-  #       with:
-  #         name: dist
-  #         path: dist/
-  #     - name: Deploy to <target>
-  #       run: |
-  #         # TODO: add deploy commands here
-  #         echo "Deploy step not yet configured."
+  # Prerequisite: repo Settings → Pages → "Build and deployment" → Source = "GitHub Actions".
+  #
+  # Like the rest of this workflow, it only fires on manual dispatch until the engine repo
+  # is public (npm ci needs to clone the private cross-repo dependency). When both repos are
+  # public, re-enable the push trigger above.
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true       # baseline.png thumbnails are stored in Git LFS
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build, catalog, assemble site
+        run: |
+          npm run build
+          npm run catalog
+          npm run site
+
+      - uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy
+        id: deploy
+        uses: actions/deploy-pages@v4

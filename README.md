@@ -228,11 +228,36 @@ making the engine repo public removes the need for the secret.)
 
 ---
 
-## Hosting
+## Site & hosting
 
-Deploy target is TBD at launch. A placeholder step is present but commented out in
-`.github/workflows/ci.yml`. The `dist/` folder produced by `npm run build` contains
-self-contained HTML files ready to serve from any static host.
+The published site is served from **GitHub Pages**. Its front door is the landing page in
+`site/index.html`: a static index that fetches `catalog/index.json` at runtime and lets
+people search and filter the archive (free-text, by type/collection/tag, sortable) and open
+each figure's live page. Trackers are featured at the top as "living" collections; one-off
+figures appear as dated cards. Cards use each chart's `baseline.png` as a thumbnail.
+
+`npm run site` assembles the publishable tree into `_site/` (gitignored):
+
+```
+_site/
+  index.html                       # landing page (from site/)
+  catalog/index.json               # the figure catalog
+  <collection>/<chart>/index.html  # each chart's live page (from dist/)
+  <collection>/<chart>/data.csv
+  <collection>/<chart>/baseline.png  # thumbnail
+```
+
+Run it after `build` + `catalog`. Preview locally by serving `_site/` over HTTP (the page
+fetches the catalog, so `file://` won't work):
+
+```sh
+npm run build && npm run catalog && npm run site
+python -m http.server -d _site      # or: npx http-server _site
+```
+
+The `deploy` job in `.github/workflows/ci.yml` runs this on `main` and publishes to Pages.
+**Prerequisite:** repo Settings → Pages → Source = "GitHub Actions". Like the rest of the
+workflow, it's manual-dispatch only until the engine repo is public.
 
 ---
 

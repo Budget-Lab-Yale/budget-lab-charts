@@ -12,7 +12,8 @@
     "validate": "node scripts/validate-all.mjs",
     "snapshot": "node scripts/snapshot-all.mjs",
     "build": "node scripts/build-all.mjs",
-    "catalog": "node scripts/build-catalog.mjs"
+    "catalog": "node scripts/build-catalog.mjs",
+    "site": "node scripts/assemble-site.mjs"
   },
   "dependencies": {
     "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v0.1.8"

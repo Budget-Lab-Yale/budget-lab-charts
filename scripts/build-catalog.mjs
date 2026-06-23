@@ -48,6 +48,7 @@ for (const { dir, specPath, id, kind, collection } of charts) {
     // immutable `created` date instead (and are versioned in place via git).
     date: kind === "oneoff" ? (collection.date ?? "") : "",
     created: kind === "tracker" ? (collection.created ?? "") : "",
+    cadence: kind === "tracker" ? (collection.cadence ?? "") : "",
     path: relPath,
     dataPath,
     engineVersion,

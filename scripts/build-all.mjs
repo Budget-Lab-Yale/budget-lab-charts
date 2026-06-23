@@ -7,7 +7,7 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, copyFileSync } from "node:fs";
+import { mkdirSync, copyFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { listCharts, buildTblChartCmd, REPO_ROOT } from "./lib.mjs";
 
@@ -17,6 +17,10 @@ if (charts.length === 0) {
   console.error("No charts found under charts/");
   process.exit(1);
 }
+
+// Clean dist/ first so renamed/removed charts don't leave stale outputs behind
+// (the site deploy assembles from dist/, so stale dirs would otherwise be published).
+rmSync(join(REPO_ROOT, "dist"), { recursive: true, force: true });
 
 console.log(`Building ${charts.length} chart(s)...\n`);
 
