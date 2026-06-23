@@ -1,7 +1,10 @@
 /**
  * build-catalog.mjs — generate catalog/index.json from all charts in charts/.
  *
- * Each entry: { id, title, eyebrow, article, date, path, dataPath, engineVersion, tags }
+ * Each entry: { id, kind, collection, collectionTitle, title, eyebrow, date, created,
+ *               path, dataPath, engineVersion, tags }
+ * `id` is the composed <collection.slug>/<chart-folder-name>; `path`/`dataPath` are the
+ * (mutable) on-disk locations. Consumers key on `id`.
  *
  * Writes catalog/index.json (committed to the repo).
  */
@@ -27,27 +30,24 @@ console.log(`Building catalog for ${charts.length} chart(s)...\n`);
 
 const catalog = [];
 
-for (const { dir, specPath, id, articleDir } of charts) {
+for (const { dir, specPath, id, kind, collection } of charts) {
   const spec = readYaml(specPath);
 
-  // Load article.yaml for date/engineVersion/article title
-  let article = {};
-  try {
-    article = readYaml(join(articleDir, "article.yaml"));
-  } catch {
-    // article.yaml missing — use defaults
-  }
-
-  const engineVersion = spec.engineVersion ?? article.engineVersion ?? "unknown";
+  const engineVersion = spec.engineVersion ?? collection.engineVersion ?? "unknown";
   const relPath = relative(REPO_ROOT, specPath).replace(/\\/g, "/");
   const dataPath = relative(REPO_ROOT, join(dir, "data.csv")).replace(/\\/g, "/");
 
   catalog.push({
     id,
+    kind,
+    collection: collection.slug ?? "",
+    collectionTitle: collection.title ?? "",
     title: spec.title ?? "",
     eyebrow: spec.eyebrow ?? "",
-    article: article.title ?? "",
-    date: article.date ?? "",
+    // Publication date is identity-bearing only for one-offs; trackers carry an
+    // immutable `created` date instead (and are versioned in place via git).
+    date: kind === "oneoff" ? (collection.date ?? "") : "",
+    created: kind === "tracker" ? (collection.created ?? "") : "",
     path: relPath,
     dataPath,
     engineVersion,

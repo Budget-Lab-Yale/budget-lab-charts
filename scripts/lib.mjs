@@ -4,13 +4,20 @@
  * Walks the charts/ directory tree and returns metadata for every chart.yaml found.
  */
 
-import { readdir, stat } from "node:fs/promises";
-import { join, relative, dirname } from "node:path";
+import { readdir } from "node:fs/promises";
+import { readFileSync } from "node:fs";
+import { join, relative, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parse as parseYaml } from "yaml";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, "..");
 const CHARTS_ROOT = join(REPO_ROOT, "charts");
+
+// Top-level tree under charts/ -> figure class. The tree is the single source of
+// truth for `kind`; validate-all.mjs asserts the collection file matches it.
+const KIND_BY_TREE = { articles: "oneoff", trackers: "tracker" };
+const COLLECTION_FILE_BY_KIND = { oneoff: "article.yaml", tracker: "tracker.yaml" };
 
 /**
  * Recursively walk a directory, calling `fn` on every entry.
@@ -31,8 +38,14 @@ async function walk(dir, fn) {
 /**
  * Returns metadata for every chart.yaml found under charts/.
  *
+ * Identity is composed as `<collection.slug>/<chart-folder-name>` — dateless and
+ * tree-independent. The collection slug is read from the collection file
+ * (article.yaml under articles/, tracker.yaml under trackers/); the chart segment
+ * is the chart's leaf folder name. See docs/superpowers/specs for the rationale.
+ *
  * @param {string} [chartsRoot] - Optional override; defaults to <repo-root>/charts
- * @returns {Promise<Array<{dir: string, specPath: string, id: string, articleDir: string}>>}
+ * @returns {Promise<Array<{dir: string, specPath: string, id: string, kind: string,
+ *   chartSlug: string, collectionDir: string, collectionFile: string, collection: object}>>}
  */
 export async function listCharts(chartsRoot = CHARTS_ROOT) {
   const results = [];
@@ -40,10 +53,24 @@ export async function listCharts(chartsRoot = CHARTS_ROOT) {
   await walk(chartsRoot, (entry, fullPath) => {
     if (entry.isFile() && entry.name === "chart.yaml") {
       const dir = dirname(fullPath);
-      const id = relative(chartsRoot, dir).replace(/\\/g, "/");
-      // articleDir is the parent of the chart folder (holds article.yaml)
-      const articleDir = dirname(dir);
-      results.push({ dir, specPath: fullPath, id, articleDir });
+      const tree = relative(chartsRoot, dir).replace(/\\/g, "/").split("/")[0];
+      const kind = KIND_BY_TREE[tree] ?? "unknown";
+
+      const chartSlug = basename(dir);
+      const collectionDir = dirname(dir);
+      const collectionFile = join(collectionDir, COLLECTION_FILE_BY_KIND[kind] ?? "article.yaml");
+
+      let collection = {};
+      try {
+        collection = parseYaml(readFileSync(collectionFile, "utf-8")) ?? {};
+      } catch {
+        // Collection file missing/unreadable — validate-all.mjs reports this; fall back to folder name.
+      }
+
+      const collectionSlug = collection.slug ?? basename(collectionDir);
+      const id = `${collectionSlug}/${chartSlug}`;
+
+      results.push({ dir, specPath: fullPath, id, kind, chartSlug, collectionDir, collectionFile, collection });
     }
   });
 

@@ -1,8 +1,9 @@
 /**
  * build-all.mjs — render every chart to dist/<id>/index.html and copy data.csv.
  *
- * Output: dist/<year>/<month>/<article>/<chart>/index.html
- *         dist/<year>/<month>/<article>/<chart>/data.csv
+ * Output: dist/<collection>/<chart>/index.html
+ *         dist/<collection>/<chart>/data.csv
+ * (<id> = <collection.slug>/<chart-folder-name>; dateless and tree-independent.)
  */
 
 import { spawnSync } from "node:child_process";

@@ -21,19 +21,34 @@ The engine is **the tool**; this repo is **the content**.
 
 ## Repo layout
 
+Figures fall into two classes, split by top-level tree:
+
+- **One-off** article figures — the publication date is a real property, so they file by date.
+- **Living** figures (trackers) — periodically updated in place, so they are **dateless**.
+
 ```
-charts/<year>/<month>/<article-slug>/
-  article.yaml                  # article-level metadata (title, date, engineVersion, slug)
-  <chart-slug>/
-    chart.yaml                  # ChartSpec for the engine
-    data.csv                    # tidy long-format data (columns: time, series, value)
-    baseline.png                # visual lock (Git LFS); regenerate with --update
+charts/
+  articles/<year>/<month>/<collection-slug>/
+    article.yaml                # one-off collection metadata (title, slug, date, url, engineVersion)
+    <chart-folder>/
+      chart.yaml                # ChartSpec for the engine
+      data.csv                  # tidy long-format data (columns: time, series, value)
+      baseline.png              # visual lock (Git LFS); regenerate with --update
+
+  trackers/<collection-slug>/
+    tracker.yaml                # living collection metadata (title, slug, url, engineVersion, created, cadence)
+    <chart-folder>/
+      chart.yaml
+      data.csv
+      baseline.png
 ```
+
+`<year>/<month>` exists only under `articles/`. `trackers/` is dateless.
 
 Generated outputs (not committed except catalog):
 
 ```
-dist/<year>/<month>/<article>/<chart>/
+dist/<collection-slug>/<chart-folder>/
   index.html                    # self-contained interactive chart
   data.csv                      # copy of the chart's data
 
@@ -41,17 +56,33 @@ catalog/
   index.json                    # array of chart metadata; committed
 ```
 
+## Identity
+
+Each figure's durable id — the thing the catalog and downstream embeds reference — is
+
+```
+<collection-slug>/<chart-folder-name>
+```
+
+e.g. `ai-labor-market/augmented-occupations`. It carries **no date and no tree**, so it survives the moves that happen over a figure's life: promoting a one-off to a tracker, reorganizing folders, or re-dating. The rules:
+
+- **`collection-slug`** is declared in `article.yaml`/`tracker.yaml` and names a durable *product* (a report series or tracker) — never a mutable editorial topic, never a date. Unique repo-wide.
+- **The chart segment is the chart's folder name** (not a field in `chart.yaml`, which the engine's strict schema would reject). Set it once; don't rename it. Unique within its collection (the filesystem guarantees this).
+- **To rename a figure for display, edit `title`/`eyebrow`** — never the slug or folder name.
+
+`npm run validate` enforces these (collection-file matches its tree, slug/folder-name format, repo-wide slug uniqueness) before running the engine's spec validation.
+
 ---
 
 ## Pipeline scripts
 
 | Command | What it does |
 |---|---|
-| `npm run validate` | Run `tbl-chart validate` on every `chart.yaml`; exit 1 if any fail. |
+| `npm run validate` | Structural/identity checks, then `tbl-chart validate` on every `chart.yaml`; exit 1 if any fail. |
 | `npm run build` | Render every chart to `dist/<id>/index.html`; copy `data.csv`. |
 | `npm run snapshot` | Compare each chart's render against its `baseline.png`; exit 1 on mismatch. |
 | `npm run snapshot -- --update` | Regenerate all baselines in-place (write new `baseline.png` files). |
-| `npm run catalog` | Write `catalog/index.json` from all `chart.yaml` + `article.yaml` files. |
+| `npm run catalog` | Write `catalog/index.json` from all `chart.yaml` + collection files. |
 
 Run them in order: validate first (catches spec errors before spending time on rendering),
 then build, then snapshot, then catalog.
@@ -60,11 +91,15 @@ then build, then snapshot, then catalog.
 
 ## Adding a chart
 
-1. Create a folder under the appropriate article: `charts/<year>/<month>/<article>/<chart>/`
+1. Create a folder under the collection. The **folder name is the chart's id segment** —
+   choose it once (lowercase/ASCII/hyphenated) and don't rename it later.
+   - one-off: `charts/articles/<year>/<month>/<collection>/<chart>/`
+   - tracker: `charts/trackers/<collection>/<chart>/`
 2. Write a `chart.yaml` (see `ChartSpec` in the engine's `src/spec/types.ts`; or copy an
-   existing example and adjust).
+   existing example and adjust). The chart's identity lives in the folder name and the
+   collection slug — there is **no `slug` field** in `chart.yaml`.
 3. Place a `data.csv` alongside it with columns `time`, `series`, `value` (tidy long format).
-4. Run `npm run validate` to check the spec.
+4. Run `npm run validate` to check structure + spec.
 5. Run `npm run snapshot -- --update` to generate the baseline.
 6. Run `npm run build` and `npm run catalog` to update outputs.
 7. Commit everything (spec, data, baseline via LFS, updated catalog).
@@ -83,17 +118,43 @@ Optional fields: `eyebrow`, `subtitle`, `source`, `note`, `series_order`, `serie
 
 ---
 
-## Adding an article
+## Adding a collection
 
-Create `charts/<year>/<month>/<article>/article.yaml`:
+A collection is one article (one-off) or one tracker (living). Its `slug` is the first segment
+of every chart id under it — durable, unique repo-wide, never a date.
+
+**One-off** — `charts/articles/<year>/<month>/<collection>/article.yaml`:
 
 ```yaml
 title: "Article title"
-date: "YYYY-MM-DD"
+slug: "collection-slug"
+date: "YYYY-MM-DD"       # publication date — a real property of a one-off
 url: "https://..."       # leave empty until published
-engineVersion: "0.1.1"  # should match the pinned engine version
-slug: "article-slug"
+engineVersion: "0.1.1"   # should match the pinned engine version
 ```
+
+**Tracker** — `charts/trackers/<collection>/tracker.yaml`:
+
+```yaml
+title: "Tracker title"
+slug: "collection-slug"
+url: "https://..."
+engineVersion: "0.1.1"
+created: "YYYY-MM-DD"    # optional: immutable first-publication date
+cadence: "monthly"       # optional human note; not part of identity
+```
+
+---
+
+## Updating a tracker
+
+Trackers are versioned **in place** — git history is the vintage archive; there are no dated
+snapshot folders.
+
+1. Replace `data.csv` with the new data at the same path.
+2. `npm run validate`, then `npm run snapshot -- --update` to refresh the baseline.
+3. `npm run build` and `npm run catalog`.
+4. Commit. The figure's id and embed URL are unchanged; prior values remain recoverable from git.
 
 ---
 
