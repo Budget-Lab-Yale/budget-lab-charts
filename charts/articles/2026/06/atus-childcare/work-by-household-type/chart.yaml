@@ -5,7 +5,7 @@ columns:
   value: mean_hours
   facet: sex_label
 title: Partnered men, with or without young children, spend the most time on paid work
-subtitle: Average hours per day, by household type (weighted)
+subtitle: Average hours per day, by household type
 source: IPUMS-ATUS 2003–2024 (excluding 2020) and Budget Lab calculations.
 note: Primary activities only.
 xAxisType: categorical

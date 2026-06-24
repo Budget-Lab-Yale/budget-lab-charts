@@ -5,7 +5,7 @@ columns:
   value: mean_hours
   facet: sex_label
 title: Millennial mothers of younger children spend less time on leisure than Gen X counterparts did
-subtitle: Average hours per day, by cohort (weighted)
+subtitle: Average hours per day, by cohort
 source: IPUMS-ATUS 2003–2024 (excluding 2020) and Budget Lab calculations.
 note: Primary activities only. Leisure excludes eating.
 xAxisType: categorical
