@@ -1,4 +1,9 @@
 chartType: line
+columns:
+  x: ychild_bin
+  series: cohort
+  value: mean_hours
+  facet: sex_label
 title: Work time rises dramatically with youngest child age for mothers but not fathers
 subtitle: Average hours per day, by cohort (weighted)
 source: IPUMS-ATUS 2003–2024 (excluding 2020) and Budget Lab calculations.
@@ -12,7 +17,6 @@ series_order:
   - Older Millennials
   - Younger Millennials
 small_multiples:
-  facet_field: sex_label
   columns: 2
   mode: shared
   pane_order:

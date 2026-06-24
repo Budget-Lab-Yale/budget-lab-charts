@@ -1,21 +1,21 @@
-time,series,value,sex_label
-Total,Youngest under 6,1.8,Fathers
-Total,Youngest 6–12,0.86,Fathers
-Total,Youngest under 6,2.93,Mothers
-Total,Youngest 6–12,1.117,Mothers
-Physical care,Youngest under 6,0.77,Fathers
-Physical care,Youngest 6–12,0.25,Fathers
-Physical care,Youngest under 6,1.49,Mothers
-Physical care,Youngest 6–12,0.38,Mothers
-Reading,Youngest under 6,0.07,Fathers
-Reading,Youngest 6–12,0.02,Fathers
-Reading,Youngest under 6,0.07,Mothers
-Reading,Youngest 6–12,0.03,Mothers
-Playing,Youngest under 6,0.65,Fathers
-Playing,Youngest 6–12,0.13,Fathers
-Playing,Youngest under 6,0.71,Mothers
-Playing,Youngest 6–12,0.09,Mothers
-Education,Youngest under 6,0.04,Fathers
-Education,Youngest 6–12,0.11,Fathers
-Education,Youngest under 6,0.11,Mothers
-Education,Youngest 6–12,0.12,Mothers
+activity,child_age,sex_label,mean_hours
+Total,Youngest under 6,Fathers,1.8
+Total,Youngest 6–12,Fathers,0.86
+Total,Youngest under 6,Mothers,2.93
+Total,Youngest 6–12,Mothers,1.117
+Physical care,Youngest under 6,Fathers,0.77
+Physical care,Youngest 6–12,Fathers,0.25
+Physical care,Youngest under 6,Mothers,1.49
+Physical care,Youngest 6–12,Mothers,0.38
+Reading,Youngest under 6,Fathers,0.07
+Reading,Youngest 6–12,Fathers,0.02
+Reading,Youngest under 6,Mothers,0.07
+Reading,Youngest 6–12,Mothers,0.03
+Playing,Youngest under 6,Fathers,0.65
+Playing,Youngest 6–12,Fathers,0.13
+Playing,Youngest under 6,Mothers,0.71
+Playing,Youngest 6–12,Mothers,0.09
+Education,Youngest under 6,Fathers,0.04
+Education,Youngest 6–12,Fathers,0.11
+Education,Youngest under 6,Mothers,0.11
+Education,Youngest 6–12,Mothers,0.12

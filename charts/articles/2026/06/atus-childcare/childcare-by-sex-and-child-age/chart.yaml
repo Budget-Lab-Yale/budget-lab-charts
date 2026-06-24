@@ -1,4 +1,8 @@
 chartType: line
+columns:
+  x: ychild_bin
+  value: mean_hours
+  facet: sex_label
 title: Childcare time for both fathers and mothers falls dramatically as the youngest child ages
 subtitle: Average hours per day, by sex (weighted)
 source: IPUMS-ATUS 2003–2024 (excluding 2020) and Budget Lab calculations.
@@ -7,7 +11,6 @@ xAxisType: categorical
 x_axis_title: Age of youngest own child
 points: true
 small_multiples:
-  facet_field: sex_label
   columns: 2
   mode: shared
   pane_order:

@@ -1,41 +1,41 @@
-time,series,value,sex_label
-0-1,Older Gen X,5.40617898462857,Men
-0-1,Older Gen X,2.0883885213379525,Women
-0-1,Older Millennials,5.338575983884121,Men
-0-1,Older Millennials,2.201515328037868,Women
-0-1,Younger Gen X,5.463663296208033,Men
-0-1,Younger Gen X,2.2369097089962415,Women
-0-1,Younger Millennials,5.163540984502149,Men
-0-1,Younger Millennials,1.992295900707147,Women
-1-2,Older Gen X,5.624079025451239,Men
-1-2,Older Gen X,2.38311231313757,Women
-1-2,Older Millennials,5.302549374149023,Men
-1-2,Older Millennials,2.877827995436332,Women
-1-2,Younger Gen X,5.6577825307070455,Men
-1-2,Younger Gen X,2.5754225590438544,Women
-1-2,Younger Millennials,4.883908053959359,Men
-1-2,Younger Millennials,2.5009829189298403,Women
-3-5,Older Gen X,5.478294223891824,Men
-3-5,Older Gen X,2.9934070864357705,Women
-3-5,Older Millennials,5.346289550897849,Men
-3-5,Older Millennials,3.02788190897758,Women
-3-5,Younger Gen X,5.465215530215404,Men
-3-5,Younger Gen X,3.0729452984952013,Women
-3-5,Younger Millennials,4.998310683587014,Men
-3-5,Younger Millennials,3.0414592390477444,Women
-6-12,Older Gen X,5.708277597788279,Men
-6-12,Older Gen X,3.4603521696229356,Women
-6-12,Older Millennials,5.583329453145195,Men
-6-12,Older Millennials,3.611417677448963,Women
-6-12,Younger Gen X,5.647407064440972,Men
-6-12,Younger Gen X,3.729075085775812,Women
-6-12,Younger Millennials,5.61226379701552,Men
-6-12,Younger Millennials,3.2929216694940795,Women
-13-17,Older Gen X,5.776056078582477,Men
-13-17,Older Gen X,3.9016657876693226,Women
-13-17,Older Millennials,5.2293972239232716,Men
-13-17,Older Millennials,4.871673455552007,Women
-13-17,Younger Gen X,5.6207192464473295,Men
-13-17,Younger Gen X,3.7956918092268737,Women
-13-17,Younger Millennials,5.550571057590414,Men
-13-17,Younger Millennials,4.105849783364852,Women
+ychild_bin,cohort,sex_label,mean_hours
+0-1,Older Gen X,Men,5.40617898462857
+0-1,Older Gen X,Women,2.0883885213379525
+0-1,Older Millennials,Men,5.338575983884121
+0-1,Older Millennials,Women,2.201515328037868
+0-1,Younger Gen X,Men,5.463663296208033
+0-1,Younger Gen X,Women,2.2369097089962415
+0-1,Younger Millennials,Men,5.163540984502149
+0-1,Younger Millennials,Women,1.992295900707147
+1-2,Older Gen X,Men,5.624079025451239
+1-2,Older Gen X,Women,2.38311231313757
+1-2,Older Millennials,Men,5.302549374149023
+1-2,Older Millennials,Women,2.877827995436332
+1-2,Younger Gen X,Men,5.6577825307070455
+1-2,Younger Gen X,Women,2.5754225590438544
+1-2,Younger Millennials,Men,4.883908053959359
+1-2,Younger Millennials,Women,2.5009829189298403
+3-5,Older Gen X,Men,5.478294223891824
+3-5,Older Gen X,Women,2.9934070864357705
+3-5,Older Millennials,Men,5.346289550897849
+3-5,Older Millennials,Women,3.02788190897758
+3-5,Younger Gen X,Men,5.465215530215404
+3-5,Younger Gen X,Women,3.0729452984952013
+3-5,Younger Millennials,Men,4.998310683587014
+3-5,Younger Millennials,Women,3.0414592390477444
+6-12,Older Gen X,Men,5.708277597788279
+6-12,Older Gen X,Women,3.4603521696229356
+6-12,Older Millennials,Men,5.583329453145195
+6-12,Older Millennials,Women,3.611417677448963
+6-12,Younger Gen X,Men,5.647407064440972
+6-12,Younger Gen X,Women,3.729075085775812
+6-12,Younger Millennials,Men,5.61226379701552
+6-12,Younger Millennials,Women,3.2929216694940795
+13-17,Older Gen X,Men,5.776056078582477
+13-17,Older Gen X,Women,3.9016657876693226
+13-17,Older Millennials,Men,5.2293972239232716
+13-17,Older Millennials,Women,4.871673455552007
+13-17,Younger Gen X,Men,5.6207192464473295
+13-17,Younger Gen X,Women,3.7956918092268737
+13-17,Younger Millennials,Men,5.550571057590414
+13-17,Younger Millennials,Women,4.105849783364852

@@ -1,4 +1,9 @@
 chartType: bar
+columns:
+  x: activity
+  series: child_age
+  value: mean_hours
+  facet: sex_label
 title: Parents of young children spend much more time on childcare than parents of older children
 subtitle: Average hours per day, by activity (weighted)
 source: IPUMS-ATUS 2003–2024 (excluding 2020) and Budget Lab calculations.
@@ -8,7 +13,6 @@ series_order:
   - Youngest under 6
   - Youngest 6–12
 small_multiples:
-  facet_field: sex_label
   columns: 2
   mode: shared
   pane_order:
