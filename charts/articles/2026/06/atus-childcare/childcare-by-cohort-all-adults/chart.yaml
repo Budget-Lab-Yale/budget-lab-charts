@@ -5,7 +5,7 @@ columns:
   value: mean_hours
   facet: sex_label
 title: Millennials (including non-parents) are spending less time on childcare than did Gen X
-subtitle: Average hours per day, by cohort (weighted)
+subtitle: Average hours per day, by cohort
 source: IPUMS-ATUS 2003–2024 (excluding 2020) and Budget Lab calculations.
 note: Primary activities only. ‘Childcare’ refers to care of household children under 18.
 xAxisType: categorical

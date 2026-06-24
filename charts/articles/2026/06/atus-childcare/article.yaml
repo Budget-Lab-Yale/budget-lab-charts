@@ -1,11 +1,9 @@
-title: ATUS Childcare Time Use
+title: How Gen X and Millennial parents managed their time
 slug: atus-childcare
 date: 2026-06-24
-url: ""
+url: https://budgetlab.yale.edu/research/how-gen-x-and-millennial-parents-managed-their-time
 engineVersion: 1.0.0
 
-# Figure-number eyebrows (chart-folder slug -> label). An article property, passed to the engine
-# at render time; not part of the chart spec. Omit a chart to render it un-numbered.
 figures:
   childcare-by-activity: "Figure 1"
   childcare-by-cohort-all-adults: "Figure 2"

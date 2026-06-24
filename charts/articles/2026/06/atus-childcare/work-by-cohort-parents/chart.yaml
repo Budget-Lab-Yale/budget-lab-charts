@@ -5,7 +5,7 @@ columns:
   value: mean_hours
   facet: sex_label
 title: Work time is lower for Millennial fathers of young children than Gen X predecessors
-subtitle: Average hours per day, by cohort (weighted)
+subtitle: Average hours per day, by cohort
 source: IPUMS-ATUS 2003–2024 (excluding 2020) and Budget Lab calculations.
 note: Primary activities only.
 xAxisType: categorical
