@@ -41,7 +41,7 @@ async function walk(dir, fn) {
  * Identity is composed as `<collection.slug>/<chart-folder-name>` — dateless and
  * tree-independent. The collection slug is read from the collection file
  * (article.yaml under articles/, tracker.yaml under trackers/); the chart segment
- * is the chart's leaf folder name. See docs/superpowers/specs for the rationale.
+ * is the chart's leaf folder name.
  *
  * @param {string} [chartsRoot] - Optional override; defaults to <repo-root>/charts
  * @returns {Promise<Array<{dir: string, specPath: string, id: string, kind: string,
