@@ -27797,7 +27797,17 @@ ${words.slice(bestI).join(" ")}`;
     el3.textContent = title;
     parent.appendChild(el3);
   }
+  function downloadSlug(spec) {
+    try {
+      const segs = location.pathname.split("/").filter(Boolean);
+      const last = segs[segs.length - 1];
+      if (last && !/\./.test(last)) return last;
+    } catch {
+    }
+    return titleToSlug(spec.title);
+  }
   function buildDownloadActions(doc, spec, rows) {
+    const base = downloadSlug(spec);
     const downloads = doc.createElement("div");
     downloads.className = "figure-downloads";
     const dataBtn = doc.createElement("button");
@@ -27815,7 +27825,7 @@ ${words.slice(bestI).join(" ")}`;
         const url = URL.createObjectURL(blob);
         const a = doc.createElement("a");
         a.href = url;
-        a.download = `${titleToSlug(spec.title)}.csv`;
+        a.download = `${base}.csv`;
         doc.body.appendChild(a);
         a.click();
         a.remove();
@@ -27843,7 +27853,7 @@ ${words.slice(bestI).join(" ")}`;
       imgBtn.disabled = true;
       imgLabel.textContent = "\u2026";
       try {
-        await exportChartPng(spec, rows);
+        await exportChartPng(spec, rows, { filename: `${base}.png` });
       } catch (err) {
         console.error("Image export failed:", err);
         imgLabel.textContent = "Failed";
