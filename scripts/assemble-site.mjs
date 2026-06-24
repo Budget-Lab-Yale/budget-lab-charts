@@ -47,7 +47,14 @@ mkdirSync(join(OUT, "catalog"), { recursive: true });
 cpSync(CATALOG, join(OUT, "catalog", "index.json"));
 console.log("  + catalog/index.json");
 
-// 3. Landing page + any other static assets in site/ -> _site/
+// 3. Embed framework (embed/v1/: loader + vendored iframe-resizer) -> _site/embed/
+const EMBED_SRC = join(REPO_ROOT, "embed");
+if (existsSync(EMBED_SRC)) {
+  cpSync(EMBED_SRC, join(OUT, "embed"), { recursive: true });
+  console.log("  + embed framework (from embed/)");
+}
+
+// 4. Landing page + any other static assets in site/ -> _site/
 for (const entry of readdirSync(SITE_SRC, { withFileTypes: true })) {
   cpSync(join(SITE_SRC, entry.name), join(OUT, entry.name), { recursive: true });
 }
