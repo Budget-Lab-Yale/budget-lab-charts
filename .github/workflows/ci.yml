@@ -3,7 +3,7 @@ name: CI
 # PAUSED (manual-only) until prerequisites hold. While the engine repo is private, the Actions
 # runner can't `npm ci` the cross-repo git dependency (git exit 128). To enable at launch:
 #   1. Engine repo public (or CI auth added) so `npm ci` can clone it.
-#   2. Engine pin in package.json at a release that builds these charts (>= 0.2.0).
+#   2. Engine pin in package.json at a release that builds these charts (>= 1.0.0).
 #   3. Settings → Pages → "Deploy from a branch" → branch `gh-pages` / root.
 #   4. Uncomment the push/pull_request triggers below and `gh workflow enable CI`.
 on:

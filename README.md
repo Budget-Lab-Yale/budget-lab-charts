@@ -146,7 +146,7 @@ title: "Article title"
 slug: "collection-slug"
 date: "YYYY-MM-DD"       # publication date — a real property of a one-off
 url: "https://..."       # leave empty until published
-engineVersion: "0.2.0"   # should match the pinned engine version
+engineVersion: "1.0.0"   # should match the pinned engine version
 figures:                 # optional: figure-number eyebrows (see below)
   chart-folder-slug: "Figure 1"
 ```
@@ -157,7 +157,7 @@ figures:                 # optional: figure-number eyebrows (see below)
 title: "Tracker title"
 slug: "collection-slug"
 url: "https://..."
-engineVersion: "0.2.0"
+engineVersion: "1.0.0"
 created: "YYYY-MM-DD"    # optional: immutable first-publication date
 cadence: "monthly"       # optional human note; not part of identity
 figures:                 # optional: figure-number eyebrows (see below)
@@ -195,7 +195,7 @@ snapshot folders.
 The engine is pinned as a git-tag dependency in `package.json`:
 
 ```json
-"budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v0.2.0"
+"budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v1.0.0"
 ```
 
 To bump:
@@ -225,7 +225,7 @@ means replacing only the preview/deploy steps — not the build.
 
 1. Engine repo public (or add a token + git-URL-rewrite step) so `npm ci` can clone the
    cross-repo dependency.
-2. Engine pin at a release that builds these charts (≥ `0.2.0`).
+2. Engine pin at a release that builds these charts (≥ `1.0.0`).
 3. Repo **Settings → Pages → Source = "Deploy from a branch" → `gh-pages` / root**.
 4. Uncomment the `push`/`pull_request` triggers in `ci.yml` and `gh workflow enable CI`.
 

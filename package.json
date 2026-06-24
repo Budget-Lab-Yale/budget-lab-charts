@@ -17,7 +17,7 @@
     "all": "npm run validate && npm run build && npm run catalog && npm run site && npm run thumbs"
   },
   "dependencies": {
-    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v0.1.8"
+    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v1.0.0"
   },
   "devDependencies": {
     "playwright": "^1.61.0"

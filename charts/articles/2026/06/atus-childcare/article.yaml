@@ -2,7 +2,7 @@ title: ATUS Childcare Time Use
 slug: atus-childcare
 date: 2026-06-24
 url: ""
-engineVersion: 0.2.0
+engineVersion: 1.0.0
 
 # Figure-number eyebrows (chart-folder slug -> label). An article property, passed to the engine
 # at render time; not part of the chart spec. Omit a chart to render it un-numbered.
