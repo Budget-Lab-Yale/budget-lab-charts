@@ -164,15 +164,12 @@ a:hover { text-decoration: underline; }
 <main class="fl-main">
   <h1 class="fl-pagetitle">Chart Library</h1>
 
-  <!-- Search + filters -->
+  <!-- Search + sort -->
   <div class="fl-controls" role="search">
     <div class="fl-search">
       <svg class="fl-search__icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M11.74 10.34a6 6 0 1 0-1.4 1.4l3.2 3.2a1 1 0 0 0 1.42-1.42l-3.22-3.18ZM3 6.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0Z"/></svg>
       <input id="q" type="search" placeholder="Search figures…" autocomplete="off" aria-label="Search figures">
     </div>
-    <select id="f-kind" class="fl-select" aria-label="Filter by type"><option value="">All types</option><option value="tracker">Trackers</option><option value="oneoff">One-offs</option></select>
-    <select id="f-collection" class="fl-select" aria-label="Filter by collection"><option value="">All collections</option></select>
-    <select id="f-tag" class="fl-select" aria-label="Filter by tag"><option value="">All tags</option></select>
     <select id="f-sort" class="fl-select" aria-label="Sort figures"><option value="newest">Sort: Newest</option><option value="az">Sort: A–Z</option><option value="collection">Sort: by collection</option></select>
     <button class="fl-clear" id="clear" type="button" hidden>Clear</button>
   </div>
@@ -181,7 +178,7 @@ a:hover { text-decoration: underline; }
   <div class="fl-grid" id="grid"></div>
   <div class="fl-empty" id="empty" hidden>
     <h3>No figures match</h3>
-    <p>Try a different search, or <button type="button" id="empty-clear">clear all filters</button>.</p>
+    <p>Try a different search, or <button type="button" id="empty-clear">clear your search</button>.</p>
   </div>
 </main>
 
@@ -203,43 +200,35 @@ a:hover { text-decoration: underline; }
   "use strict";
   const $ = (s) => document.querySelector(s);
   const grid = $("#grid"), empty = $("#empty"), resultline = $("#resultline");
-  const els = { q: $("#q"), kind: $("#f-kind"), collection: $("#f-collection"), tag: $("#f-tag"), sort: $("#f-sort"), clear: $("#clear") };
+  const els = { q: $("#q"), sort: $("#f-sort"), clear: $("#clear") };
 
   const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   function ym(d) { if (!d) return ""; const m = /^(\d{4})-(\d{2})/.exec(d); return m ? `${MONTHS[+m[2]-1]} ${m[1]}` : d; }
 
   let DATA = [];
-  const state = { q: "", kind: "", collection: "", tag: "", sort: "newest" };
+  const state = { q: "", sort: "newest" };
 
   // ---- URL hash <-> state (shareable filtered views) ----
   function readHash() {
     const p = new URLSearchParams(location.hash.slice(1));
-    state.q = p.get("q") || ""; state.kind = p.get("kind") || ""; state.collection = p.get("collection") || "";
-    state.tag = p.get("tag") || ""; state.sort = p.get("sort") || "newest";
+    state.q = p.get("q") || ""; state.sort = p.get("sort") || "newest";
   }
   function writeHash() {
     const p = new URLSearchParams();
     if (state.q) p.set("q", state.q);
-    if (state.kind) p.set("kind", state.kind);
-    if (state.collection) p.set("collection", state.collection);
-    if (state.tag) p.set("tag", state.tag);
     if (state.sort && state.sort !== "newest") p.set("sort", state.sort);
     const h = p.toString();
     history.replaceState(null, "", h ? "#" + h : location.pathname + location.search);
   }
   function syncControls() {
-    els.q.value = state.q; els.kind.value = state.kind; els.collection.value = state.collection;
-    els.tag.value = state.tag; els.sort.value = state.sort;
+    els.q.value = state.q; els.sort.value = state.sort;
   }
 
   function sortKey(c) { return c.date || c.created || ""; }
   function filtered() {
     const q = state.q.trim().toLowerCase();
     let rows = DATA.filter((c) => {
-      if (state.kind && c.kind !== state.kind) return false;
-      if (state.collection && c.collection !== state.collection) return false;
-      if (state.tag && !(c.tags || []).includes(state.tag)) return false;
       if (q) {
         const hay = [c.title, c.collectionTitle, (c.tags || []).join(" ")].join(" ").toLowerCase();
         if (!hay.includes(q)) return false;
@@ -267,35 +256,22 @@ a:hover { text-decoration: underline; }
     </a>`;
   }
 
-  function fillFacets() {
-    const colls = new Map(), tags = new Set();
-    for (const c of DATA) { if (c.collection) colls.set(c.collection, c.collectionTitle); (c.tags || []).forEach((t) => tags.add(t)); }
-    els.collection.insertAdjacentHTML("beforeend", [...colls.entries()].sort((a, b) => a[1].localeCompare(b[1]))
-      .map(([slug, title]) => `<option value="${esc(slug)}">${esc(title)}</option>`).join(""));
-    els.tag.insertAdjacentHTML("beforeend", [...tags].sort().map((t) => `<option value="${esc(t)}">${esc(t)}</option>`).join(""));
-    if (tags.size === 0) els.tag.style.display = "none";
-  }
-
   function apply() {
     const rows = filtered();
     grid.innerHTML = rows.map(cardHTML).join("");
     empty.hidden = rows.length > 0;
-    const anyFilter = state.q || state.kind || state.collection || state.tag;
-    els.clear.hidden = !anyFilter;
+    els.clear.hidden = !state.q;
     const total = DATA.length, shown = rows.length;
-    resultline.innerHTML = anyFilter
+    resultline.innerHTML = state.q
       ? `<strong>${shown}</strong> of ${total} figure${total === 1 ? "" : "s"}`
       : `<strong>${total}</strong> figure${total === 1 ? "" : "s"}`;
     writeHash();
   }
 
-  function reset() { state.q = state.kind = state.collection = state.tag = ""; state.sort = "newest"; syncControls(); apply(); }
+  function reset() { state.q = ""; state.sort = "newest"; syncControls(); apply(); }
 
   function bind() {
     els.q.addEventListener("input", () => { state.q = els.q.value; apply(); });
-    els.kind.addEventListener("change", () => { state.kind = els.kind.value; apply(); });
-    els.collection.addEventListener("change", () => { state.collection = els.collection.value; apply(); });
-    els.tag.addEventListener("change", () => { state.tag = els.tag.value; apply(); });
     els.sort.addEventListener("change", () => { state.sort = els.sort.value; apply(); });
     els.clear.addEventListener("click", reset);
     $("#empty-clear").addEventListener("click", reset);
@@ -306,7 +282,7 @@ a:hover { text-decoration: underline; }
     .then((data) => {
       DATA = Array.isArray(data) ? data : [];
       $("#footer-note").textContent = `${DATA.length} figures in the archive`;
-      fillFacets(); readHash(); syncControls(); bind(); apply();
+      readHash(); syncControls(); bind(); apply();
     })
     .catch((err) => {
       resultline.textContent = "";
