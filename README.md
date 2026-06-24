@@ -33,13 +33,13 @@ Figures fall into two classes, split by top-level tree:
 ```
 charts/
   articles/<year>/<month>/<collection-slug>/
-    article.yaml                # one-off collection metadata (title, slug, date, url, engineVersion, figures)
+    article.yaml                # one-off collection metadata (title, slug, date, url, figures)
     <chart-folder>/
       chart.yaml                # ChartSpec for the engine
       data.csv                  # long-format data; any column names (mapped via chart.yaml `columns:`)
 
   trackers/<collection-slug>/
-    tracker.yaml                # living collection metadata (title, slug, url, engineVersion, created, cadence, figures)
+    tracker.yaml                # living collection metadata (title, slug, url, created, cadence, figures)
     <chart-folder>/
       chart.yaml
       data.csv
@@ -130,7 +130,8 @@ To preview locally before opening the PR: `npm run all`, then serve `_site/` ove
 Required: `chartType`, `title`, `xAxisType`, `data`. Common optional: `columns`, `subtitle`,
 `source`, `note`, `x_axis_title`, `y_axis_title`, `series_order`, `series_colors`,
 `series_styles`, `series_labels`, `points`, `small_multiples`, `confidence_bands`, `tags`. See
-`ChartSpec` in the engine's `src/spec/types.ts` for the full set.
+**[CONFIG-REFERENCE.md](CONFIG-REFERENCE.md)** for the full field-by-field reference (chart.yaml,
+collection files, and the CSV format).
 
 ---
 
@@ -146,7 +147,6 @@ title: "Article title"
 slug: "collection-slug"
 date: "YYYY-MM-DD"       # publication date — a real property of a one-off
 url: "https://..."       # leave empty until published
-engineVersion: "1.0.0"   # should match the pinned engine version
 figures:                 # optional: figure-number eyebrows (see below)
   chart-folder-slug: "Figure 1"
 ```
@@ -157,7 +157,6 @@ figures:                 # optional: figure-number eyebrows (see below)
 title: "Tracker title"
 slug: "collection-slug"
 url: "https://..."
-engineVersion: "1.0.0"
 created: "YYYY-MM-DD"    # optional: immutable first-publication date
 cadence: "monthly"       # optional human note; not part of identity
 figures:                 # optional: figure-number eyebrows (see below)

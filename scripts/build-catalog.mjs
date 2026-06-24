@@ -2,7 +2,7 @@
  * build-catalog.mjs — generate catalog/index.json from all charts in charts/.
  *
  * Each entry: { id, kind, collection, collectionTitle, title, eyebrow, date, created,
- *               path, dataPath, engineVersion, tags }
+ *               path, dataPath, tags }
  * `id` is the composed <collection.slug>/<chart-folder-name>; `path`/`dataPath` are the
  * (mutable) on-disk locations. Consumers key on `id`.
  *
@@ -33,7 +33,6 @@ const catalog = [];
 for (const { dir, specPath, id, kind, chartSlug, collection } of charts) {
   const spec = readYaml(specPath);
 
-  const engineVersion = spec.engineVersion ?? collection.engineVersion ?? "unknown";
   const relPath = relative(REPO_ROOT, specPath).replace(/\\/g, "/");
   const dataPath = relative(REPO_ROOT, join(dir, "data.csv")).replace(/\\/g, "/");
 
@@ -52,7 +51,6 @@ for (const { dir, specPath, id, kind, chartSlug, collection } of charts) {
     cadence: kind === "tracker" ? (collection.cadence ?? "") : "",
     path: relPath,
     dataPath,
-    engineVersion,
     tags: spec.tags ?? [],
   });
 
