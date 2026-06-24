@@ -98,8 +98,10 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
           npm run build
+          echo "::group::DEBUG dist"; find dist -name 'index.html' | sort; ls -la dist/atus-childcare/childcare-by-activity/ || true; echo "::endgroup::"
           npm run catalog
           npm run site
+          echo "::group::DEBUG _site"; find _site -name 'index.html' | sort; ls -la _site/atus-childcare/childcare-by-activity/ || true; echo "::endgroup::"
           npm run thumbs
       - name: Publish to gh-pages
         uses: peaceiris/actions-gh-pages@v4
