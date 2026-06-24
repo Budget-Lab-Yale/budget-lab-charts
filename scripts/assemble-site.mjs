@@ -13,8 +13,9 @@
  * at runtime and links to ./<id>/ pages + ./<id>/thumb.png thumbnails.
  */
 
-import { cp, mkdir, rm, readdir } from "node:fs/promises";
-import { existsSync } from "node:fs";
+// Synchronous fs throughout: async fs.cp({recursive}) has a file-dropping race on Node 20
+// (the CI runtime) that silently omitted per-chart index.html. cpSync is deterministic.
+import { cpSync, mkdirSync, rmSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { REPO_ROOT } from "./lib.mjs";
 
@@ -34,21 +35,21 @@ if (!existsSync(CATALOG)) {
 
 console.log("Assembling _site/ ...\n");
 
-await rm(OUT, { recursive: true, force: true });
-await mkdir(OUT, { recursive: true });
+rmSync(OUT, { recursive: true, force: true });
+mkdirSync(OUT, { recursive: true });
 
 // 1. Chart pages + data (dist/<id>/...) -> _site/<id>/...
-await cp(DIST, OUT, { recursive: true });
+cpSync(DIST, OUT, { recursive: true });
 console.log("  + chart pages (from dist/)");
 
 // 2. Catalog -> _site/catalog/index.json
-await mkdir(join(OUT, "catalog"), { recursive: true });
-await cp(CATALOG, join(OUT, "catalog", "index.json"));
+mkdirSync(join(OUT, "catalog"), { recursive: true });
+cpSync(CATALOG, join(OUT, "catalog", "index.json"));
 console.log("  + catalog/index.json");
 
 // 3. Landing page + any other static assets in site/ -> _site/
-for (const entry of await readdir(SITE_SRC, { withFileTypes: true })) {
-  await cp(join(SITE_SRC, entry.name), join(OUT, entry.name), { recursive: true });
+for (const entry of readdirSync(SITE_SRC, { withFileTypes: true })) {
+  cpSync(join(SITE_SRC, entry.name), join(OUT, entry.name), { recursive: true });
 }
 console.log("  + landing page (from site/)");
 

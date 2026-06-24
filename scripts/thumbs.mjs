@@ -31,7 +31,7 @@ console.log(`Generating ${charts.length} thumbnail(s)...\n`);
 
 let browser;
 try {
-  browser = await chromium.launch();
+  browser = await chromium.launch({ args: ["--no-sandbox"] }); // --no-sandbox: CI runners
 } catch (err) {
   console.error(
     `thumbs: could not launch Chromium (${err.message}).\nInstall it with: npx playwright install chromium`,
