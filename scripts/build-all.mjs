@@ -14,7 +14,19 @@ import { join } from "node:path";
 // height when embedded via embed/v1/embed.js. Chart ids are 2 segments (<collection>/<chart>), so
 // the page sits 2 levels deep and ../../embed/v1/ resolves to the Pages-root embed dir. The script
 // self-detects iframe context; on the standalone/gallery view it is a no-op.
-const RESIZER_TAG = '<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script>';
+// Resizer child script + a re-measure hook. iframe-resizer v4 tracks height via a MutationObserver
+// + window resize, which can miss late reflows (chart re-render, font swap, host layout settling),
+// leaving the iframe taller than the settled content (trailing whitespace). A ResizeObserver on
+// <body> + a couple of post-load nudges force iframe-resizer to re-measure the true height. Gated
+// to embedded context (window.self !== window.top); no-op on the standalone/gallery view.
+const RESIZER_TAG =
+  '<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script>' +
+  '<script>(function(){if(window.self===window.top)return;' +
+  'function fit(){try{if(window.parentIFrame&&window.parentIFrame.size)window.parentIFrame.size();}catch(e){}}' +
+  'var t;function soon(){clearTimeout(t);t=setTimeout(fit,60);}' +
+  'if(window.ResizeObserver){try{new ResizeObserver(soon).observe(document.body);}catch(e){}}' +
+  'window.addEventListener("load",function(){setTimeout(fit,200);setTimeout(fit,800);});' +
+  'if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}})();</script>';
 
 // When embedded (in an iframe), make the chart fill the iframe: strip the standalone page's
 // centering margin / max-width so it renders edge-to-edge and its height measures correctly. The
