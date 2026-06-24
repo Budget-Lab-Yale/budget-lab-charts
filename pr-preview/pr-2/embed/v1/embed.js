@@ -1,11 +1,11 @@
 /**
  * Budget Lab Charts — embed loader
  * @version 1.0.0
- * Snippet: <script src=".../budget-lab-charts/embed/v1/embed.js" data-chart="<collection>/<chart>"></script>
+ * Snippet: <script src=".../budget-lab-charts/embed/v1/embed.js" chart="<collection>/<chart>"></script>
  * Auto-sizes the chart iframe to content height via iframe-resizer v4 (MIT, vendored alongside).
  * Mirrors the budget-lab-interactives embed loader; the only differences are that charts are
- * addressed by their durable id (data-chart = "<collection-slug>/<chart-folder>") and served at
- * the Pages root, and that data-eyebrow controls the figure-number eyebrow.
+ * addressed by their durable id (chart = "<collection-slug>/<chart-folder>") and served at the
+ * Pages root, and that data-eyebrow controls the figure-number eyebrow.
  */
 (function () {
   'use strict';
@@ -13,9 +13,9 @@
   var me = document.currentScript;
   if (!me) return;
 
-  var chart = me.getAttribute('data-chart');
+  var chart = me.getAttribute('chart') || me.getAttribute('data-chart');
   if (!chart) {
-    console.error('[TBL charts embed] data-chart attribute is required (e.g. "atus-childcare/childcare-by-activity").');
+    console.error('[TBL charts embed] a "chart" attribute is required (e.g. chart="atus-childcare/childcare-by-activity").');
     return;
   }
 
