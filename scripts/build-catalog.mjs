@@ -30,7 +30,7 @@ console.log(`Building catalog for ${charts.length} chart(s)...\n`);
 
 const catalog = [];
 
-for (const { dir, specPath, id, kind, collection } of charts) {
+for (const { dir, specPath, id, kind, chartSlug, collection } of charts) {
   const spec = readYaml(specPath);
 
   const engineVersion = spec.engineVersion ?? collection.engineVersion ?? "unknown";
@@ -43,7 +43,8 @@ for (const { dir, specPath, id, kind, collection } of charts) {
     collection: collection.slug ?? "",
     collectionTitle: collection.title ?? "",
     title: spec.title ?? "",
-    eyebrow: spec.eyebrow ?? "",
+    // Eyebrow (figure number) lives in the collection file's figures map, keyed by chart slug.
+    eyebrow: collection.figures?.[chartSlug] ?? "",
     // Publication date is identity-bearing only for one-offs; trackers carry an
     // immutable `created` date instead (and are versioned in place via git).
     date: kind === "oneoff" ? (collection.date ?? "") : "",

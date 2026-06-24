@@ -1,0 +1,24 @@
+chartType: line
+title: Partnered mothers spend more time on childcare than other groups
+subtitle: Average hours per day, by household type (weighted)
+source: ATUS 2003–2024 and Budget Lab calculations.
+note: Primary activities only. “Childcare” refers to care of household children under 18. Leisure excludes eating.
+xAxisType: categorical
+x_axis_title: Age group
+points: true
+series_order:
+  - Partnered, no child <13
+  - Partnered, own child <13
+  - Single, no child <13
+  - Single, own child <13
+small_multiples:
+  facet_field: sex_label
+  columns: 2
+  mode: shared
+  pane_order:
+    - Men
+    - Women
+  pane_titles:
+    Men: Men
+    Women: Women
+data: data.csv
