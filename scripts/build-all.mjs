@@ -15,6 +15,18 @@ import { join } from "node:path";
 // the page sits 2 levels deep and ../../embed/v1/ resolves to the Pages-root embed dir. The script
 // self-detects iframe context; on the standalone/gallery view it is a no-op.
 const RESIZER_TAG = '<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script>';
+
+// When embedded (in an iframe), make the chart fill the iframe: strip the standalone page's
+// centering margin / max-width so it renders edge-to-edge and its height measures correctly. The
+// standalone `#chart { margin: 32px auto }` collapses out of body.offsetHeight, which makes
+// iframe-resizer size the frame ~32px short (clipping the footer) and the max-width leaves side
+// whitespace. Gated on html.tbl-embedded (set only inside an iframe), so the standalone/gallery
+// view is unchanged. Injected into <head> so it applies before the chart mounts (no reflow flash).
+const EMBED_HEAD =
+  '<style>html.tbl-embedded body{margin:0 !important}' +
+  'html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style>' +
+  '<script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}' +
+  'catch(e){document.documentElement.classList.add("tbl-embedded")}</script>';
 import { listCharts, buildTblChartCmd, REPO_ROOT } from "./lib.mjs";
 
 const charts = await listCharts();
@@ -67,7 +79,10 @@ for (const { dir, specPath, id, chartSlug, collection } of charts) {
     try {
       const html = readFileSync(outFile, "utf8");
       if (!html.includes("iframeResizer.contentWindow")) {
-        writeFileSync(outFile, html.replace("</body>", `${RESIZER_TAG}\n</body>`));
+        writeFileSync(
+          outFile,
+          html.replace("</head>", `${EMBED_HEAD}\n</head>`).replace("</body>", `${RESIZER_TAG}\n</body>`),
+        );
       }
     } catch {
       // non-fatal: page still renders, just won't auto-resize when embedded
