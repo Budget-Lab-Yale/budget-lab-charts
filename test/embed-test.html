@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Embed smoke test — budget-lab-charts</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; max-width: 760px; margin: 40px auto; padding: 0 16px; color: #1A1A2E; }
+  h1 { font-size: 20px; }
+  .note { color: #555; font-size: 14px; }
+  hr { border: 0; border-top: 1px solid #e5e5e5; margin: 32px 0; }
+</style>
+</head>
+<body>
+  <h1>Embed smoke test</h1>
+  <p class="note">
+    Each block below is the production embed snippet for one chart. The loader injects an
+    auto-resizing iframe; there should be <strong>no inner scrollbar</strong> and the height should
+    track the content as you resize the window. To test a local build instead, serve <code>_site/</code>
+    over HTTP and change the <code>src</code> below to <code>http://localhost:PORT/embed/v1/embed.js</code>.
+  </p>
+
+  <h2>Eyebrow on (default)</h2>
+  <script src="https://budget-lab-yale.github.io/budget-lab-charts/embed/v1/embed.js"
+          data-chart="atus-childcare/childcare-by-activity"
+          data-title="Figure 1 — Parents of young children spend much more time on childcare"></script>
+
+  <hr>
+
+  <h2>Eyebrow off (<code>data-eyebrow="off"</code>)</h2>
+  <script src="https://budget-lab-yale.github.io/budget-lab-charts/embed/v1/embed.js"
+          data-chart="atus-childcare/childcare-by-sex-and-child-age"
+          data-eyebrow="off"
+          data-title="Childcare time falls as the youngest child ages"></script>
+</body>
+</html>

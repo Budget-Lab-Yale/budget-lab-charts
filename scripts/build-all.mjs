@@ -7,8 +7,14 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, copyFileSync, rmSync } from "node:fs";
+import { mkdirSync, copyFileSync, rmSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+
+// iframe-resizer child script — injected into every rendered page so the chart auto-reports its
+// height when embedded via embed/v1/embed.js. Chart ids are 2 segments (<collection>/<chart>), so
+// the page sits 2 levels deep and ../../embed/v1/ resolves to the Pages-root embed dir. The script
+// self-detects iframe context; on the standalone/gallery view it is a no-op.
+const RESIZER_TAG = '<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script>';
 import { listCharts, buildTblChartCmd, REPO_ROOT } from "./lib.mjs";
 
 const charts = await listCharts();
@@ -57,6 +63,16 @@ for (const { dir, specPath, id, chartSlug, collection } of charts) {
   }
 
   if (passed) {
+    // Make the page embed-ready: inject the iframe-resizer child script before </body>.
+    try {
+      const html = readFileSync(outFile, "utf8");
+      if (!html.includes("iframeResizer.contentWindow")) {
+        writeFileSync(outFile, html.replace("</body>", `${RESIZER_TAG}\n</body>`));
+      }
+    } catch {
+      // non-fatal: page still renders, just won't auto-resize when embedded
+    }
+
     // Copy data.csv alongside the HTML
     const srcData = join(dir, "data.csv");
     const dstData = join(outDir, "data.csv");
