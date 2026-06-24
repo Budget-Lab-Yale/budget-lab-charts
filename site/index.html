@@ -46,24 +46,21 @@ a { color: var(--blue); text-decoration: none; }
 a:hover { text-decoration: underline; }
 :focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; border-radius: 4px; }
 
-/* ── Masthead ─────────────────────────────────────────────── */
-.fl-masthead { background: var(--navy); color: #fff; }
-.fl-masthead__inner {
-  max-width: var(--maxw); margin: 0 auto; padding: 26px 24px 30px;
-  display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+/* ── Site header (emulates budgetlab.yale.edu) ────────────── */
+.fl-header { background: var(--navy); }
+.fl-header__inner {
+  max-width: var(--maxw); margin: 0 auto; padding: 16px 24px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px 28px; flex-wrap: wrap;
 }
-.fl-brand { display: flex; align-items: center; gap: 18px; }
-.fl-brand__logo { height: 40px; width: auto; display: block; }
-.fl-brand__divider { width: 1px; align-self: stretch; background: rgba(255,255,255,.22); }
-.fl-brand__title { display: flex; flex-direction: column; gap: 3px; }
-.fl-brand__eyebrow {
-  font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--sky);
-}
-.fl-brand__h1 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -.02em; line-height: 1.05; color: #fff; }
-.fl-masthead__tagline { margin: 4px 0 0; color: rgba(255,255,255,.78); font-size: 15px; max-width: 42ch; }
-.fl-count { text-align: right; color: rgba(255,255,255,.85); font-size: 14px; white-space: nowrap; }
-.fl-count strong { color: #fff; font-weight: 700; }
+.fl-header__home { display: inline-flex; }
+.fl-header__home:hover { opacity: .85; }
+.fl-header__logo { height: 30px; width: auto; display: block; }
+.fl-nav { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.fl-nav a { color: rgba(255,255,255,.92); font-size: 14.5px; font-weight: 600; }
+.fl-nav a:hover { color: var(--sky); text-decoration: none; }
+
+/* Page title */
+.fl-pagetitle { margin: 30px 0 0; font-size: 30px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; color: var(--t-head); }
 
 /* ── Page shell ───────────────────────────────────────────── */
 .fl-main { max-width: var(--maxw); margin: 0 auto; padding: 0 24px 80px; }
@@ -157,8 +154,9 @@ a:hover { text-decoration: underline; }
 .fl-footer__inner { max-width: var(--maxw); margin: 0 auto; padding: 26px 24px; font-size: 13px; color: var(--t-muted); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 
 @media (max-width: 620px) {
-  .fl-brand__h1 { font-size: 24px; }
-  .fl-count { text-align: left; }
+  .fl-pagetitle { font-size: 25px; }
+  .fl-nav { gap: 16px; }
+  .fl-nav a { font-size: 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .fl-live__dot { animation: none; }
@@ -167,12 +165,11 @@ a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
-<header class="fl-masthead">
-  <div class="fl-masthead__inner">
-    <div>
-      <div class="fl-brand">
-        <!-- TBL knockout wordmark (white + sky stripe), inline for self-containment -->
-        <svg class="fl-brand__logo" viewBox="0 0 252 108" role="img" aria-label="The Budget Lab" xmlns="http://www.w3.org/2000/svg">
+<header class="fl-header">
+  <div class="fl-header__inner">
+    <a class="fl-header__home" href="https://budgetlab.yale.edu/" aria-label="The Budget Lab home">
+      <!-- TBL knockout wordmark (white + sky stripe), inline for self-containment -->
+      <svg class="fl-header__logo" viewBox="0 0 252 108" role="img" aria-label="The Budget Lab" xmlns="http://www.w3.org/2000/svg">
           <g fill="#FFFFFF">
             <path d="M26.16,74.4c-2.79,0-5.08-1.78-5.08-5.48V58.19H18v-2.1h3.08v-4.25l2.33-0.91v5.15h7.41v2.1h-7.41v10.62c0,2.32,1.36,3.41,3.19,3.41c1.65,0,3.08-0.83,4.3-1.96l0.07,0.04l-0.57,2.65C29.42,73.68,27.95,74.4,26.16,74.4z"/>
             <path d="M35.54,61.64V74h-2.4V47.53l2.4-0.91v13.13c1.97-2.65,3.97-4.07,6.69-4.07c3.55,0,6.3,2.47,6.3,7.07V74h-2.36V62.98c0-3.37-1.86-5.11-4.51-5.11C39.51,57.86,37.79,58.99,35.54,61.64z"/>
@@ -188,20 +185,22 @@ a:hover { text-decoration: underline; }
             <path d="M224.62,74.29c-2.01,0-3.83-0.65-5.62-1.67L217.42,74h-0.47V47.53l2.4-0.91v12.33c2.07-2.14,4.04-3.23,6.62-3.23c4.33,0,8.02,3.63,8.02,8.92C234,70.48,229.7,74.29,224.62,74.29z M219.36,60.66v9.94c1.75,1.05,3.44,1.6,5.22,1.6c3.98,0,7.02-3.19,7.02-7.4c0-4.28-2.9-6.89-6.27-6.89C223.22,57.9,221.43,58.81,219.36,60.66z"/>
           </g>
           <path fill="#63AAFF" d="M219.11,36.17c0,1.07-0.86,1.94-1.91,1.94c-0.81,0-1.5-0.52-1.77-1.24l-18.5,3.33c-0.02,1.07-0.86,1.91-1.91,1.91c-0.83,0-1.55-0.55-1.79-1.29l-16.95,2.61c-0.05,1.02-0.88,1.81-1.89,1.81c-0.86,0-1.57-0.57-1.82-1.34l-19.77,1.86c-0.15,0.89-0.93,1.59-1.86,1.59c-1.05,0-1.89-0.84-1.91-1.91l-15.87-4.4c-0.29,0.65-0.96,1.07-1.69,1.07c-0.76,0-1.45-0.47-1.74-1.14L100.6,47.5v0.02c0,1.07-0.86,1.94-1.91,1.94c-1.06,0-1.91-0.87-1.91-1.94c0-0.37,0.1-0.72,0.29-1.02L80.36,30.53c-0.29,0.22-0.69,0.35-1.1,0.35c-0.76,0-1.42-0.45-1.72-1.12L35.66,40.04c0.02,0.05,0.02,0.07,0.02,0.12c0,1.07-0.86,1.94-1.91,1.94c-0.76,0-1.45-0.47-1.74-1.14l-8.49,2.19c0.02,0.05,0.02,0.07,0.02,0.12c0,1.07-0.86,1.94-1.91,1.94s-1.91-0.87-1.91-1.94c0-1.07,0.86-1.94,1.91-1.94c0.74,0,1.4,0.42,1.69,1.07l8.51-2.19c0-0.02,0-0.02,0-0.05c0-1.07,0.86-1.94,1.91-1.94c0.74,0,1.4,0.42,1.72,1.07l41.85-10.29v-0.07c0-1.07,0.86-1.94,1.91-1.94c1.08,0,1.94,0.87,1.94,1.94c0,0.37-0.1,0.75-0.29,1.04l16.68,15.95c0.32-0.22,0.69-0.35,1.1-0.35c0.76,0,1.45,0.47,1.74,1.14l29.12-6.53v-0.02c0-1.07,0.86-1.94,1.91-1.94c1.05,0,1.91,0.87,1.91,1.94c0,0.05,0,0.07-0.02,0.12l15.82,4.37c0.29-0.7,0.98-1.19,1.77-1.19c0.91,0,1.67,0.65,1.86,1.52l19.7-1.86c0.07-0.99,0.88-1.76,1.89-1.76c0.83,0,1.55,0.55,1.79,1.29l16.95-2.61c0.05-1.02,0.88-1.81,1.89-1.81c0.81,0,1.5,0.5,1.77,1.22l18.5-3.35c0.05-1.07,0.88-1.89,1.91-1.89C218.25,34.21,219.11,35.08,219.11,36.17z"/>
-        </svg>
-        <div class="fl-brand__divider" aria-hidden="true"></div>
-        <div class="fl-brand__title">
-          <span class="fl-brand__eyebrow">Chart archive</span>
-          <h1 class="fl-brand__h1">Figures</h1>
-        </div>
-      </div>
-      <p class="fl-masthead__tagline">Every published Budget Lab figure — searchable, and citable at a link that stays put.</p>
-    </div>
-    <div class="fl-count" id="masthead-count" aria-live="polite"></div>
+      </svg>
+    </a>
+    <nav class="fl-nav" aria-label="Budget Lab">
+      <a href="https://budgetlab.yale.edu/our-work">Our Work</a>
+      <a href="https://budgetlab.yale.edu/topics">Topics</a>
+      <a href="https://budgetlab.yale.edu/news">News</a>
+      <a href="https://budgetlab.yale.edu/our-people">People</a>
+      <a href="https://budgetlab.yale.edu/about">About</a>
+      <a href="https://budgetlab.yale.edu/contact-us">Contact</a>
+    </nav>
   </div>
 </header>
 
 <main class="fl-main">
+  <h1 class="fl-pagetitle">Figures</h1>
+
   <!-- Featured living trackers -->
   <section id="trackers-section" hidden>
     <div class="fl-section__head">
@@ -403,8 +402,6 @@ a:hover { text-decoration: underline; }
     .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then((data) => {
       DATA = Array.isArray(data) ? data : [];
-      const nT = new Set(DATA.filter((c) => c.kind === "tracker").map((c) => c.collection)).size;
-      $("#masthead-count").innerHTML = `<strong>${DATA.length}</strong> figures` + (nT ? ` · <strong>${nT}</strong> tracker${nT === 1 ? "" : "s"}` : "");
       $("#footer-note").textContent = `${DATA.length} figures in the archive`;
       fillFacets(); readHash(); syncControls(); renderTrackers(); bind(); apply();
     })
