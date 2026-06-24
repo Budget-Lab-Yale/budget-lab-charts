@@ -243,7 +243,7 @@ a:hover { text-decoration: underline; }
 
   function cardHTML(c) {
     const dateText = c.kind === "oneoff" && c.date ? ym(c.date) : "";
-    const thumb = `<div class="fl-card__thumb" style="background-image:url('${esc(c.id)}/baseline.png')"></div>`;
+    const thumb = `<div class="fl-card__thumb" style="background-image:url('${esc(c.id)}/thumb.png')"></div>`;
     return `<a class="fl-card" href="${esc(c.id)}/">
       ${thumb}
       <div class="fl-card__body">

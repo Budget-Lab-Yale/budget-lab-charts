@@ -1,9 +1,10 @@
 # budget-lab-charts
 
-The Budget Lab chart archive. This repo holds chart specs, data, and visual baselines for
-published figures. It pins a specific version of
+The Budget Lab chart archive. This repo holds chart specs and data for published figures. It
+pins a specific version of
 [budget-lab-chart-engine](https://github.com/Budget-Lab-Yale/budget-lab-chart-engine)
-and runs a build/validate/snapshot/catalog pipeline over that content.
+and runs a validate → build → catalog → site pipeline over that content, with a live preview
+deployed for every pull request.
 
 The engine is **the tool**; this repo is **the content**.
 
@@ -12,10 +13,13 @@ The engine is **the tool**; this repo is **the content**.
 ## What this repo does
 
 - Stores one `chart.yaml` + `data.csv` per figure, in a dated folder hierarchy.
-- Locks each chart's visual appearance as a `baseline.png` (tracked via Git LFS).
-- Runs a four-step pipeline: validate → build → snapshot → catalog.
+- Validates every chart against the engine's spec/data schema (the merge gate).
+- Renders each chart to a self-contained interactive page and assembles a searchable gallery.
 - Generates `catalog/index.json` for downstream consumers (embeds, site templates).
-- Deploys to a hosting target TBD at launch (see CI for placeholder).
+- Publishes the gallery to **GitHub Pages**, with a **live per-PR preview URL** for review.
+
+There are **no committed visual baselines** — charts are reviewed by looking at the rendered
+HTML on the PR preview, not by pixel-diffing.
 
 ---
 
@@ -29,18 +33,16 @@ Figures fall into two classes, split by top-level tree:
 ```
 charts/
   articles/<year>/<month>/<collection-slug>/
-    article.yaml                # one-off collection metadata (title, slug, date, url, engineVersion)
+    article.yaml                # one-off collection metadata (title, slug, date, url, engineVersion, figures)
     <chart-folder>/
       chart.yaml                # ChartSpec for the engine
-      data.csv                  # tidy long-format data (columns: time, series, value)
-      baseline.png              # visual lock (Git LFS); regenerate with --update
+      data.csv                  # long-format data; any column names (mapped via chart.yaml `columns:`)
 
   trackers/<collection-slug>/
-    tracker.yaml                # living collection metadata (title, slug, url, engineVersion, created, cadence)
+    tracker.yaml                # living collection metadata (title, slug, url, engineVersion, created, cadence, figures)
     <chart-folder>/
       chart.yaml
       data.csv
-      baseline.png
 ```
 
 `<year>/<month>` exists only under `articles/`. `trackers/` is dateless.
@@ -52,8 +54,8 @@ dist/<collection-slug>/<chart-folder>/
   index.html                    # self-contained interactive chart
   data.csv                      # copy of the chart's data
 
-catalog/
-  index.json                    # array of chart metadata; committed
+catalog/index.json              # array of chart metadata; committed
+_site/                          # the assembled gallery published to Pages (incl. per-chart thumb.png)
 ```
 
 ## Identity
@@ -68,7 +70,7 @@ e.g. `ai-labor-market/augmented-occupations`. It carries **no date and no tree**
 
 - **`collection-slug`** is declared in `article.yaml`/`tracker.yaml` and names a durable *product* (a report series or tracker) — never a mutable editorial topic, never a date. Unique repo-wide.
 - **The chart segment is the chart's folder name** (not a field in `chart.yaml`, which the engine's strict schema would reject). Set it once; don't rename it. Unique within its collection (the filesystem guarantees this).
-- **To rename a figure for display, edit `title`/`eyebrow`** — never the slug or folder name.
+- **To rename a figure for display, edit `title`** — never the slug or folder name. (The figure-number eyebrow lives in the collection's `figures:` map, below.)
 
 `npm run validate` enforces these (collection-file matches its tree, slug/folder-name format, repo-wide slug uniqueness) before running the engine's spec validation.
 
@@ -80,41 +82,55 @@ e.g. `ai-labor-market/augmented-occupations`. It carries **no date and no tree**
 |---|---|
 | `npm run validate` | Structural/identity checks, then `tbl-chart validate` on every `chart.yaml`; exit 1 if any fail. |
 | `npm run build` | Render every chart to `dist/<id>/index.html`; copy `data.csv`. |
-| `npm run snapshot` | Compare each chart's render against its `baseline.png`; exit 1 on mismatch. |
-| `npm run snapshot -- --update` | Regenerate all baselines in-place (write new `baseline.png` files). |
 | `npm run catalog` | Write `catalog/index.json` from all `chart.yaml` + collection files. |
+| `npm run site` | Assemble the publishable gallery into `_site/` (landing page + chart pages + catalog). |
+| `npm run thumbs` | Headless-screenshot each page into `_site/<id>/thumb.png` (gallery card thumbnails). |
+| `npm run all` | All of the above, in order. |
 
-Run them in order: validate first (catches spec errors before spending time on rendering),
-then build, then snapshot, then catalog.
+Run order: validate → build → catalog → site → thumbs (`npm run all` does this).
 
 ---
 
 ## Adding a chart
 
+The authoring step is just **a folder + two files**; CI does the rest.
+
 1. Create a folder under the collection. The **folder name is the chart's id segment** —
    choose it once (lowercase/ASCII/hyphenated) and don't rename it later.
    - one-off: `charts/articles/<year>/<month>/<collection>/<chart>/`
    - tracker: `charts/trackers/<collection>/<chart>/`
-2. Write a `chart.yaml` (see `ChartSpec` in the engine's `src/spec/types.ts`; or copy an
-   existing example and adjust). The chart's identity lives in the folder name and the
-   collection slug — there is **no `slug` field** in `chart.yaml`.
-3. Place a `data.csv` alongside it with columns `time`, `series`, `value` (tidy long format).
-4. Run `npm run validate` to check structure + spec.
-5. Run `npm run snapshot -- --update` to generate the baseline.
-6. Run `npm run build` and `npm run catalog` to update outputs.
-7. Commit everything (spec, data, baseline via LFS, updated catalog).
+2. Add `data.csv` — long format, **any column names**, e.g.:
+   ```
+   age_bin,cohort,sex_label,mean_hours
+   18-21,Gen X,Men,0.5
+   ...
+   ```
+3. Write `chart.yaml` — the `columns:` block maps your CSV columns onto the engine's roles:
+   ```yaml
+   chartType: line              # line | bar | stacked
+   title: "..."
+   xAxisType: categorical       # temporal | numeric | quarterly | categorical
+   columns:
+     x: age_bin                 # default "time" if the columns block is omitted
+     value: mean_hours          # default "value"
+     series: cohort             # OPTIONAL — omit for a single-series chart
+     facet: sex_label           # OPTIONAL — defines small-multiples panes
+   data: data.csv
+   ```
+   There is **no `slug`** and **no `eyebrow`** in `chart.yaml` (identity is the folder; the figure
+   number is the article's, below).
+4. Open a PR. CI runs `validate`, builds the site, and comments a **preview URL**.
+5. Review the chart on that URL; merge when it looks right. Merging publishes it to Pages.
 
-### chart.yaml required fields
+To preview locally before opening the PR: `npm run all`, then serve `_site/` over HTTP
+(`npx http-server _site`) — the gallery fetches the catalog, so `file://` won't work.
 
-```yaml
-chartType: line          # "line" is the only type in v0.1.x
-title: "..."
-xAxisType: temporal      # temporal | numeric | quarterly
-data: data.csv
-```
+### chart.yaml fields
 
-Optional fields: `eyebrow`, `subtitle`, `source`, `note`, `series_order`, `series_colors`,
-`series_styles`, `series_labels`, `yAxisPolicy`, `xAxisPolicy`, `confidence_bands`, `tags`.
+Required: `chartType`, `title`, `xAxisType`, `data`. Common optional: `columns`, `subtitle`,
+`source`, `note`, `x_axis_title`, `y_axis_title`, `series_order`, `series_colors`,
+`series_styles`, `series_labels`, `points`, `small_multiples`, `confidence_bands`, `tags`. See
+`ChartSpec` in the engine's `src/spec/types.ts` for the full set.
 
 ---
 
@@ -130,7 +146,7 @@ title: "Article title"
 slug: "collection-slug"
 date: "YYYY-MM-DD"       # publication date — a real property of a one-off
 url: "https://..."       # leave empty until published
-engineVersion: "0.1.1"   # should match the pinned engine version
+engineVersion: "0.2.0"   # should match the pinned engine version
 figures:                 # optional: figure-number eyebrows (see below)
   chart-folder-slug: "Figure 1"
 ```
@@ -141,7 +157,7 @@ figures:                 # optional: figure-number eyebrows (see below)
 title: "Tracker title"
 slug: "collection-slug"
 url: "https://..."
-engineVersion: "0.1.1"
+engineVersion: "0.2.0"
 created: "YYYY-MM-DD"    # optional: immutable first-publication date
 cadence: "monthly"       # optional human note; not part of identity
 figures:                 # optional: figure-number eyebrows (see below)
@@ -169,9 +185,8 @@ Trackers are versioned **in place** — git history is the vintage archive; ther
 snapshot folders.
 
 1. Replace `data.csv` with the new data at the same path.
-2. `npm run validate`, then `npm run snapshot -- --update` to refresh the baseline.
-3. `npm run build` and `npm run catalog`.
-4. Commit. The figure's id and embed URL are unchanged; prior values remain recoverable from git.
+2. Open a PR; review the refreshed chart on the preview URL.
+3. Merge. The figure's id and embed URL are unchanged; prior values remain recoverable from git.
 
 ---
 
@@ -180,101 +195,50 @@ snapshot folders.
 The engine is pinned as a git-tag dependency in `package.json`:
 
 ```json
-"budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v0.1.1"
+"budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v0.2.0"
 ```
 
 To bump:
 
-1. Update the tag in `package.json` (e.g. `#v0.2.0`).
+1. Update the tag in `package.json` (e.g. `#v0.2.1`).
 2. Run `npm install` to pull the new version and update `package-lock.json`.
-3. Run `npm run validate` to confirm existing specs still pass.
-4. Run `npm run snapshot -- --update` to regenerate baselines (a version bump may change
-   rendering; new baselines are the expected outcome).
-5. Commit `package.json`, `package-lock.json`, and the updated `baseline.png` files.
+3. Run `npm run validate` (and `npm run all` to eyeball the gallery) to confirm specs still build.
+4. Commit `package.json` + `package-lock.json`.
+
+---
+
+## Continuous integration & hosting
+
+`.github/workflows/ci.yml` has three jobs:
+
+- **validate** — the merge gate (spec/structure/data). Make it a required status check.
+- **preview** — on each PR, builds the site and publishes it to the `gh-pages` branch at
+  `pr-preview/pr-<n>/`, then comments the live URL. The directory is removed when the PR closes.
+- **deploy** — on merge to `main`, publishes the site to the `gh-pages` branch **root** (the
+  production gallery), preserving the `pr-preview/` subtree.
+
+The build (`validate → build → catalog → site → thumbs → _site/`) is **host-agnostic**. Migrating
+off GitHub Pages later (e.g. Cloudflare Pages / Netlify, which give per-PR previews natively)
+means replacing only the preview/deploy steps — not the build.
+
+**Launch prerequisites** (the workflow is `workflow_dispatch`-only until these hold):
+
+1. Engine repo public (or add a token + git-URL-rewrite step) so `npm ci` can clone the
+   cross-repo dependency.
+2. Engine pin at a release that builds these charts (≥ `0.2.0`).
+3. Repo **Settings → Pages → Source = "Deploy from a branch" → `gh-pages` / root**.
+4. Uncomment the `push`/`pull_request` triggers in `ci.yml` and `gh workflow enable CI`.
 
 ---
 
 ## Git LFS
 
-Baseline PNGs and any `.frozen.csv` files are stored in Git LFS. The `.gitattributes`
-file configures this automatically. LFS must be installed locally:
+`*.frozen.csv` files (frozen snapshots of remote data sources) are stored in Git LFS via
+`.gitattributes`. Install LFS locally so they resolve:
 
 ```sh
 git lfs install
 ```
-
-After cloning, LFS objects are pulled automatically if LFS is installed.
-
-### Baseline portability caveat
-
-Baselines are platform-specific. Font rendering and anti-aliasing differ between operating
-systems (and even between OS versions), so a baseline generated on macOS will not match a
-render on Ubuntu CI, and vice versa.
-
-The current baselines were generated on a Windows development machine and prove that the
-snapshot pipeline works. Before the snapshot gate is authoritative in CI, baselines must be
-regenerated in the canonical launch environment (the same OS/Docker image CI uses). To do
-this:
-
-1. Run the CI snapshot job or spin up a matching environment.
-2. Run `npm run snapshot -- --update`.
-3. Commit the new `baseline.png` files via LFS and push.
-
-After that one-time re-seed, the snapshot gate will catch unintended visual regressions.
-
----
-
-## Continuous integration
-
-`.github/workflows/ci.yml` runs validate → build → catalog on every push/PR (deterministic,
-cross-platform), plus an **advisory** snapshot job (platform-specific baselines; see caveat
-above).
-
-**Required secret — `ENGINE_REPO_TOKEN`.** The engine is a *private* cross-repo git
-dependency, and the default Actions token cannot clone it, so `npm ci` fails with git exit
-128 until you add a token:
-
-1. Create a token with read access to `Budget-Lab-Yale/budget-lab-chart-engine` — either a
-   classic PAT with the `repo` scope, or a fine-grained token scoped to that repo (Contents:
-   read).
-2. Add it as a repository secret named `ENGINE_REPO_TOKEN`
-   (`gh secret set ENGINE_REPO_TOKEN --repo Budget-Lab-Yale/budget-lab-charts`).
-
-The workflow rewrites `github.com` git URLs to use this token before `npm ci`. (Alternatively,
-making the engine repo public removes the need for the secret.)
-
----
-
-## Site & hosting
-
-The published site is served from **GitHub Pages**. Its front door is the landing page in
-`site/index.html`: a static index that fetches `catalog/index.json` at runtime and lets
-people search and filter the archive (free-text, by type/collection/tag, sortable) and open
-each figure's live page. Trackers are featured at the top as "living" collections; one-off
-figures appear as dated cards. Cards use each chart's `baseline.png` as a thumbnail.
-
-`npm run site` assembles the publishable tree into `_site/` (gitignored):
-
-```
-_site/
-  index.html                       # landing page (from site/)
-  catalog/index.json               # the figure catalog
-  <collection>/<chart>/index.html  # each chart's live page (from dist/)
-  <collection>/<chart>/data.csv
-  <collection>/<chart>/baseline.png  # thumbnail
-```
-
-Run it after `build` + `catalog`. Preview locally by serving `_site/` over HTTP (the page
-fetches the catalog, so `file://` won't work):
-
-```sh
-npm run build && npm run catalog && npm run site
-python -m http.server -d _site      # or: npx http-server _site
-```
-
-The `deploy` job in `.github/workflows/ci.yml` runs this on `main` and publishes to Pages.
-**Prerequisite:** repo Settings → Pages → Source = "GitHub Actions". Like the rest of the
-workflow, it's manual-dispatch only until the engine repo is public.
 
 ---
 
@@ -282,12 +246,9 @@ workflow, it's manual-dispatch only until the engine repo is public.
 
 ```sh
 git clone <this-repo>
-git lfs pull         # fetch baseline PNGs
-npm install          # installs engine + Playwright dev deps
-npx playwright install chromium   # for snapshot support
+npm install                      # installs the engine + Playwright (for thumbnails)
+npx playwright install chromium  # for `npm run thumbs`
 
-npm run validate
-npm run build
-npm run snapshot
-npm run catalog
+npm run all                      # validate → build → catalog → site → thumbs
+npx http-server _site            # preview the gallery over HTTP
 ```

@@ -6,16 +6,17 @@
  *   _site/catalog/index.json          # the figure catalog
  *   _site/<collection>/<chart>/index.html  # each chart's live page (from dist/)
  *   _site/<collection>/<chart>/data.csv
- *   _site/<collection>/<chart>/baseline.png  # thumbnail (from the chart's baseline)
  *
- * Run AFTER `npm run build` and `npm run catalog`. The landing page fetches
- * ./catalog/index.json at runtime and links to ./<id>/ pages + ./<id>/baseline.png thumbs.
+ * Run AFTER `npm run build` and `npm run catalog`. Card thumbnails (./<id>/thumb.png) are
+ * produced separately by `npm run thumbs` (a headless screenshot of each rendered page), so they
+ * are transient build artifacts — never committed. The landing page fetches ./catalog/index.json
+ * at runtime and links to ./<id>/ pages + ./<id>/thumb.png thumbnails.
  */
 
 import { cp, mkdir, rm, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { listCharts, REPO_ROOT } from "./lib.mjs";
+import { REPO_ROOT } from "./lib.mjs";
 
 const DIST = join(REPO_ROOT, "dist");
 const CATALOG = join(REPO_ROOT, "catalog", "index.json");
@@ -45,24 +46,10 @@ await mkdir(join(OUT, "catalog"), { recursive: true });
 await cp(CATALOG, join(OUT, "catalog", "index.json"));
 console.log("  + catalog/index.json");
 
-// 3. Baseline thumbnails -> _site/<id>/baseline.png
-const charts = await listCharts();
-let thumbs = 0;
-for (const { dir, id } of charts) {
-  const baseline = join(dir, "baseline.png");
-  if (existsSync(baseline)) {
-    await cp(baseline, join(OUT, id, "baseline.png"));
-    thumbs++;
-  } else {
-    console.warn(`  ! no baseline.png for ${id} — card will show a blank thumbnail`);
-  }
-}
-console.log(`  + ${thumbs} baseline thumbnail(s)`);
-
-// 4. Landing page + any other static assets in site/ -> _site/
+// 3. Landing page + any other static assets in site/ -> _site/
 for (const entry of await readdir(SITE_SRC, { withFileTypes: true })) {
   await cp(join(SITE_SRC, entry.name), join(OUT, entry.name), { recursive: true });
 }
 console.log("  + landing page (from site/)");
 
-console.log(`\nDone. Serve _site/ to preview (e.g. \`npx http-server _site\` or \`python -m http.server -d _site\`).`);
+console.log(`\nNext: \`npm run thumbs\` to generate card thumbnails, then serve _site/ (e.g. \`npx http-server _site\`).`);

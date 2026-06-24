@@ -1,139 +1,102 @@
 name: CI
 
-# PAUSED (manual-only) until the engine repo is public. While it's private, the Actions
-# runner can't `npm ci` the cross-repo git dependency (git exit 128), so every push fails.
-# When both repos are public: uncomment the push/PR triggers and `gh workflow enable CI`.
+# PAUSED (manual-only) until prerequisites hold. While the engine repo is private, the Actions
+# runner can't `npm ci` the cross-repo git dependency (git exit 128). To enable at launch:
+#   1. Engine repo public (or CI auth added) so `npm ci` can clone it.
+#   2. Engine pin in package.json at a release that builds these charts (>= 0.2.0).
+#   3. Settings → Pages → "Deploy from a branch" → branch `gh-pages` / root.
+#   4. Uncomment the push/pull_request triggers below and `gh workflow enable CI`.
 on:
   workflow_dispatch:
   # push:
-  #   branches: ["**"]
+  #   branches: [main]
   # pull_request:
-  #   branches: ["**"]
+  #   types: [opened, reopened, synchronize, closed]
 
-# Serialize Pages deploys; don't cancel an in-flight one.
+permissions:
+  contents: write        # push the built site to the gh-pages branch
+  pull-requests: write   # comment the preview URL on the PR
+
+# Serialize all writers of the gh-pages branch (preview + production) so pushes don't race.
 concurrency:
-  group: "pages"
+  group: gh-pages
   cancel-in-progress: false
 
 jobs:
-  # ── Deterministic, cross-platform pipeline ────────────────────────────────
-  # validate + build + catalog run on every push/PR. No Playwright required.
-  build:
-    name: Validate / Build / Catalog
+  # ── Merge gate ────────────────────────────────────────────────────────────
+  # Spec/structure/data validation only — no rendering, no Chromium. Make this a required status
+  # check in branch protection so a malformed chart.yaml can't merge.
+  validate:
+    name: Validate
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          lfs: true       # pull LFS objects (baselines) so they're available if needed
-
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
+      - run: npm ci
+      - run: npm run validate
 
-      # NOTE: the engine is a cross-repo git dependency. Both repos are slated to go public,
-      # at which point `npm ci` clones the engine with no auth. While the engine repo is
-      # still private, this step fails (git exit 128) — that's expected and accepted for now.
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Validate all charts
-        run: npm run validate
-
-      - name: Build all charts
-        run: npm run build
-
-      - name: Build catalog
-        run: npm run catalog
-
-      - name: Upload dist artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-  # ── Advisory: visual snapshot comparison ─────────────────────────────────
-  # This job compares rendered PNGs against committed baselines. It is ADVISORY
-  # because baselines are platform-specific (font rendering / anti-aliasing
-  # differ by OS). The committed baselines were generated on the developer's
-  # machine and will not match until they are regenerated in this CI environment.
-  #
-  # To fix: run `npm run snapshot -- --update` in this environment, commit the
-  # new baseline.png files (tracked via Git LFS), and push. After that one-time
-  # re-seed, the snapshot gate becomes authoritative for this platform.
-  #
-  # Until then, failures here are expected and do NOT block merge.
-  snapshot:
-    name: Snapshot (advisory — platform-specific baselines)
+  # ── Per-PR live preview ───────────────────────────────────────────────────
+  # Builds + assembles the site and publishes it to gh-pages at /pr-preview/pr-<n>/, then comments
+  # the URL on the PR. On PR close the same action removes that directory. Fork PRs get a read-only
+  # token and are skipped by the action (no preview) — acceptable for an internal repo.
+  preview:
+    name: PR preview
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    continue-on-error: true   # advisory: does not block CI
     steps:
       - uses: actions/checkout@v4
-        with:
-          lfs: true
-
       - uses: actions/setup-node@v4
+        if: github.event.action != 'closed'
         with:
           node-version: "20"
           cache: "npm"
-
-      - name: Install dependencies (including Playwright)
-        run: npm ci
-
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Run snapshot comparison
-        run: npm run snapshot
-        # NOTE: Expected to fail until baselines are regenerated in this environment.
-        # See comment above.
-
-  # ── Deploy to GitHub Pages ────────────────────────────────────────────────
-  # Assembles _site/ (landing page + chart pages + catalog + baseline thumbnails)
-  # and publishes it to GitHub Pages. Runs only on main.
-  #
-  # Prerequisite: repo Settings → Pages → "Build and deployment" → Source = "GitHub Actions".
-  #
-  # Like the rest of this workflow, it only fires on manual dispatch until the engine repo
-  # is public (npm ci needs to clone the private cross-repo dependency). When both repos are
-  # public, re-enable the push trigger above.
-  deploy:
-    name: Deploy to GitHub Pages
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          lfs: true       # baseline.png thumbnails are stored in Git LFS
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build, catalog, assemble site
+      - name: Build site
+        if: github.event.action != 'closed'
         run: |
+          npm ci
+          npx playwright install --with-deps chromium
           npm run build
           npm run catalog
           npm run site
-
-      - uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+          npm run thumbs
+      - name: Deploy / remove preview
+        uses: rossjrw/pr-preview-action@v1
         with:
-          path: _site
+          source-dir: ./_site
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
 
-      - name: Deploy
-        id: deploy
-        uses: actions/deploy-pages@v4
+  # ── Production deploy ─────────────────────────────────────────────────────
+  # On merge to main: build + assemble + publish _site/ to the gh-pages root. keep_files:true so a
+  # production deploy never wipes the pr-preview/ subtree. (Caveat: keep_files also means a removed
+  # chart leaves stale files at the root — prune the gh-pages branch manually on the rare removal.)
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Build site
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm run build
+          npm run catalog
+          npm run site
+          npm run thumbs
+      - name: Publish to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          publish_branch: gh-pages
+          keep_files: true
