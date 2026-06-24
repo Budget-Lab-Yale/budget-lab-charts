@@ -82,7 +82,7 @@ jobs:
   # chart leaves stale files at the root — prune the gh-pages branch manually on the rare removal.)
   deploy:
     name: Deploy to GitHub Pages
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     needs: validate
     runs-on: ubuntu-latest
     steps:
