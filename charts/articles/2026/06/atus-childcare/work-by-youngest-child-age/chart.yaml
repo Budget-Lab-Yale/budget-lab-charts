@@ -1,8 +1,8 @@
 chartType: line
 title: Work time rises dramatically with youngest child age for mothers but not fathers
 subtitle: Average hours per day, by cohort (weighted)
-source: ATUS 2003–2024 and Budget Lab calculations.
-note: Primary activities only. “Childcare” refers to care of household children under 18. Leisure excludes eating.
+source: IPUMS-ATUS 2003–2024 (excluding 2020) and Budget Lab calculations.
+note: Primary activities only.
 xAxisType: categorical
 x_axis_title: Age of youngest own child
 points: true

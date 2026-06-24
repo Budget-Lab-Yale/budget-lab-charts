@@ -1,8 +1,8 @@
 chartType: line
 title: Millennial parents spend more time on childcare than did same-aged Gen X parents
 subtitle: Average hours per day, by cohort (weighted)
-source: ATUS 2003–2024 and Budget Lab calculations.
-note: Primary activities only. “Childcare” refers to care of household children under 18. Leisure excludes eating.
+source: IPUMS-ATUS 2003–2024 (excluding 2020) and Budget Lab calculations.
+note: Primary activities only. ‘Childcare’ refers to care of household children under 18.
 xAxisType: categorical
 x_axis_title: Age group
 points: true

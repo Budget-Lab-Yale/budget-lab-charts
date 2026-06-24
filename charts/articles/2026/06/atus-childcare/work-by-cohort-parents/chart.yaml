@@ -1,8 +1,8 @@
 chartType: line
 title: Work time is lower for Millennial fathers of young children than Gen X predecessors
 subtitle: Average hours per day, by cohort (weighted)
-source: ATUS 2003–2024 and Budget Lab calculations.
-note: Primary activities only. “Childcare” refers to care of household children under 18. Leisure excludes eating.
+source: IPUMS-ATUS 2003–2024 (excluding 2020) and Budget Lab calculations.
+note: Primary activities only.
 xAxisType: categorical
 x_axis_title: Age group
 points: true
