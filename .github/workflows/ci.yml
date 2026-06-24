@@ -98,12 +98,13 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
           ( set +e
-            echo "::group::DEBUG engine"
-            grep '"version"' node_modules/budget-lab-chart-engine/package.json | head -1
-            ls -la node_modules/budget-lab-chart-engine/dist/cli/index.js node_modules/budget-lab-chart-engine/dist/embed/live.js
-            node node_modules/budget-lab-chart-engine/dist/cli/index.js render charts/articles/2026/06/atus-childcare/childcare-by-activity/chart.yaml -o /tmp/probe.html
-            echo "render rc=$?"
-            ls -la /tmp/probe.html || echo "NO probe.html"
+            echo "::group::DEBUG render"
+            ls -la node_modules/.bin/tbl-chart
+            mkdir -p dist/probe
+            echo "-- via .bin into nested dist path (build-all style) --"
+            node_modules/.bin/tbl-chart render charts/articles/2026/06/atus-childcare/childcare-by-activity/chart.yaml -o dist/probe/index.html
+            echo "bin rc=$?"
+            ls -la dist/probe/ || echo "no dist/probe"
             echo "::endgroup::" )
           npm run build
           npm run catalog
