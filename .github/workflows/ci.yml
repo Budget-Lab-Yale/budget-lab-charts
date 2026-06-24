@@ -97,11 +97,16 @@ jobs:
           git config --global url."https://github.com/".insteadOf git@github.com:
           npm ci
           npx playwright install --with-deps chromium
+          echo "::group::DEBUG engine"
+          node -e "console.log('engine', require('budget-lab-chart-engine/package.json').version)"
+          ls node_modules/budget-lab-chart-engine/dist/cli/ || echo "NO cli dist"
+          ls node_modules/budget-lab-chart-engine/dist/embed/live.js || echo "NO live.js"
+          node node_modules/budget-lab-chart-engine/dist/cli/index.js render charts/articles/2026/06/atus-childcare/childcare-by-activity/chart.yaml -o /tmp/probe.html; echo "render exit=$?"
+          ls -la /tmp/probe.html || echo "NO probe.html written"
+          echo "::endgroup::"
           npm run build
-          echo "::group::DEBUG dist"; find dist -name 'index.html' | sort; ls -la dist/atus-childcare/childcare-by-activity/ || true; echo "::endgroup::"
           npm run catalog
           npm run site
-          echo "::group::DEBUG _site"; find _site -name 'index.html' | sort; ls -la _site/atus-childcare/childcare-by-activity/ || true; echo "::endgroup::"
           npm run thumbs
       - name: Publish to gh-pages
         uses: peaceiris/actions-gh-pages@v4
