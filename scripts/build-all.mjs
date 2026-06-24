@@ -26,13 +26,19 @@ console.log(`Building ${charts.length} chart(s)...\n`);
 
 let allPassed = true;
 
-for (const { dir, specPath, id } of charts) {
+for (const { dir, specPath, id, chartSlug, collection } of charts) {
   const outDir = join(REPO_ROOT, "dist", id);
   const outFile = join(outDir, "index.html");
 
   mkdirSync(outDir, { recursive: true });
 
-  const { executable, args, options } = buildTblChartCmd(["render", specPath, "-o", outFile]);
+  // The figure-number eyebrow lives in the collection file (article.yaml / tracker.yaml), keyed
+  // by chart-folder slug — an article property, not the chart spec. Pass it at render time.
+  const eyebrow = collection.figures?.[chartSlug];
+  const renderArgs = ["render", specPath, "-o", outFile];
+  if (eyebrow) renderArgs.push("--eyebrow", eyebrow);
+
+  const { executable, args, options } = buildTblChartCmd(renderArgs);
   const result = spawnSync(executable, args, {
     ...options,
     stdio: "pipe",

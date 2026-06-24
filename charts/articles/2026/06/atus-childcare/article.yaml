@@ -3,3 +3,18 @@ slug: atus-childcare
 date: 2026-06-24
 url: ""
 engineVersion: 0.2.0
+
+# Figure-number eyebrows (chart-folder slug -> label). An article property, passed to the engine
+# at render time; not part of the chart spec. Omit a chart to render it un-numbered.
+figures:
+  childcare-by-activity: "Figure 1"
+  childcare-by-cohort-all-adults: "Figure 2"
+  childcare-by-cohort-parents: "Figure 3"
+  work-by-cohort-parents: "Figure 4"
+  work-by-youngest-child-age: "Figure 5"
+  childcare-by-household-type: "Figure 6"
+  work-by-household-type: "Figure 7"
+  childcare-by-sex-and-child-age: "Figure 8"
+  childcare-by-household-type-and-child-age: "Figure 9"
+  leisure-by-cohort: "Appendix Figure 1"
+  leisure-by-household-type: "Appendix Figure 2"

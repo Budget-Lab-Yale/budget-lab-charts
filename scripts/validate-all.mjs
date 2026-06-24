@@ -28,6 +28,8 @@ console.log("Checking structure & identity...\n");
 
 const structuralErrors = [];
 const collectionSlugOwner = new Map(); // slug -> collectionDir (detects repo-wide collisions)
+// collectionDir -> { figures, chartSlugs } so we can check the figures map against real folders.
+const collectionFolders = new Map();
 
 for (const { id, kind, chartSlug, collectionDir, collectionFile, collection } of charts) {
   // kind / tree
@@ -65,6 +67,23 @@ for (const { id, kind, chartSlug, collectionDir, collectionFile, collection } of
       structuralErrors.push(`collection slug "${collection.slug}" is used by two collections: ${prior} and ${collectionDir}`);
     } else {
       collectionSlugOwner.set(collection.slug, collectionDir);
+    }
+  }
+
+  // accumulate chart folders + the (optional) figures map for the post-loop cross-check
+  if (!collectionFolders.has(collectionDir)) {
+    collectionFolders.set(collectionDir, { figures: collection.figures, chartSlugs: new Set() });
+  }
+  collectionFolders.get(collectionDir).chartSlugs.add(chartSlug);
+}
+
+// The optional `figures:` map (chart-folder slug -> eyebrow label) must reference real folders —
+// a stale/typo'd key would silently fail to number its chart at render time.
+for (const [collectionDir, { figures, chartSlugs }] of collectionFolders) {
+  if (!figures || typeof figures !== "object") continue;
+  for (const key of Object.keys(figures)) {
+    if (!chartSlugs.has(key)) {
+      structuralErrors.push(`${collectionDir}: figures key "${key}" matches no chart folder in this collection`);
     }
   }
 }

@@ -131,6 +131,8 @@ slug: "collection-slug"
 date: "YYYY-MM-DD"       # publication date — a real property of a one-off
 url: "https://..."       # leave empty until published
 engineVersion: "0.1.1"   # should match the pinned engine version
+figures:                 # optional: figure-number eyebrows (see below)
+  chart-folder-slug: "Figure 1"
 ```
 
 **Tracker** — `charts/trackers/<collection>/tracker.yaml`:
@@ -142,7 +144,22 @@ url: "https://..."
 engineVersion: "0.1.1"
 created: "YYYY-MM-DD"    # optional: immutable first-publication date
 cadence: "monthly"       # optional human note; not part of identity
+figures:                 # optional: figure-number eyebrows (see below)
+  chart-folder-slug: "Figure 1"
 ```
+
+### Figure-number eyebrows
+
+A figure number ("Figure 1", "Appendix Figure 2") is a property of the **article a chart is
+embedded in**, not of the chart itself — so it is **not** a `chart.yaml` field (the engine's
+schema rejects `eyebrow:`). Instead, the collection file carries an optional `figures:` map from
+**chart-folder slug → label**. `build-all` passes the matching label to the engine
+(`tbl-chart render --eyebrow "Figure 1"`); `build-catalog` records it. A chart omitted from the
+map (or a collection with no `figures:` block) renders with no eyebrow.
+
+The label is baked into the built `index.html` but can be suppressed at view time by appending
+`?eyebrow=off` to the embed URL — so one built artifact can be embedded with or without the
+figure number.
 
 ---
 
