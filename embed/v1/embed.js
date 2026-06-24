@@ -40,10 +40,25 @@
   var iframe = document.createElement('iframe');
   iframe.id        = 'tbl-chart-' + chart.replace(/[^a-z0-9]+/gi, '-') + '-' + Math.random().toString(36).slice(2, 8);
   iframe.src       = src;
-  iframe.title     = me.getAttribute('data-title') || chart;
   iframe.scrolling = 'no';
   iframe.loading   = 'lazy';
   iframe.style.cssText = 'position:absolute !important;top:0 !important;left:0 !important;width:100% !important;height:100% !important;border:0 !important;display:block !important;';
+
+  // Accessible title: an explicit data-title wins; otherwise derive it from the published catalog
+  // (eyebrow + title) so authors only need data-chart. Falls back to the id until/if that resolves.
+  var explicitTitle = me.getAttribute('data-title');
+  iframe.title = explicitTitle || chart;
+  if (!explicitTitle && window.fetch) {
+    fetch(siteBase + 'catalog/index.json')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (cat) {
+        if (!Array.isArray(cat)) return;
+        var hit = null;
+        for (var i = 0; i < cat.length; i++) { if (cat[i] && cat[i].id === chart) { hit = cat[i]; break; } }
+        if (hit && hit.title) iframe.title = (hit.eyebrow ? hit.eyebrow + ' — ' : '') + hit.title;
+      })
+      .catch(function () {});
+  }
 
   wrapper.appendChild(iframe);
   me.parentNode.insertBefore(wrapper, me);

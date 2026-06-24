@@ -233,15 +233,14 @@ means replacing only the preview/deploy steps — not the build.
 
 ## Embedding
 
-Publications embed a chart with one `<script>` tag. The loader (`embed/v1/embed.js`) injects a
-responsive iframe and auto-sizes it to the chart's content height via
+Publications embed a chart with **one `<script>` tag** — only `data-chart` is required. The loader
+(`embed/v1/embed.js`) injects a responsive iframe and auto-sizes it to the chart's content height via
 [iframe-resizer](https://github.com/davidjbradshaw/iframe-resizer) v4 (MIT, vendored in `embed/v1/`)
 — so the height tracks the content as the embed column reflows (no fixed height, no inner scroll).
 
 ```html
 <script src="https://budget-lab-yale.github.io/budget-lab-charts/embed/v1/embed.js"
         data-chart="atus-childcare/childcare-by-activity"></script>
-<noscript><a href="https://budget-lab-yale.github.io/budget-lab-charts/atus-childcare/childcare-by-activity/">Open the chart</a></noscript>
 ```
 
 `data-chart` is the chart's durable id (`<collection-slug>/<chart-folder>`). Optional `data-*`:
@@ -249,15 +248,24 @@ responsive iframe and auto-sizes it to the chart's content height via
 | Attribute | Default | Purpose |
 |---|---|---|
 | `data-chart` | _(required)_ | Which chart to load. |
-| `data-title` | the id | Iframe `title` for accessibility. |
+| `data-title` | _(auto)_ | Iframe `title` for accessibility. **Omit it** — the loader derives it from the catalog (`eyebrow — title`); set this only to override. |
 | `data-eyebrow` | _(on)_ | The figure-number eyebrow shows by default; set `"off"` to hide it (appends `?eyebrow=off`). |
 | `data-height` | `100` | Initial px height before iframe-resizer measures (set to the natural height to avoid a brief flash). |
 | `data-log` | _(off)_ | Any value enables iframe-resizer verbose logging. |
 | `data-strip-host-classes` | `paragraph-embed-code` | Comma-separated host-wrapper classes whose width-proportional height should be overridden. |
 
+**No-JS fallback (optional).** A `<script>` can't run when JavaScript is disabled, so a fallback
+link can't be auto-injected. For accessibility-strict hosts, add a static `<noscript>` next to the
+script:
+
+```html
+<noscript><a href="https://budget-lab-yale.github.io/budget-lab-charts/atus-childcare/childcare-by-activity/">Open the chart</a></noscript>
+```
+
 **How it's wired:** each rendered chart page includes the iframe-resizer *child* script (injected by
-`build-all`, before `</body>`), so it reports its height to the loader. `embed/v1/` is a frozen
-contract — breaking loader changes would ship as `embed/v2/`.
+`build-all`, before `</body>`), so it reports its height to the loader; the accessible title is read
+from `/catalog/index.json`. `embed/v1/` is a frozen contract — breaking loader changes ship as
+`embed/v2/`.
 
 ---
 
