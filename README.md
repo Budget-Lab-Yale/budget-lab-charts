@@ -195,7 +195,7 @@ snapshot folders.
 The engine is pinned as a git-tag dependency in `package.json`:
 
 ```json
-"budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v1.0.0"
+"budget-lab-chart-engine": "git+https://github.com/Budget-Lab-Yale/budget-lab-chart-engine.git#v1.0.0"
 ```
 
 To bump:

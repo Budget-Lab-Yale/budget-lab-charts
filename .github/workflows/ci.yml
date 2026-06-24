@@ -1,17 +1,17 @@
 name: CI
 
-# PAUSED (manual-only) until prerequisites hold. While the engine repo is private, the Actions
-# runner can't `npm ci` the cross-repo git dependency (git exit 128). To enable at launch:
-#   1. Engine repo public (or CI auth added) so `npm ci` can clone it.
-#   2. Engine pin in package.json at a release that builds these charts (>= 1.0.0).
-#   3. Settings → Pages → "Deploy from a branch" → branch `gh-pages` / root.
-#   4. Uncomment the push/pull_request triggers below and `gh workflow enable CI`.
+# Builds the chart gallery and publishes it to GitHub Pages (the gh-pages branch): production at
+# the branch root on push to main, and a live preview at /pr-preview/pr-<n>/ on each PR.
+#
+# The engine is a public git dependency. npm pins git deps as `git+ssh://` in the lockfile, which
+# the runner has no key for — so each job rewrites GitHub SSH URLs to HTTPS before `npm ci`
+# (no auth needed for a public repo).
 on:
   workflow_dispatch:
-  # push:
-  #   branches: [main]
-  # pull_request:
-  #   types: [opened, reopened, synchronize, closed]
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
 
 permissions:
   contents: write        # push the built site to the gh-pages branch
@@ -36,7 +36,11 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
-      - run: npm ci
+      - name: Install (engine over HTTPS)
+        run: |
+          git config --global url."https://github.com/".insteadOf ssh://git@github.com/
+          git config --global url."https://github.com/".insteadOf git@github.com:
+          npm ci
       - run: npm run validate
 
   # ── Per-PR live preview ───────────────────────────────────────────────────
@@ -57,6 +61,8 @@ jobs:
       - name: Build site
         if: github.event.action != 'closed'
         run: |
+          git config --global url."https://github.com/".insteadOf ssh://git@github.com/
+          git config --global url."https://github.com/".insteadOf git@github.com:
           npm ci
           npx playwright install --with-deps chromium
           npm run build
@@ -87,6 +93,8 @@ jobs:
           cache: "npm"
       - name: Build site
         run: |
+          git config --global url."https://github.com/".insteadOf ssh://git@github.com/
+          git config --global url."https://github.com/".insteadOf git@github.com:
           npm ci
           npx playwright install --with-deps chromium
           npm run build
