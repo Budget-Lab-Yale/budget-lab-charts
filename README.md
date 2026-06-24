@@ -233,21 +233,21 @@ means replacing only the preview/deploy steps — not the build.
 
 ## Embedding
 
-Publications embed a chart with **one `<script>` tag** — only `data-chart` is required. The loader
+Publications embed a chart with **one `<script>` tag** — only `chart` is required. The loader
 (`embed/v1/embed.js`) injects a responsive iframe and auto-sizes it to the chart's content height via
 [iframe-resizer](https://github.com/davidjbradshaw/iframe-resizer) v4 (MIT, vendored in `embed/v1/`)
 — so the height tracks the content as the embed column reflows (no fixed height, no inner scroll).
 
 ```html
 <script src="https://budget-lab-yale.github.io/budget-lab-charts/embed/v1/embed.js"
-        data-chart="atus-childcare/childcare-by-activity"></script>
+        chart="atus-childcare/childcare-by-activity"></script>
 ```
 
-`data-chart` is the chart's durable id (`<collection-slug>/<chart-folder>`). Optional `data-*`:
+`chart` is the chart's durable id (`<collection-slug>/<chart-folder>`). Optional `data-*`:
 
 | Attribute | Default | Purpose |
 |---|---|---|
-| `data-chart` | _(required)_ | Which chart to load. |
+| `chart` | _(required)_ | Which chart to load. |
 | `data-title` | _(auto)_ | Iframe `title` for accessibility. **Omit it** — the loader derives it from the catalog (`eyebrow — title`); set this only to override. |
 | `data-eyebrow` | _(on)_ | The figure-number eyebrow shows by default; set `"off"` to hide it (appends `?eyebrow=off`). |
 | `data-height` | `100` | Initial px height before iframe-resizer measures (set to the natural height to avoid a brief flash). |
