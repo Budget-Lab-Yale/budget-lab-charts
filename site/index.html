@@ -57,7 +57,7 @@ a:hover { text-decoration: underline; }
 .fl-header__logo { height: 50px; width: auto; display: block; }   /* ~site's 55px wordmark */
 .fl-nav { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; }
 .fl-nav a {
-  color: var(--sky); font-size: 13px; font-weight: 800; line-height: 1.2;
+  color: var(--sky); font-size: 13px; font-weight: 600; line-height: 1.2;
   background-image: linear-gradient(currentColor, currentColor);
   background-size: 0% 1px; background-repeat: no-repeat; background-position: left bottom;
   transition: background-size .2s ease, color .2s ease;
@@ -69,58 +69,30 @@ a:hover { text-decoration: underline; }
 
 /* ── Page shell ───────────────────────────────────────────── */
 .fl-main { max-width: var(--maxw); margin: 0 auto; padding: 0 24px 80px; }
-.fl-section__head {
-  display: flex; align-items: baseline; gap: 12px; margin: 38px 0 16px;
-}
-.fl-section__title { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--navy); }
-.fl-section__note { font-size: 13px; color: var(--t-muted); }
 
-/* ── Featured trackers ────────────────────────────────────── */
-.fl-trackers { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--gap); }
-.fl-tracker {
-  display: flex; flex-direction: column; text-align: left; cursor: pointer;
-  background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 0; overflow: hidden; font: inherit; color: inherit;
-  transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease;
-}
-.fl-tracker:hover { border-color: var(--sky); box-shadow: 0 6px 20px rgba(16,31,91,.10); transform: translateY(-2px); text-decoration: none; }
-.fl-tracker__thumb { aspect-ratio: 16 / 8; background: var(--bg-subtle) center/cover no-repeat; border-bottom: 1px solid var(--border); }
-.fl-tracker__body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
-.fl-tracker__name { font-size: 17px; font-weight: 700; color: var(--t-head); letter-spacing: -.01em; line-height: 1.2; }
-.fl-tracker__meta { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--t-muted); flex-wrap: wrap; }
-
-/* "Living" indicator */
-.fl-live { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--blue); }
-.fl-live__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sky); box-shadow: 0 0 0 0 rgba(99,170,255,.7); animation: fl-pulse 2.2s infinite; }
-@keyframes fl-pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(99,170,255,.55); }
-  70%  { box-shadow: 0 0 0 7px rgba(99,170,255,0); }
-  100% { box-shadow: 0 0 0 0 rgba(99,170,255,0); }
-}
-
-/* ── Controls ─────────────────────────────────────────────── */
+/* ── Controls (search + filters, all one row, same height) ──── */
+:root { --control-h: 44px; }
 .fl-controls {
   position: sticky; top: 0; z-index: 5; background: rgba(255,255,255,.94); backdrop-filter: blur(6px);
-  border-bottom: 1px solid var(--border); margin-top: 30px;
-  display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 14px 0;
+  border-bottom: 1px solid var(--border); margin-top: 24px;
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 14px 0;
 }
-.fl-search { position: relative; flex: 1 1 280px; min-width: 200px; }
-.fl-search__icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--t-muted); pointer-events: none; }
+.fl-search { position: relative; flex: 1 1 260px; min-width: 200px; }
+.fl-search__icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--t-muted); pointer-events: none; }
 .fl-search input {
-  width: 100%; font: inherit; font-size: 15px; color: var(--t-head);
-  padding: 11px 12px 11px 38px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg);
+  width: 100%; height: var(--control-h); font: inherit; font-size: 15px; color: var(--t-head);
+  padding: 0 12px 0 38px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg);
 }
 .fl-search input::placeholder { color: var(--t-muted); }
 .fl-search input:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgba(0,114,178,.15); }
-.fl-field { display: flex; flex-direction: column; gap: 3px; }
-.fl-field label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--t-muted); padding-left: 2px; }
-.fl-field select {
-  font: inherit; font-size: 14px; color: var(--t-head); padding: 8px 30px 8px 10px; border: 1px solid var(--border);
-  border-radius: 8px; background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236D6D6D' d='M6 8L2 4h8z'/%3E%3C/svg%3E") no-repeat right 10px center;
+.fl-select {
+  height: var(--control-h); font: inherit; font-size: 14px; color: var(--t-head);
+  padding: 0 32px 0 12px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236D6D6D' d='M6 8L2 4h8z'/%3E%3C/svg%3E") no-repeat right 12px center;
   -webkit-appearance: none; appearance: none; cursor: pointer;
 }
-.fl-field select:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgba(0,114,178,.15); }
-.fl-clear { font: inherit; font-size: 13px; font-weight: 600; color: var(--blue); background: none; border: none; cursor: pointer; padding: 8px 4px; align-self: flex-end; }
+.fl-select:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgba(0,114,178,.15); }
+.fl-clear { height: var(--control-h); font: inherit; font-size: 13px; font-weight: 600; color: var(--blue); background: none; border: none; cursor: pointer; padding: 0 6px; }
 .fl-clear:hover { text-decoration: underline; }
 .fl-clear[hidden] { display: none; }
 
@@ -135,18 +107,9 @@ a:hover { text-decoration: underline; }
 .fl-card:hover { border-color: var(--sky); box-shadow: 0 6px 20px rgba(16,31,91,.10); transform: translateY(-2px); text-decoration: none; }
 .fl-card__thumb { aspect-ratio: 16 / 9; background: var(--bg-subtle) center/cover no-repeat; border-bottom: 1px solid var(--border); }
 .fl-card__body { padding: 13px 15px 15px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
-.fl-card__eyebrow { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--t-muted); }
 .fl-card__title { font-size: 15.5px; font-weight: 700; color: var(--t-head); line-height: 1.25; letter-spacing: -.01em; }
 .fl-card__foot { margin-top: auto; padding-top: 8px; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--t-muted); flex-wrap: wrap; }
 .fl-card__collection { color: var(--t-body); }
-
-/* Kind badges */
-.fl-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; line-height: 1.6; }
-.fl-badge--tracker { color: var(--blue); background: var(--bg-hi); }
-.fl-badge--oneoff { color: var(--t-muted); background: var(--bg-subtle); border: 1px solid var(--border); }
-.fl-badge__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sky); }
-
-.fl-tag { font-size: 11.5px; color: var(--t-muted); background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 6px; padding: 1px 7px; }
 
 /* ── Empty / error ────────────────────────────────────────── */
 .fl-empty { text-align: center; padding: 64px 20px; color: var(--t-muted); }
@@ -164,8 +127,7 @@ a:hover { text-decoration: underline; }
   .fl-nav { gap: 18px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .fl-live__dot { animation: none; }
-  .fl-card, .fl-tracker { transition: none; }
+  .fl-card { transition: none; }
 }
 </style>
 </head>
@@ -202,37 +164,16 @@ a:hover { text-decoration: underline; }
 <main class="fl-main">
   <h1 class="fl-pagetitle">Chart Library</h1>
 
-  <!-- Featured living trackers -->
-  <section id="trackers-section" hidden>
-    <div class="fl-section__head">
-      <h2 class="fl-section__title">Living trackers</h2>
-      <span class="fl-section__note">Updated on a cadence — the link stays the same as the data refreshes.</span>
-    </div>
-    <div class="fl-trackers" id="trackers"></div>
-  </section>
-
-  <!-- Controls -->
+  <!-- Search + filters -->
   <div class="fl-controls" role="search">
     <div class="fl-search">
       <svg class="fl-search__icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M11.74 10.34a6 6 0 1 0-1.4 1.4l3.2 3.2a1 1 0 0 0 1.42-1.42l-3.22-3.18ZM3 6.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0Z"/></svg>
       <input id="q" type="search" placeholder="Search figures…" autocomplete="off" aria-label="Search figures">
     </div>
-    <div class="fl-field">
-      <label for="f-kind">Type</label>
-      <select id="f-kind"><option value="">All</option><option value="tracker">Trackers</option><option value="oneoff">One-offs</option></select>
-    </div>
-    <div class="fl-field">
-      <label for="f-collection">Collection</label>
-      <select id="f-collection"><option value="">All</option></select>
-    </div>
-    <div class="fl-field">
-      <label for="f-tag">Tag</label>
-      <select id="f-tag"><option value="">All</option></select>
-    </div>
-    <div class="fl-field">
-      <label for="f-sort">Sort</label>
-      <select id="f-sort"><option value="newest">Newest</option><option value="az">A–Z</option><option value="collection">Collection</option></select>
-    </div>
+    <select id="f-kind" class="fl-select" aria-label="Filter by type"><option value="">All types</option><option value="tracker">Trackers</option><option value="oneoff">One-offs</option></select>
+    <select id="f-collection" class="fl-select" aria-label="Filter by collection"><option value="">All collections</option></select>
+    <select id="f-tag" class="fl-select" aria-label="Filter by tag"><option value="">All tags</option></select>
+    <select id="f-sort" class="fl-select" aria-label="Sort figures"><option value="newest">Sort: Newest</option><option value="az">Sort: A–Z</option><option value="collection">Sort: by collection</option></select>
     <button class="fl-clear" id="clear" type="button" hidden>Clear</button>
   </div>
 
@@ -264,11 +205,9 @@ a:hover { text-decoration: underline; }
   const grid = $("#grid"), empty = $("#empty"), resultline = $("#resultline");
   const els = { q: $("#q"), kind: $("#f-kind"), collection: $("#f-collection"), tag: $("#f-tag"), sort: $("#f-sort"), clear: $("#clear") };
 
-  const KIND_LABEL = { tracker: "Tracker", oneoff: "One-off" };
   const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   function ym(d) { if (!d) return ""; const m = /^(\d{4})-(\d{2})/.exec(d); return m ? `${MONTHS[+m[2]-1]} ${m[1]}` : d; }
-  function cap(s) { return s ? s[0].toUpperCase() + s.slice(1) : s; }
 
   let DATA = [];
   const state = { q: "", kind: "", collection: "", tag: "", sort: "newest" };
@@ -302,67 +241,30 @@ a:hover { text-decoration: underline; }
       if (state.collection && c.collection !== state.collection) return false;
       if (state.tag && !(c.tags || []).includes(state.tag)) return false;
       if (q) {
-        const hay = [c.title, c.eyebrow, c.collectionTitle, (c.tags || []).join(" ")].join(" ").toLowerCase();
+        const hay = [c.title, c.collectionTitle, (c.tags || []).join(" ")].join(" ").toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
     if (state.sort === "az") rows.sort((a, b) => a.title.localeCompare(b.title));
-    else if (state.sort === "collection") rows.sort((a, b) => (a.collectionTitle || "").localeCompare(b.collectionTitle || "") || (a.eyebrow || "").localeCompare(b.eyebrow || ""));
+    else if (state.sort === "collection") rows.sort((a, b) => (a.collectionTitle || "").localeCompare(b.collectionTitle || "") || a.title.localeCompare(b.title));
     else rows.sort((a, b) => sortKey(b).localeCompare(sortKey(a)) || a.title.localeCompare(b.title));
     return rows;
   }
 
   function cardHTML(c) {
-    const dateText = c.kind === "tracker"
-      ? (c.cadence ? "Updated " + c.cadence : (c.created ? "Since " + ym(c.created) : ""))
-      : (c.date ? ym(c.date) : "");
-    const badge = c.kind === "tracker"
-      ? `<span class="fl-badge fl-badge--tracker"><span class="fl-badge__dot"></span>Tracker</span>`
-      : `<span class="fl-badge fl-badge--oneoff">One-off</span>`;
+    const dateText = c.kind === "oneoff" && c.date ? ym(c.date) : "";
     const thumb = `<div class="fl-card__thumb" style="background-image:url('${esc(c.id)}/baseline.png')"></div>`;
     return `<a class="fl-card" href="${esc(c.id)}/">
       ${thumb}
       <div class="fl-card__body">
-        ${c.eyebrow ? `<span class="fl-card__eyebrow">${esc(c.eyebrow)}</span>` : ""}
         <span class="fl-card__title">${esc(c.title)}</span>
         <span class="fl-card__foot">
-          ${badge}
           <span class="fl-card__collection">${esc(c.collectionTitle)}</span>
           ${dateText ? `<span>· ${esc(dateText)}</span>` : ""}
         </span>
       </div>
     </a>`;
-  }
-
-  function renderTrackers() {
-    const sec = $("#trackers-section"), wrap = $("#trackers");
-    const byColl = new Map();
-    for (const c of DATA) {
-      if (c.kind !== "tracker") continue;
-      if (!byColl.has(c.collection)) byColl.set(c.collection, { title: c.collectionTitle, slug: c.collection, cadence: c.cadence, charts: [] });
-      byColl.get(c.collection).charts.push(c);
-    }
-    if (byColl.size === 0) { sec.hidden = true; return; }
-    sec.hidden = false;
-    wrap.innerHTML = [...byColl.values()].map((t) => {
-      const first = t.charts[0];
-      const n = t.charts.length;
-      return `<button class="fl-tracker" type="button" data-collection="${esc(t.slug)}">
-        <span class="fl-tracker__thumb" style="background-image:url('${esc(first.id)}/baseline.png')"></span>
-        <span class="fl-tracker__body">
-          <span class="fl-tracker__name">${esc(t.title)}</span>
-          <span class="fl-tracker__meta">
-            <span class="fl-live"><span class="fl-live__dot"></span>${esc(t.cadence ? cap(t.cadence) : "Living")}</span>
-            <span>· ${n} figure${n === 1 ? "" : "s"}</span>
-          </span>
-        </span>
-      </button>`;
-    }).join("");
-    wrap.querySelectorAll(".fl-tracker").forEach((b) => b.addEventListener("click", () => {
-      state.collection = b.dataset.collection; state.kind = ""; state.q = "";
-      syncControls(); apply(); $("#resultline").scrollIntoView({ behavior: "smooth", block: "start" });
-    }));
   }
 
   function fillFacets() {
@@ -371,7 +273,7 @@ a:hover { text-decoration: underline; }
     els.collection.insertAdjacentHTML("beforeend", [...colls.entries()].sort((a, b) => a[1].localeCompare(b[1]))
       .map(([slug, title]) => `<option value="${esc(slug)}">${esc(title)}</option>`).join(""));
     els.tag.insertAdjacentHTML("beforeend", [...tags].sort().map((t) => `<option value="${esc(t)}">${esc(t)}</option>`).join(""));
-    if (tags.size === 0) els.tag.closest(".fl-field").style.display = "none";
+    if (tags.size === 0) els.tag.style.display = "none";
   }
 
   function apply() {
@@ -404,7 +306,7 @@ a:hover { text-decoration: underline; }
     .then((data) => {
       DATA = Array.isArray(data) ? data : [];
       $("#footer-note").textContent = `${DATA.length} figures in the archive`;
-      fillFacets(); readHash(); syncControls(); renderTrackers(); bind(); apply();
+      fillFacets(); readHash(); syncControls(); bind(); apply();
     })
     .catch((err) => {
       resultline.textContent = "";
