@@ -1,0 +1,25 @@
+chartType: line
+eyebrow: Figure 5
+title: Work time rises dramatically with youngest child age for mothers but not fathers
+subtitle: Average hours per day, by cohort (weighted)
+source: ATUS 2003–2024 and Budget Lab calculations.
+note: Primary activities only. “Childcare” refers to care of household children under 18. Leisure excludes eating.
+xAxisType: categorical
+x_axis_title: Age of youngest own child
+points: true
+series_order:
+  - Older Gen X
+  - Younger Gen X
+  - Older Millennials
+  - Younger Millennials
+small_multiples:
+  facet_field: sex_label
+  columns: 2
+  mode: shared
+  pane_order:
+    - Men
+    - Women
+  pane_titles:
+    Men: Men
+    Women: Women
+data: data.csv
