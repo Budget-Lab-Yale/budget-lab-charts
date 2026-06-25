@@ -76,7 +76,10 @@ const RESIZER_TAG =
   'if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}})();</script>';
 
 const EMBED_HEAD =
-  '<style>html.tbl-embedded body{margin:0 !important}' +
+  // In production the host article provides spacing; in the dev preview the iframe sits in a bare
+  // frame, so pad the body to give breathing room on all sides and stop the logo (which rises above
+  // the title, visible when the eyebrow is off) from being clipped at the iframe's top edge.
+  '<style>html.tbl-embedded body{margin:0 !important;padding:16px 20px !important}' +
   'html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style>' +
   '<script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}' +
   'catch(e){document.documentElement.classList.add("tbl-embedded")}</script>';
@@ -248,9 +251,12 @@ function sortCharts(arr){
   const nat = (a,b) => String(a||"").localeCompare(String(b||""), undefined, {numeric:true, sensitivity:"base"});
   return arr.slice().sort((a,b) => {
     if(by === "figure"){
-      // charts without a figure number sort to the bottom; ties fall back to slug
+      // charts without a figure number sort to the bottom; appendix figures come after all
+      // non-appendix figures; ties fall back to slug
       if(a.eyebrowLabel && !b.eyebrowLabel) return -1;
       if(!a.eyebrowLabel && b.eyebrowLabel) return 1;
+      const ax = /appendix/i.test(a.eyebrowLabel||""), bx = /appendix/i.test(b.eyebrowLabel||"");
+      if(ax !== bx) return ax ? 1 : -1;
       return nat(a.eyebrowLabel, b.eyebrowLabel) || nat(a.chartSlug, b.chartSlug);
     }
     if(by === "title") return nat(a.title, b.title) || nat(a.chartSlug, b.chartSlug);
