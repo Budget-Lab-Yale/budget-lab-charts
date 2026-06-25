@@ -289,3 +289,16 @@ npx playwright install chromium  # for `npm run thumbs`
 npm run all                      # validate → build → catalog → site → thumbs
 npx http-server _site            # preview the gallery over HTTP
 ```
+
+### Live preview (dialing in chart design)
+
+To preview any chart and have it auto-reload as you edit:
+
+```sh
+npm run dev            # serves at http://localhost:5173 (use --port to override, --open to launch a browser)
+```
+
+Pick a chart from the sidebar; edit its `chart.yaml` or `data.csv` in your editor and save — the
+preview reloads automatically. The preview frame mimics an embed (adjustable width, eyebrow toggle).
+Charts that fail to render (e.g. ones needing a newer engine than the pinned one) still appear in the
+list and show the engine's error inline.
