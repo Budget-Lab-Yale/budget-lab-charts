@@ -224,7 +224,7 @@ main{flex:1;display:flex;flex-direction:column;min-width:0}
 </main>
 <script src="/embed/v1/iframeResizer.min.js"></script>
 <script>
-const state = { id: null, width: "620", eyebrow: true, collapsed: new Set(), sort: "slug" };
+const state = { id: null, width: "620", eyebrow: true, expanded: new Set(), sort: "slug" };
 const $ = (s) => document.querySelector(s);
 let charts = [];
 function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
@@ -271,7 +271,7 @@ function renderPicker(){
     (groups[c.collectionSlug] ||= []).push(c);
   }
   const html = Object.keys(groups).sort().map(g => {
-    const collapsed = !q && state.collapsed.has(g);
+    const collapsed = !state.expanded.has(g);
     const items = sortCharts(groups[g]).map(c =>
       '<a class="chart-link'+(c.id===state.id?' active':'')+'" data-id="'+esc(c.id)+'" href="#">'+
       '<span class="t">'+esc(c.chartSlug)+'</span>'+
@@ -292,7 +292,7 @@ $("#picker").addEventListener("click", (e) => {
   if(hd){
     const folder = hd.closest(".folder");
     const g = folder.dataset.collection;
-    if(state.collapsed.has(g)) state.collapsed.delete(g); else state.collapsed.add(g);
+    if(state.expanded.has(g)) state.expanded.delete(g); else state.expanded.add(g);
     folder.classList.toggle("collapsed");
     return;
   }
