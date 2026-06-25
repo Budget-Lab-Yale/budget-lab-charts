@@ -5,10 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Figures · The Budget Lab</title>
 <meta name="description" content="The Budget Lab chart archive — every published figure, searchable and citable.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* Self-host Figtree (deployed at fonts/ by assemble-site) rather than loading it from Google
+   Fonts — corporate firewalls that block the fonts CDN would otherwise drop the gallery to a
+   system fallback. One variable file covers every weight the page uses (400–800). */
+@font-face {
+  font-family: 'Figtree';
+  src: url('fonts/Figtree-variable.ttf') format('truetype');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
 :root {
   /* Brand */
   --navy: #101F5B;
