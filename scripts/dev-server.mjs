@@ -211,6 +211,7 @@ main{flex:1;display:flex;flex-direction:column;min-width:0}
       <button data-w="320">320</button>
       <button data-w="620" class="active">620</button>
       <button data-w="740">740</button>
+      <button data-w="960">960</button>
       <button data-w="100%">Full</button>
       <input id="wcustom" type="number" min="200" placeholder="px">
     </span>
