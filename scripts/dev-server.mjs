@@ -158,7 +158,9 @@ html,body{margin:0;height:100%}
 body{font-family:system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1a1a2e;display:flex;height:100vh}
 #sidebar{width:300px;flex:0 0 300px;border-right:1px solid #e2e5ea;display:flex;flex-direction:column;background:#fafbfc}
 #sidebar h1{font-size:14px;font-weight:800;margin:0;padding:14px 16px;background:#1a1a2e;color:#fff}
-#search{margin:10px;padding:7px 9px;border:1px solid #d6dae0;border-radius:6px;font-size:13px}
+#search{margin:10px 10px 6px;padding:7px 9px;border:1px solid #d6dae0;border-radius:6px;font-size:13px}
+#sortrow{padding:0 10px 8px;font-size:12px;color:#6d6d6d}
+#sort{font:inherit;font-size:12px;padding:3px 6px;border:1px solid #d6dae0;border-radius:5px;margin-left:4px}
 #picker{overflow:auto;flex:1;padding:6px}
 .folder{margin-bottom:1px}
 .folder-hd{display:flex;align-items:center;gap:6px;width:100%;border:0;background:none;cursor:pointer;padding:6px 8px;border-radius:6px;font:inherit;color:#1a1a2e;text-align:left;font-weight:700;font-size:13px}
@@ -191,6 +193,13 @@ main{flex:1;display:flex;flex-direction:column;min-width:0}
 <aside id="sidebar">
   <h1>Charts</h1>
   <input id="search" placeholder="Filter charts…" autocomplete="off">
+  <div id="sortrow">Sort
+    <select id="sort">
+      <option value="slug">Slug</option>
+      <option value="figure">Figure #</option>
+      <option value="title">Title</option>
+    </select>
+  </div>
   <div id="picker"></div>
 </aside>
 <main>
@@ -212,7 +221,7 @@ main{flex:1;display:flex;flex-direction:column;min-width:0}
 </main>
 <script src="/embed/v1/iframeResizer.min.js"></script>
 <script>
-const state = { id: null, width: "620", eyebrow: true, collapsed: new Set() };
+const state = { id: null, width: "620", eyebrow: true, collapsed: new Set(), sort: "slug" };
 const $ = (s) => document.querySelector(s);
 let charts = [];
 function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
@@ -234,16 +243,30 @@ $("#preview").addEventListener("load", () => {
   try{ if(window.iFrameResize) window.iFrameResize({checkOrigin:false,log:false}, "#preview"); }catch(e){}
   $("#status").textContent = "rendered " + new Date().toLocaleTimeString();
 });
+function sortCharts(arr){
+  const by = state.sort;
+  const nat = (a,b) => String(a||"").localeCompare(String(b||""), undefined, {numeric:true, sensitivity:"base"});
+  return arr.slice().sort((a,b) => {
+    if(by === "figure"){
+      // charts without a figure number sort to the bottom; ties fall back to slug
+      if(a.eyebrowLabel && !b.eyebrowLabel) return -1;
+      if(!a.eyebrowLabel && b.eyebrowLabel) return 1;
+      return nat(a.eyebrowLabel, b.eyebrowLabel) || nat(a.chartSlug, b.chartSlug);
+    }
+    if(by === "title") return nat(a.title, b.title) || nat(a.chartSlug, b.chartSlug);
+    return nat(a.chartSlug, b.chartSlug);
+  });
+}
 function renderPicker(){
   const q = $("#search").value.toLowerCase();
   const groups = {};
   for(const c of charts){
-    if(q && !(c.id.toLowerCase().includes(q) || (c.title||"").toLowerCase().includes(q))) continue;
+    if(q && !(c.id.toLowerCase().includes(q) || (c.title||"").toLowerCase().includes(q) || (c.eyebrowLabel||"").toLowerCase().includes(q))) continue;
     (groups[c.collectionSlug] ||= []).push(c);
   }
   const html = Object.keys(groups).sort().map(g => {
     const collapsed = !q && state.collapsed.has(g);
-    const items = groups[g].map(c =>
+    const items = sortCharts(groups[g]).map(c =>
       '<a class="chart-link'+(c.id===state.id?' active':'')+'" data-id="'+esc(c.id)+'" href="#">'+
       '<span class="t">'+esc(c.chartSlug)+'</span>'+
       '<span class="s">'+(c.eyebrowLabel?'<span class="fig">'+esc(c.eyebrowLabel)+'</span> ':'')+esc(c.title)+'</span></a>').join("");
@@ -271,6 +294,7 @@ $("#picker").addEventListener("click", (e) => {
   e.preventDefault(); setActive(a.dataset.id);
 });
 $("#search").addEventListener("input", renderPicker);
+$("#sort").addEventListener("change", (e) => { state.sort = e.target.value; renderPicker(); });
 $("#controls").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-w]"); if(!b) return;
   state.width = b.dataset.w;
