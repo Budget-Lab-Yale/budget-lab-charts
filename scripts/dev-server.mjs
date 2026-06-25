@@ -188,7 +188,7 @@ main{flex:1;display:flex;flex-direction:column;min-width:0}
 #wcustom{width:64px;padding:3px 6px;border:1px solid #d6dae0;border-radius:5px;font-size:12px}
 #status{margin-left:auto;color:#8a8f99;font-size:12px}
 #stage{flex:1;overflow:auto;background:#f4f5f7;padding:24px;display:flex;justify-content:center;align-items:flex-start}
-#frame-wrap{width:620px;max-width:100%;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.08);display:none}
+#frame-wrap{width:960px;max-width:100%;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.08);display:none}
 #preview{width:100%;border:0;display:block}
 #empty{color:#8a8f99;margin-top:40px}
 </style></head>
@@ -209,9 +209,9 @@ main{flex:1;display:flex;flex-direction:column;min-width:0}
   <div id="controls">
     <span class="group">Width:
       <button data-w="320">320</button>
-      <button data-w="620" class="active">620</button>
+      <button data-w="620">620</button>
       <button data-w="740">740</button>
-      <button data-w="960">960</button>
+      <button data-w="960" class="active">960</button>
       <button data-w="100%">Full</button>
       <input id="wcustom" type="number" min="200" placeholder="px">
     </span>
@@ -225,7 +225,7 @@ main{flex:1;display:flex;flex-direction:column;min-width:0}
 </main>
 <script src="/embed/v1/iframeResizer.min.js"></script>
 <script>
-const state = { id: null, width: "620", eyebrow: true, expanded: new Set(), sort: "slug" };
+const state = { id: null, width: "960", eyebrow: true, expanded: new Set(), sort: "slug" };
 const $ = (s) => document.querySelector(s);
 let charts = [];
 function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
