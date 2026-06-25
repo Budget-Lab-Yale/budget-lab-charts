@@ -159,13 +159,21 @@ body{font-family:system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1a1a
 #sidebar{width:300px;flex:0 0 300px;border-right:1px solid #e2e5ea;display:flex;flex-direction:column;background:#fafbfc}
 #sidebar h1{font-size:14px;font-weight:800;margin:0;padding:14px 16px;background:#1a1a2e;color:#fff}
 #search{margin:10px;padding:7px 9px;border:1px solid #d6dae0;border-radius:6px;font-size:13px}
-#picker{overflow:auto;flex:1;padding:0 6px 12px}
-.group-hd{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#8a8f99;padding:12px 10px 4px}
-.chart-link{display:block;padding:7px 10px;border-radius:6px;text-decoration:none;color:#1a1a2e}
+#picker{overflow:auto;flex:1;padding:6px}
+.folder{margin-bottom:1px}
+.folder-hd{display:flex;align-items:center;gap:6px;width:100%;border:0;background:none;cursor:pointer;padding:6px 8px;border-radius:6px;font:inherit;color:#1a1a2e;text-align:left;font-weight:700;font-size:13px}
+.folder-hd:hover{background:#eef1f5}
+.caret{display:inline-block;transition:transform .12s;color:#8a8f99;font-size:10px;width:10px;text-align:center}
+.folder.collapsed .caret{transform:rotate(-90deg)}
+.folder.collapsed .folder-body{display:none}
+.folder-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folder-body{padding-left:16px}
+.chart-link{display:block;padding:6px 10px;border-radius:6px;text-decoration:none;color:#1a1a2e}
 .chart-link:hover{background:#eef1f5}
 .chart-link.active{background:#d9eaff}
-.chart-link .t{display:block;font-size:13px;font-weight:600;line-height:1.3}
-.chart-link .s{display:block;font-size:11px;color:#8a8f99;font-family:ui-monospace,monospace}
+.chart-link .t{display:block;font-size:13px;font-weight:600;line-height:1.3;font-family:ui-monospace,monospace}
+.chart-link .s{display:block;font-size:11px;color:#8a8f99;line-height:1.35;margin-top:1px}
+.chart-link .fig{color:#0072b2;font-weight:600}
 .none{color:#8a8f99;padding:12px 10px;font-size:13px}
 main{flex:1;display:flex;flex-direction:column;min-width:0}
 #controls{display:flex;align-items:center;gap:18px;padding:10px 16px;border-bottom:1px solid #e2e5ea;font-size:13px;flex-wrap:wrap}
@@ -204,7 +212,7 @@ main{flex:1;display:flex;flex-direction:column;min-width:0}
 </main>
 <script src="/embed/v1/iframeResizer.min.js"></script>
 <script>
-const state = { id: null, width: "620", eyebrow: true };
+const state = { id: null, width: "620", eyebrow: true, collapsed: new Set() };
 const $ = (s) => document.querySelector(s);
 let charts = [];
 function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
@@ -234,11 +242,15 @@ function renderPicker(){
     (groups[c.collectionSlug] ||= []).push(c);
   }
   const html = Object.keys(groups).sort().map(g => {
+    const collapsed = !q && state.collapsed.has(g);
     const items = groups[g].map(c =>
       '<a class="chart-link'+(c.id===state.id?' active':'')+'" data-id="'+esc(c.id)+'" href="#">'+
-      '<span class="t">'+esc(c.title)+'</span>'+
-      '<span class="s">'+esc(c.chartSlug)+(c.eyebrowLabel?' · '+esc(c.eyebrowLabel):'')+'</span></a>').join("");
-    return '<div class="group-hd">'+esc(g)+'</div>'+items;
+      '<span class="t">'+esc(c.chartSlug)+'</span>'+
+      '<span class="s">'+(c.eyebrowLabel?'<span class="fig">'+esc(c.eyebrowLabel)+'</span> ':'')+esc(c.title)+'</span></a>').join("");
+    return '<div class="folder'+(collapsed?' collapsed':'')+'" data-collection="'+esc(g)+'">'+
+      '<button class="folder-hd" type="button"><span class="caret">▾</span>'+
+      '<span class="folder-name">'+esc(g)+'</span></button>'+
+      '<div class="folder-body">'+items+'</div></div>';
   }).join("");
   $("#picker").innerHTML = html || '<p class="none">No charts found.</p>';
 }
@@ -247,6 +259,14 @@ async function loadCharts(){
   catch(e){ $("#status").textContent = "failed to load chart list"; }
 }
 $("#picker").addEventListener("click", (e) => {
+  const hd = e.target.closest(".folder-hd");
+  if(hd){
+    const folder = hd.closest(".folder");
+    const g = folder.dataset.collection;
+    if(state.collapsed.has(g)) state.collapsed.delete(g); else state.collapsed.add(g);
+    folder.classList.toggle("collapsed");
+    return;
+  }
   const a = e.target.closest(".chart-link"); if(!a) return;
   e.preventDefault(); setActive(a.dataset.id);
 });
