@@ -941,6 +941,31 @@ td.is-neg {
   color: var(--tbl-text-muted);
 }
 
+/* ---- Inline math: sub/superscripts + stacked sub+super ---- */
+/* Math scripts (from ( … ) markup) inherit the cell's text color — overriding the muted
+   footnote <sup> styling above — and use a slightly smaller size. */
+.tbl-table sup.tbl-math,
+.tbl-table sub.tbl-math {
+  font-size: 0.72em;
+  line-height: 0;
+  color: inherit;
+}
+.tbl-table sup.tbl-math { vertical-align: super; }
+.tbl-table sub.tbl-math { vertical-align: sub; }
+/* Stacked sub+super (e.g. 	heta_1^K → θ with K above, 1 below): a tight inline column placed
+   right after the base glyph, sized down like a script and left-aligned so digits/letters of
+   different widths share a common left edge. */
+.tbl-table .tbl-msubsup {
+  display: inline-flex;
+  flex-direction: column;
+  /* Center the two-line stack on the text's midline so the super sits at cap height and the
+     sub just below the baseline (rather than the whole stack dropping below it). */
+  vertical-align: middle;
+  line-height: 1;
+  font-size: 0.72em;
+  text-align: left;
+}
+
 </style>
 <style>html.tbl-embedded body{margin:0 !important}html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style><script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}catch(e){document.documentElement.classList.add("tbl-embedded")}</script>
 </head>
@@ -30068,7 +30093,7 @@ ${words.slice(bestI).join(" ")}`;
         const gKey = groupPath.slice(0, lvl + 1).join(SEP);
         if (!emittedGroup.has(gKey)) {
           emittedGroup.add(gKey);
-          const group = { label: gLabel, level: lvl };
+          const group = { label: spec.group_labels?.[gLabel] ?? gLabel, level: lvl };
           const note = spec.group_notes?.[gLabel];
           if (note != null) group.note = note;
           body.push({ kind: "group", group });
@@ -30099,7 +30124,9 @@ ${words.slice(bestI).join(" ")}`;
         kind: "row",
         row: {
           stubPath: path,
-          label,
+          // Display label may be overridden in the spec; raw `label` (above) stays the key for
+          // emphasis_rows, format.rows, and row_order.
+          label: spec.row_labels?.[label] ?? label,
           level: groupPath.length,
           groupKeys: groupPath,
           cells
@@ -30129,6 +30156,424 @@ ${words.slice(bestI).join(" ")}`;
     };
   }
 
+  // src/table/richtext.ts
+  var SCRIPT_SCALE = 0.72;
+  var GREEK = {
+    alpha: "\u03B1",
+    beta: "\u03B2",
+    gamma: "\u03B3",
+    delta: "\u03B4",
+    epsilon: "\u03B5",
+    varepsilon: "\u03B5",
+    zeta: "\u03B6",
+    eta: "\u03B7",
+    theta: "\u03B8",
+    vartheta: "\u03D1",
+    iota: "\u03B9",
+    kappa: "\u03BA",
+    lambda: "\u03BB",
+    mu: "\u03BC",
+    nu: "\u03BD",
+    xi: "\u03BE",
+    omicron: "\u03BF",
+    pi: "\u03C0",
+    varpi: "\u03D6",
+    rho: "\u03C1",
+    varrho: "\u03F1",
+    sigma: "\u03C3",
+    varsigma: "\u03C2",
+    tau: "\u03C4",
+    upsilon: "\u03C5",
+    phi: "\u03C6",
+    varphi: "\u03D5",
+    chi: "\u03C7",
+    psi: "\u03C8",
+    omega: "\u03C9",
+    Gamma: "\u0393",
+    Delta: "\u0394",
+    Theta: "\u0398",
+    Lambda: "\u039B",
+    Xi: "\u039E",
+    Pi: "\u03A0",
+    Sigma: "\u03A3",
+    Upsilon: "\u03A5",
+    Phi: "\u03A6",
+    Psi: "\u03A8",
+    Omega: "\u03A9"
+  };
+  var SYMBOLS = {
+    cdot: "\xB7",
+    times: "\xD7",
+    div: "\xF7",
+    pm: "\xB1",
+    mp: "\u2213",
+    ast: "\u2217",
+    star: "\u22C6",
+    leq: "\u2264",
+    le: "\u2264",
+    geq: "\u2265",
+    ge: "\u2265",
+    neq: "\u2260",
+    ne: "\u2260",
+    approx: "\u2248",
+    equiv: "\u2261",
+    sim: "\u223C",
+    simeq: "\u2243",
+    propto: "\u221D",
+    infty: "\u221E",
+    partial: "\u2202",
+    nabla: "\u2207",
+    sum: "\u2211",
+    prod: "\u220F",
+    int: "\u222B",
+    forall: "\u2200",
+    exists: "\u2203",
+    in: "\u2208",
+    notin: "\u2209",
+    subset: "\u2282",
+    supset: "\u2283",
+    subseteq: "\u2286",
+    supseteq: "\u2287",
+    cup: "\u222A",
+    cap: "\u2229",
+    rightarrow: "\u2192",
+    to: "\u2192",
+    leftarrow: "\u2190",
+    Rightarrow: "\u21D2",
+    Leftarrow: "\u21D0",
+    leftrightarrow: "\u2194",
+    mapsto: "\u21A6",
+    cdots: "\u22EF",
+    ldots: "\u2026",
+    dots: "\u2026",
+    prime: "\u2032",
+    circ: "\u2218",
+    bullet: "\u2022",
+    dagger: "\u2020",
+    degree: "\xB0",
+    deg: "\xB0",
+    percent: "%"
+  };
+  var STYLE_MACROS = {
+    textit: "italic",
+    mathit: "italic",
+    emph: "italic",
+    text: "upright",
+    mathrm: "upright",
+    textrm: "upright",
+    operatorname: "upright",
+    mathsf: "upright"
+  };
+  var UPRIGHT_WORDS = /* @__PURE__ */ new Set([
+    "sin",
+    "cos",
+    "tan",
+    "cot",
+    "sec",
+    "csc",
+    "log",
+    "ln",
+    "exp",
+    "lim",
+    "max",
+    "min",
+    "det",
+    "dim",
+    "ker",
+    "deg",
+    "arg",
+    "gcd",
+    "sup",
+    "inf",
+    "mod"
+  ]);
+  var DELIMS = [
+    { open: "\\(", close: "\\)" },
+    { open: "\\[", close: "\\]" },
+    { open: "$$", close: "$$" }
+  ];
+  function hasMath(s) {
+    return s.includes("\\(") || s.includes("\\[") || s.includes("$$");
+  }
+  function nextOpener(s, from) {
+    let best = null;
+    for (const d of DELIMS) {
+      const idx = s.indexOf(d.open, from);
+      if (idx >= 0 && (best == null || idx < best.idx)) best = { idx, open: d.open, close: d.close };
+    }
+    return best;
+  }
+  function unescapeText(s) {
+    return s.replace(/\\\$/g, "$");
+  }
+  function parseRich(s, onUnsupported) {
+    if (!hasMath(s)) return [{ kind: "text", text: s, italic: false }];
+    const runs = [];
+    let i = 0;
+    while (i < s.length) {
+      const opener = nextOpener(s, i);
+      if (opener == null) {
+        pushText(runs, unescapeText(s.slice(i)), false);
+        break;
+      }
+      if (opener.idx > i) pushText(runs, unescapeText(s.slice(i, opener.idx)), false);
+      const contentStart = opener.idx + opener.open.length;
+      const closeIdx = s.indexOf(opener.close, contentStart);
+      if (closeIdx < 0) {
+        parseMath(s.slice(contentStart), runs, onUnsupported);
+        break;
+      }
+      parseMath(s.slice(contentStart, closeIdx), runs, onUnsupported);
+      i = closeIdx + opener.close.length;
+    }
+    return runs;
+  }
+  function pushText(runs, text, italic) {
+    if (text === "") return;
+    const last = runs[runs.length - 1];
+    if (last && last.kind === "text" && last.italic === italic) last.text += text;
+    else runs.push({ kind: "text", text, italic });
+  }
+  function readGroup(s, i) {
+    let depth = 0;
+    let j11 = i;
+    for (; j11 < s.length; j11++) {
+      if (s[j11] === "{") depth++;
+      else if (s[j11] === "}") {
+        depth--;
+        if (depth === 0) {
+          j11++;
+          break;
+        }
+      }
+    }
+    return { content: s.slice(i + 1, Math.max(i + 1, j11 - 1)), next: j11 };
+  }
+  function readScriptArg(s, i) {
+    if (s[i] === "{") {
+      const g = readGroup(s, i);
+      return { raw: g.content, next: g.next };
+    }
+    if (s[i] === "\\") {
+      let j11 = i + 1;
+      while (j11 < s.length && /[a-zA-Z]/.test(s[j11])) j11++;
+      return { raw: s.slice(i, j11), next: j11 };
+    }
+    return { raw: s[i] ?? "", next: i + 1 };
+  }
+  function renderScript(raw, onUnsupported) {
+    const sub = parseMath(raw, [], onUnsupported, true);
+    const text = sub.map((r) => r.kind === "text" || r.kind === "super" || r.kind === "sub" ? r.text : r.sub + r.sup).join("");
+    const italic = /[a-zA-Z]/.test(text) && sub.some((r) => r.kind === "text" ? r.italic : false);
+    return { text, italic };
+  }
+  function parseMath(s, out, onUnsupported, flatten = false) {
+    let i = 0;
+    while (i < s.length) {
+      const c = s[i];
+      if (c === " " || c === "	" || c === "\n") {
+        i++;
+        continue;
+      }
+      if (c === "{") {
+        const g = readGroup(s, i);
+        parseMath(g.content, out, onUnsupported, flatten);
+        i = g.next;
+        continue;
+      }
+      if (c === "}") {
+        i++;
+        continue;
+      }
+      if (c === "_" || c === "^") {
+        attachScript(s, i, c, out, onUnsupported, flatten);
+        i = skipScripts(s, i);
+        continue;
+      }
+      if (c === "\\") {
+        let j11 = i + 1;
+        if (s[j11] === "," || s[j11] === ";" || s[j11] === " " || s[j11] === ":" || s[j11] === "!") {
+          pushText(out, " ", false);
+          i = j11 + 1;
+          continue;
+        }
+        while (j11 < s.length && /[a-zA-Z]/.test(s[j11])) j11++;
+        const name = s.slice(i + 1, j11);
+        i = j11;
+        if (name in GREEK) {
+          pushText(out, GREEK[name], /^[a-z]/.test(name));
+          i = applyScripts(s, i, out, onUnsupported, flatten);
+          continue;
+        }
+        if (name in SYMBOLS) {
+          pushText(out, SYMBOLS[name], false);
+          i = applyScripts(s, i, out, onUnsupported, flatten);
+          continue;
+        }
+        if (name in STYLE_MACROS) {
+          while (i < s.length && /\s/.test(s[i])) i++;
+          let content = "";
+          if (s[i] === "{") {
+            const g = readGroup(s, i);
+            content = g.content;
+            i = g.next;
+          }
+          const italic2 = STYLE_MACROS[name] === "italic";
+          pushText(out, content, italic2);
+          i = applyScripts(s, i, out, onUnsupported, flatten);
+          continue;
+        }
+        if (UPRIGHT_WORDS.has(name)) {
+          pushText(out, name, false);
+          i = applyScripts(s, i, out, onUnsupported, flatten);
+          continue;
+        }
+        onUnsupported?.(name);
+        pushText(out, "\\" + name, false);
+        continue;
+      }
+      const italic = /[a-zA-Z]/.test(c);
+      pushText(out, c, italic);
+      i++;
+      i = applyScripts(s, i, out, onUnsupported, flatten);
+    }
+    return out;
+  }
+  function applyScripts(s, i, out, onUnsupported, flatten = false) {
+    if (s[i] !== "_" && s[i] !== "^") return i;
+    let sub = null;
+    let sup = null;
+    while (s[i] === "_" || s[i] === "^") {
+      const isSub = s[i] === "_";
+      const arg = readScriptArg(s, i + 1);
+      const r = renderScript(arg.raw, onUnsupported);
+      if (isSub) sub = r;
+      else sup = r;
+      i = arg.next;
+    }
+    if (flatten) {
+      if (sup) out.push({ kind: "text", text: sup.text, italic: sup.italic });
+      if (sub) out.push({ kind: "text", text: sub.text, italic: sub.italic });
+    } else if (sub && sup) {
+      out.push({ kind: "subsup", sub: sub.text, sup: sup.text, subItalic: sub.italic, supItalic: sup.italic });
+    } else if (sub) {
+      out.push({ kind: "sub", text: sub.text, italic: sub.italic });
+    } else if (sup) {
+      out.push({ kind: "super", text: sup.text, italic: sup.italic });
+    }
+    return i;
+  }
+  function attachScript(s, i, _first, out, onUnsupported, flatten = false) {
+    applyScripts(s, i, out, onUnsupported, flatten);
+  }
+  function skipScripts(s, i) {
+    while (s[i] === "_" || s[i] === "^") {
+      const arg = readScriptArg(s, i + 1);
+      i = arg.next;
+    }
+    return i;
+  }
+  function richWidth(s, fontPx, weight, measure) {
+    if (!hasMath(s)) return measure(s, fontPx, weight);
+    const runs = parseRich(s);
+    const sf3 = fontPx * SCRIPT_SCALE;
+    let w = 0;
+    for (const run of runs) {
+      if (run.kind === "text") w += measure(run.text, fontPx, weight);
+      else if (run.kind === "super" || run.kind === "sub") w += measure(run.text, sf3, weight);
+      else w += Math.max(measure(run.sub, sf3, weight), measure(run.sup, sf3, weight));
+    }
+    return w;
+  }
+  function richToPlain(s) {
+    if (!hasMath(s)) return s;
+    return parseRich(s).map((r) => r.kind === "subsup" ? r.sup + r.sub : r.text).join("");
+  }
+  function appendRichHtml(parent, s, doc) {
+    for (const run of parseRich(s)) {
+      if (run.kind === "text") {
+        if (run.italic) {
+          const el3 = doc.createElement("i");
+          el3.textContent = run.text;
+          parent.appendChild(el3);
+        } else parent.appendChild(doc.createTextNode(run.text));
+      } else if (run.kind === "super" || run.kind === "sub") {
+        const el3 = doc.createElement(run.kind === "super" ? "sup" : "sub");
+        el3.className = "tbl-math";
+        if (run.italic) el3.style.fontStyle = "italic";
+        el3.textContent = run.text;
+        parent.appendChild(el3);
+      } else {
+        const wrap = doc.createElement("span");
+        wrap.className = "tbl-msubsup";
+        const sup = doc.createElement("span");
+        sup.className = "tbl-msup";
+        if (run.supItalic) sup.style.fontStyle = "italic";
+        sup.textContent = run.sup;
+        const sub = doc.createElement("span");
+        sub.className = "tbl-msub";
+        if (run.subItalic) sub.style.fontStyle = "italic";
+        sub.textContent = run.sub;
+        wrap.appendChild(sup);
+        wrap.appendChild(sub);
+        parent.appendChild(wrap);
+      }
+    }
+  }
+  var SVG_NS4 = "http://www.w3.org/2000/svg";
+  function renderRichSvgText(doc, s, opts) {
+    const runs = parseRich(s);
+    const sf3 = opts.fontSize * SCRIPT_SCALE;
+    const m = opts.measure;
+    let total = 0;
+    for (const run of runs) {
+      if (run.kind === "text") total += m(run.text, opts.fontSize, opts.weight);
+      else if (run.kind === "super" || run.kind === "sub") total += m(run.text, sf3, opts.weight);
+      else total += Math.max(m(run.sub, sf3, opts.weight), m(run.sup, sf3, opts.weight));
+    }
+    const startX = opts.anchor === "middle" ? opts.x - total / 2 : opts.anchor === "end" ? opts.x - total : opts.x;
+    const t60 = doc.createElementNS(SVG_NS4, "text");
+    t60.setAttribute("x", String(startX));
+    t60.setAttribute("y", String(opts.baselineY));
+    t60.setAttribute("text-anchor", "start");
+    t60.setAttribute("font-family", opts.fontFamily);
+    t60.setAttribute("font-size", String(opts.fontSize));
+    t60.setAttribute("font-weight", String(opts.weight));
+    t60.setAttribute("fill", opts.fill);
+    if (opts.cls) t60.setAttribute("class", opts.cls);
+    const supRise = opts.fontSize * 0.42;
+    const subDrop = opts.fontSize * 0.16;
+    let cx3 = startX;
+    const put = (text, x, y, italic, script) => {
+      const ts3 = doc.createElementNS(SVG_NS4, "tspan");
+      ts3.setAttribute("x", String(x));
+      ts3.setAttribute("y", String(y));
+      if (script) ts3.setAttribute("font-size", String(sf3));
+      if (italic) ts3.setAttribute("font-style", "italic");
+      ts3.textContent = text;
+      t60.appendChild(ts3);
+    };
+    for (const run of runs) {
+      if (run.kind === "text") {
+        put(run.text, cx3, opts.baselineY, run.italic, false);
+        cx3 += m(run.text, opts.fontSize, opts.weight);
+      } else if (run.kind === "super") {
+        put(run.text, cx3, opts.baselineY - supRise, run.italic, true);
+        cx3 += m(run.text, sf3, opts.weight);
+      } else if (run.kind === "sub") {
+        put(run.text, cx3, opts.baselineY + subDrop, run.italic, true);
+        cx3 += m(run.text, sf3, opts.weight);
+      } else {
+        const supW = m(run.sup, sf3, opts.weight);
+        const subW = m(run.sub, sf3, opts.weight);
+        put(run.sup, cx3, opts.baselineY - supRise, run.supItalic, true);
+        put(run.sub, cx3, opts.baselineY + subDrop, run.subItalic, true);
+        cx3 += Math.max(supW, subW);
+      }
+    }
+    return t60;
+  }
+
   // src/table/layout.ts
   var headerFontPx = TBL.size.legend;
   var bodyFontPx = 13;
@@ -30145,7 +30590,7 @@ ${words.slice(bestI).join(" ")}`;
   var groupFirstTopGap = 4;
   var groupLabelLine = 18;
   var groupNoteLineHeight = 15;
-  var groupNoteGap = 1;
+  var groupNoteGap = 7;
   var groupBottomPad = 4;
   var INDENT_STEP = 14;
   var FOOTNOTE_TOP_GAP = 8;
@@ -30191,8 +30636,8 @@ ${words.slice(bestI).join(" ")}`;
     const { measureText: measureText2 } = opts;
     const leaves = model.leaves;
     const headerMaxLines = opts.headerMaxLines;
-    const measureHeader = (s) => measureText2(s, headerFontPx, headerWeight);
-    const measureNote = (s) => measureText2(s, noteFontPx, bodyWeight);
+    const measureHeader = (s) => richWidth(s, headerFontPx, headerWeight, measureText2);
+    const measureNote = (s) => richWidth(s, noteFontPx, bodyWeight, measureText2);
     const bodyRows = model.body.filter((b) => b.kind === "row").map((b) => b.row);
     const colWidthOverride = (leafKey) => {
       const cw3 = opts.columnWidth;
@@ -30205,11 +30650,11 @@ ${words.slice(bestI).join(" ")}`;
       if (override != null) return override;
       let natural = headerMaxLines != null ? 0 : measureHeader(leaf.label);
       if (leaf.sublabel != null) {
-        natural = Math.max(natural, measureText2(leaf.sublabel, headerFontPx, bodyWeight));
+        natural = Math.max(natural, richWidth(leaf.sublabel, headerFontPx, bodyWeight, measureText2));
       }
       for (const row of bodyRows) {
         const cell = row.cells[i];
-        if (cell) natural = Math.max(natural, measureText2(cell.text, bodyFontPx, bodyWeight));
+        if (cell) natural = Math.max(natural, richWidth(cell.text, bodyFontPx, bodyWeight, measureText2));
       }
       return natural + padX;
     });
@@ -30239,12 +30684,12 @@ ${words.slice(bestI).join(" ")}`;
       if (b.kind === "group") {
         stubNatural = Math.max(
           stubNatural,
-          measureText2(b.group.label, bodyFontPx, headerWeight) + b.group.level * INDENT_STEP
+          richWidth(b.group.label, bodyFontPx, headerWeight, measureText2) + b.group.level * INDENT_STEP
         );
       } else {
         stubNatural = Math.max(
           stubNatural,
-          measureText2(b.row.label, bodyFontPx, bodyWeight) + b.row.level * INDENT_STEP
+          richWidth(b.row.label, bodyFontPx, bodyWeight, measureText2) + b.row.level * INDENT_STEP
         );
       }
     }
@@ -30253,7 +30698,7 @@ ${words.slice(bestI).join(" ")}`;
       for (const b of model.body) {
         if (b.kind !== "row") continue;
         for (const w of b.row.label.split(/\s+/).filter(Boolean)) {
-          widestWord = Math.max(widestWord, measureText2(w, bodyFontPx, bodyWeight) + b.row.level * INDENT_STEP);
+          widestWord = Math.max(widestWord, richWidth(w, bodyFontPx, bodyWeight, measureText2) + b.row.level * INDENT_STEP);
         }
       }
     }
@@ -30331,7 +30776,7 @@ ${words.slice(bestI).join(" ")}`;
         y += h10;
         return { group: entry.group, rect, noteLines, topGap, isFirst };
       }
-      const measureBody = (s) => measureText2(s, bodyFontPx, bodyWeight);
+      const measureBody = (s) => richWidth(s, bodyFontPx, bodyWeight, measureText2);
       let maxLines = 1;
       let stubLines;
       if (opts.stubWrap) {
@@ -30409,7 +30854,7 @@ ${words.slice(bestI).join(" ")}`;
         const cornerTh = doc.createElement("th");
         cornerTh.rowSpan = tierCount;
         cornerTh.className = "tbl-table-stub-header";
-        cornerTh.textContent = model.stubHeader;
+        appendRichHtml(cornerTh, model.stubHeader, doc);
         tr3.appendChild(cornerTh);
       }
       tierCells.forEach((hCell) => {
@@ -30425,23 +30870,23 @@ ${words.slice(bestI).join(" ")}`;
           th3.classList.add("is-spanner");
           const inner = doc.createElement("span");
           inner.className = "tbl-table-spanner";
-          inner.textContent = hCell.text;
+          appendRichHtml(inner, hCell.text, doc);
           th3.appendChild(inner);
         } else if (clamp) {
           const inner = doc.createElement("span");
           inner.className = "tbl-table-header-clamp";
           inner.style.setProperty("--tbl-header-lines", String(headerMaxLines));
-          inner.textContent = hCell.text;
+          appendRichHtml(inner, hCell.text, doc);
           th3.appendChild(inner);
         } else {
-          th3.textContent = hCell.text;
+          appendRichHtml(th3, hCell.text, doc);
         }
         if (hCell.leafKey != null) {
           const leaf = leaves.find((l) => l.key === hCell.leafKey);
           if (leaf?.sublabel != null) {
             const span = doc.createElement("span");
             span.className = "tbl-table-sublabel";
-            span.textContent = leaf.sublabel;
+            appendRichHtml(span, leaf.sublabel, doc);
             th3.appendChild(span);
           }
         }
@@ -30462,11 +30907,11 @@ ${words.slice(bestI).join(" ")}`;
         const inner = doc.createElement("div");
         inner.className = "tbl-table-group-inner";
         if (stubNowrap) inner.classList.add("is-nowrap");
-        inner.textContent = group.label;
+        appendRichHtml(inner, group.label, doc);
         if (group.note != null) {
           const noteDiv = doc.createElement("div");
           noteDiv.className = "tbl-table-group-note";
-          noteDiv.textContent = group.note;
+          appendRichHtml(noteDiv, group.note, doc);
           inner.appendChild(noteDiv);
         }
         th3.appendChild(inner);
@@ -30484,10 +30929,10 @@ ${words.slice(bestI).join(" ")}`;
         if (!stubWrap && spec?.stub_width != null) {
           const clip = doc.createElement("span");
           clip.className = "tbl-table-stub-clip";
-          clip.textContent = row.label;
+          appendRichHtml(clip, row.label, doc);
           stubTh.appendChild(clip);
         } else {
-          stubTh.textContent = row.label;
+          appendRichHtml(stubTh, row.label, doc);
         }
         tr3.appendChild(stubTh);
         row.cells.forEach((cell, i) => {
@@ -30500,7 +30945,7 @@ ${words.slice(bestI).join(" ")}`;
           if (cell.emphasis) {
             td3.classList.add("is-emphasis");
           }
-          td3.textContent = cell.text;
+          appendRichHtml(td3, cell.text, doc);
           if (cell.footnote != null) {
             const sup = doc.createElement("sup");
             sup.textContent = cell.footnote;
@@ -30567,7 +31012,7 @@ ${words.slice(bestI).join(" ")}`;
   }
 
   // src/table/render-svg.ts
-  var SVG_NS4 = "http://www.w3.org/2000/svg";
+  var SVG_NS5 = "http://www.w3.org/2000/svg";
   var HEADER_FONT = TBL.size.legend;
   var BODY_FONT = 13;
   var SUBLABEL_FONT = TBL.size.annotation;
@@ -30581,10 +31026,11 @@ ${words.slice(bestI).join(" ")}`;
   function renderTableSvg(model, layout, opts) {
     const doc = opts.document;
     const spec = opts.spec;
+    const measure = opts.measure ?? ((s, fontPx) => s.length * fontPx * 0.6);
     const headerTierRules = spec?.header_tier_rules === true;
     const spannerRules = spec?.spanner_rules !== false;
     const el3 = (name, attrs = {}) => {
-      const node = doc.createElementNS(SVG_NS4, name);
+      const node = doc.createElementNS(SVG_NS5, name);
       for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, String(v));
       return node;
     };
@@ -30604,13 +31050,49 @@ ${words.slice(bestI).join(" ")}`;
       t60.textContent = str;
       return t60;
     };
+    const drawText = (x, y, str, o) => {
+      if (!hasMath(str)) return text(x, y, str, o);
+      const rich = renderRichSvgText(doc, str, {
+        x,
+        baselineY: y,
+        anchor: o.anchor,
+        fontFamily: TBL.font,
+        fontSize: o.size,
+        weight: o.weight,
+        fill: o.fill,
+        measure,
+        ...o.cls ? { cls: o.cls } : {}
+      });
+      if (o.italic) rich.setAttribute("font-style", "italic");
+      return rich;
+    };
+    const drawLines3 = (lines, x, firstBaselineY, lineHeight, o) => {
+      if (!lines.some(hasMath)) {
+        const t60 = el3("text", {
+          x,
+          y: firstBaselineY,
+          "text-anchor": o.anchor,
+          "font-family": TBL.font,
+          "font-size": o.size,
+          "font-weight": o.weight,
+          fill: o.fill
+        });
+        lines.forEach((ln3, li3) => {
+          const ts3 = el3("tspan", { x, dy: li3 === 0 ? 0 : lineHeight });
+          ts3.textContent = ln3;
+          t60.appendChild(ts3);
+        });
+        return [t60];
+      }
+      return lines.map((ln3, li3) => drawText(x, firstBaselineY + li3 * lineHeight, ln3, o));
+    };
     const rule = (x13, y13, x23, y23, stroke) => el3("line", { x1: x13, y1: y13, x2: x23, y2: y23, stroke, "stroke-width": 1 });
     const ruleStrong = (x13, y13, x23, y23) => rule(x13, y13, x23, y23, TBL.color.axisStroke);
     const ruleGroup = (x13, y13, x23, y23) => rule(x13, y13, x23, y23, TBL.color.border);
     const ruleRow = (x13, y13, x23, y23) => rule(x13, y13, x23, y23, TBL.color.gridline);
     const spannerLine = (x13, y13, x23, y23) => rule(x13, y13, x23, y23, TBL.color.border);
     const svg = el3("svg", {
-      xmlns: SVG_NS4,
+      xmlns: SVG_NS5,
       width: layout.totalWidth,
       height: layout.totalHeight,
       viewBox: `0 0 ${layout.totalWidth} ${layout.totalHeight}`
@@ -30650,24 +31132,16 @@ ${words.slice(bestI).join(" ")}`;
           const anchor = isTextCol ? "start" : "middle";
           const lines = entry.lines ?? [cell.text];
           if (lines.length > 1) {
-            const t60 = el3("text", {
-              x: hx3,
-              y: leafLabelBottom - (lines.length - 1) * HEADER_LINE_HEIGHT,
-              "text-anchor": anchor,
-              "font-family": TBL.font,
-              "font-size": HEADER_FONT,
-              "font-weight": 700,
-              fill: TBL.color.heading
-            });
-            lines.forEach((ln3, li3) => {
-              const ts3 = el3("tspan", { x: hx3, dy: li3 === 0 ? 0 : HEADER_LINE_HEIGHT });
-              ts3.textContent = ln3;
-              t60.appendChild(ts3);
-            });
-            headerG.appendChild(t60);
+            const firstBaseline = leafLabelBottom - (lines.length - 1) * HEADER_LINE_HEIGHT;
+            for (const el22 of drawLines3(lines, hx3, firstBaseline, HEADER_LINE_HEIGHT, {
+              anchor,
+              weight: 700,
+              fill: TBL.color.heading,
+              size: HEADER_FONT
+            })) headerG.appendChild(el22);
           } else {
             headerG.appendChild(
-              text(hx3, leafLabelBottom, lines[0] ?? "", {
+              drawText(hx3, leafLabelBottom, lines[0] ?? "", {
                 anchor,
                 weight: 700,
                 fill: TBL.color.heading,
@@ -30677,7 +31151,7 @@ ${words.slice(bestI).join(" ")}`;
           }
           if (leaf?.sublabel != null) {
             headerG.appendChild(
-              text(hx3, sublabelBaseline, leaf.sublabel, {
+              drawText(hx3, sublabelBaseline, leaf.sublabel, {
                 anchor,
                 weight: 400,
                 fill: TBL.color.muted,
@@ -30689,7 +31163,7 @@ ${words.slice(bestI).join(" ")}`;
         } else {
           const by3 = rect.y + rect.h / 2 + HEADER_FONT / 3;
           headerG.appendChild(
-            text(cx3, by3, cell.text, {
+            drawText(cx3, by3, cell.text, {
               anchor: "middle",
               weight: 700,
               fill: TBL.color.heading,
@@ -30698,7 +31172,7 @@ ${words.slice(bestI).join(" ")}`;
           );
           if (cell.colSpan > 1 && spannerRules) {
             const ruleY = rect.y + rect.h / 2;
-            const halfText = measureish(cell.text) / 2 + PAD_X;
+            const halfText = measureish(richToPlain(cell.text)) / 2 + PAD_X;
             headerG.appendChild(spannerLine(rect.x + PAD_X, ruleY, cx3 - halfText, ruleY));
             headerG.appendChild(spannerLine(cx3 + halfText, ruleY, rect.x + rect.w - PAD_X, ruleY));
           }
@@ -30707,7 +31181,7 @@ ${words.slice(bestI).join(" ")}`;
     }
     if (model.stubHeader) {
       headerG.appendChild(
-        text(PAD_X, leafLabelBottom, model.stubHeader, {
+        drawText(PAD_X, leafLabelBottom, model.stubHeader, {
           anchor: "start",
           weight: 700,
           fill: TBL.color.heading,
@@ -30732,7 +31206,7 @@ ${words.slice(bestI).join(" ")}`;
         const x = PAD_X + group.level * INDENT_STEP;
         const labelBaseline = rect2.y + topGap + BODY_FONT;
         g.appendChild(
-          text(x, labelBaseline, group.label, {
+          drawText(x, labelBaseline, group.label, {
             anchor: "start",
             weight: 700,
             fill: TBL.color.heading,
@@ -30741,7 +31215,7 @@ ${words.slice(bestI).join(" ")}`;
         );
         noteLines.forEach((ln3, li3) => {
           g.appendChild(
-            text(x, labelBaseline + GROUP_NOTE_GAP + NOTE_FONT + li3 * GROUP_NOTE_LINE_HEIGHT, ln3, {
+            drawText(x, labelBaseline + GROUP_NOTE_GAP + NOTE_FONT + li3 * GROUP_NOTE_LINE_HEIGHT, ln3, {
               anchor: "start",
               weight: 400,
               fill: TBL.color.muted,
@@ -30761,23 +31235,15 @@ ${words.slice(bestI).join(" ")}`;
       const stubLines = entry.stubLines;
       if (stubLines && stubLines.length > 1) {
         const blockH = (stubLines.length - 1) * STUB_LINE_HEIGHT;
-        const t60 = el3("text", {
-          x: stubX,
-          y: rect.y + rect.h / 2 - blockH / 2 + BODY_FONT / 3,
-          "text-anchor": "start",
-          "font-family": TBL.font,
-          "font-size": BODY_FONT,
-          "font-weight": stubWeight,
-          fill: TBL.color.text
-        });
-        stubLines.forEach((ln3, li3) => {
-          const ts3 = el3("tspan", { x: stubX, dy: li3 === 0 ? 0 : STUB_LINE_HEIGHT });
-          ts3.textContent = ln3;
-          t60.appendChild(ts3);
-        });
-        rg3.appendChild(t60);
+        const firstBaseline = rect.y + rect.h / 2 - blockH / 2 + BODY_FONT / 3;
+        for (const el22 of drawLines3(stubLines, stubX, firstBaseline, STUB_LINE_HEIGHT, {
+          anchor: "start",
+          weight: stubWeight,
+          fill: TBL.color.text,
+          size: BODY_FONT
+        })) rg3.appendChild(el22);
       } else {
-        const st3 = text(stubX, baseY, row.label, {
+        const st3 = drawText(stubX, baseY, row.label, {
           anchor: "start",
           weight: stubWeight,
           fill: TBL.color.text,
@@ -30808,28 +31274,20 @@ ${words.slice(bestI).join(" ")}`;
           const tx3 = cr3.x + PAD_X;
           if (cellLines && cellLines.length > 1) {
             const blockH = (cellLines.length - 1) * STUB_LINE_HEIGHT;
-            const t61 = el3("text", {
-              x: tx3,
-              y: cr3.y + cr3.h / 2 - blockH / 2 + BODY_FONT / 3,
-              "text-anchor": "start",
-              "font-family": TBL.font,
-              "font-size": BODY_FONT,
-              "font-weight": weight,
-              fill: TBL.color.text
-            });
-            cellLines.forEach((ln3, li3) => {
-              const ts3 = el3("tspan", { x: tx3, dy: li3 === 0 ? 0 : STUB_LINE_HEIGHT });
-              ts3.textContent = ln3;
-              t61.appendChild(ts3);
-            });
-            cg3.appendChild(t61);
+            const firstBaseline = cr3.y + cr3.h / 2 - blockH / 2 + BODY_FONT / 3;
+            for (const el22 of drawLines3(cellLines, tx3, firstBaseline, STUB_LINE_HEIGHT, {
+              anchor: "start",
+              weight,
+              fill: TBL.color.text,
+              size: BODY_FONT
+            })) cg3.appendChild(el22);
           } else {
-            cg3.appendChild(text(tx3, baseY, cell.text, { anchor: "start", weight, fill: TBL.color.text, size: BODY_FONT }));
+            cg3.appendChild(drawText(tx3, baseY, cell.text, { anchor: "start", weight, fill: TBL.color.text, size: BODY_FONT }));
           }
           rg3.appendChild(cg3);
           return;
         }
-        const t60 = text(cr3.x + cr3.w / 2, baseY, cell.text, {
+        const t60 = drawText(cr3.x + cr3.w / 2, baseY, cell.text, {
           anchor: "middle",
           weight,
           fill,
@@ -30856,7 +31314,7 @@ ${words.slice(bestI).join(" ")}`;
       const fg3 = el3("g", { class: "tbl-table-footnotes" });
       model.footnotes.forEach((fn3, i) => {
         const y = bodyBottom + FOOTNOTE_TOP_GAP + i * FOOTNOTE_LINE_HEIGHT + NOTE_FONT;
-        const t60 = text(PAD_X, y, `${fn3.marker} ${fn3.text}`, {
+        const t60 = drawText(PAD_X, y, `${fn3.marker} ${fn3.text}`, {
           anchor: "start",
           weight: 400,
           fill: TBL.color.muted,
@@ -30918,7 +31376,7 @@ ${words.slice(bestI).join(" ")}`;
     const { root, bgRect } = createExportRoot(document, width, 1);
     const topCursor = composeTopChrome(document, root, { title, subtitle, width });
     const bodyTop = topCursor + BODY_TOP_GAP;
-    const bodySvg = renderTableSvg(model, layout, { document, spec });
+    const bodySvg = renderTableSvg(model, layout, { document, spec, measure: measureText2 });
     bodySvg.setAttribute("x", String(MARGIN));
     bodySvg.setAttribute("y", String(bodyTop));
     bodySvg.setAttribute("width", String(layout.totalWidth));
@@ -30953,7 +31411,7 @@ ${words.slice(bestI).join(" ")}`;
         );
         cursor += PANE_TITLE_GAP;
       }
-      const bodySvg = renderTableSvg(model, layout, { document, spec });
+      const bodySvg = renderTableSvg(model, layout, { document, spec, measure: measureText2 });
       bodySvg.setAttribute("x", String(MARGIN));
       bodySvg.setAttribute("y", String(cursor));
       bodySvg.setAttribute("width", String(layout.totalWidth));
