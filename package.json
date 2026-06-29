@@ -18,7 +18,7 @@
     "dev": "node scripts/dev-server.mjs"
   },
   "dependencies": {
-    "budget-lab-chart-engine": "git+https://github.com/Budget-Lab-Yale/budget-lab-chart-engine.git#v1.0.4"
+    "budget-lab-chart-engine": "git+https://github.com/Budget-Lab-Yale/budget-lab-chart-engine.git#v1.1.0"
   },
   "devDependencies": {
     "playwright": "^1.61.0"
