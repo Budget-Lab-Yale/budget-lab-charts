@@ -234,6 +234,8 @@ text string.
 |---|---|---|
 | `stub_header` | string \| object | Top-left corner label above the row labels. A string applies to all panes; a `{ <paneValue>: label }` map sets it per pane. |
 | `column_labels` | object | `{ <leafKey>: "Display label" }` — overrides a leaf column's raw header value. |
+| `row_labels` | object | `{ <rowValue>: "Display label" }` — overrides a row label. Keep short plain keys in the CSV and put display text (incl. inline math) here; `row_order` / `emphasis_rows` / `format.rows` still key off the raw value. |
+| `group_labels` | object | `{ <groupValue>: "Display label" }` — overrides a row-group heading; `group_notes` / `format.groups` still key off the raw value. |
 | `header_labels` | object | `{ <headerValue>: "Display label" }` — applied to banner tiers above the leaves. |
 | `sublabels` | object | `{ <leafKey>: "secondary" }` — a small second line under a column label (e.g. units). |
 
@@ -301,6 +303,23 @@ formatting).
 | `subtitle` | string | Below the title. |
 | `source` | string | Source line below the table. |
 | `notes` | string \| array | Explanatory note(s); each string renders as a paragraph. |
+
+### Inline math & special characters (tables)
+
+Any table text — cell values, row/column labels, headers, sublabels, group labels & notes — can
+contain inline math using the **same MathJax delimiters as the TBL website**: `\( … \)` for
+inline math (also `\[ … \]` / `$$ … $$`), and `\$` for a literal dollar sign. Bare `$ _ ^ *` are
+only special *inside* a delimiter, so ordinary text (e.g. `$2.50`) needs no escaping.
+
+Supported (the **linear** LaTeX subset): Greek (`\sigma`, `\theta`, …), sub/superscripts (`_{}`,
+`^{}`, including **stacked** sub+super like `\(\theta_1^K\)`), inline italics (`\textit{}`), and
+common operators (`\cdot`, `\leq`, `\sum`, …). **Not** supported (rejected at validation):
+`\frac`, `\sqrt`, and other 2-D constructs.
+
+> **YAML gotcha:** in a **double-quoted** YAML value, `\(` is an invalid escape. Put math in
+> **single-quoted** YAML strings (`group_notes: { 'Inequality (\(\sigma\))': '…' }`) — or use
+> `\\(`. Math in the **CSV** (where row labels live) has no such issue. See the engine's
+> `CONFIG-SPEC.md` for the full command list.
 
 ---
 

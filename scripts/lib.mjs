@@ -51,7 +51,10 @@ export async function listCharts(chartsRoot = CHARTS_ROOT) {
   const results = [];
 
   await walk(chartsRoot, (entry, fullPath) => {
-    if (entry.isFile() && entry.name === "chart.yaml") {
+    // A figure folder holds either a chart.yaml (ChartSpec) or a table.yaml (TableSpec). Both
+    // carry their own spec; the engine CLI auto-detects which, so downstream steps only need
+    // the spec path.
+    if (entry.isFile() && (entry.name === "chart.yaml" || entry.name === "table.yaml")) {
       const dir = dirname(fullPath);
       const tree = relative(chartsRoot, dir).replace(/\\/g, "/").split("/")[0];
       const kind = KIND_BY_TREE[tree] ?? "unknown";
