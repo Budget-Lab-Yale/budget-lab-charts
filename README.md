@@ -107,7 +107,7 @@ The authoring step is just **a folder + two files**; CI does the rest.
    ```
 3. Write `chart.yaml` — the `columns:` block maps your CSV columns onto the engine's roles:
    ```yaml
-   chartType: line              # line | bar | stacked
+   chartType: line              # line | area | bar | stacked | scatter | dotplot
    title: "..."
    xAxisType: categorical       # temporal | numeric | quarterly | categorical
    columns:
@@ -131,7 +131,7 @@ Required: `chartType`, `title`, `xAxisType`, `data`. Common optional: `columns`,
 `source`, `note`, `x_axis_title`, `y_axis_title`, `series_order`, `series_colors`,
 `series_styles`, `series_labels`, `points`, `small_multiples`, `confidence_bands`, `tags`. See
 **[CONFIG-REFERENCE.md](CONFIG-REFERENCE.md)** for the full field-by-field reference (chart.yaml,
-collection files, and the CSV format).
+table.yaml, collection files, and the CSV format).
 
 ---
 
@@ -194,7 +194,7 @@ snapshot folders.
 The engine is pinned as a git-tag dependency in `package.json`:
 
 ```json
-"budget-lab-chart-engine": "git+https://github.com/Budget-Lab-Yale/budget-lab-chart-engine.git#v1.0.0"
+"budget-lab-chart-engine": "git+https://github.com/Budget-Lab-Yale/budget-lab-chart-engine.git#v1.1.0"
 ```
 
 To bump:
