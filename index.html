@@ -19,8 +19,8 @@
 :root {
   /* Brand */
   --navy: #101F5B;
-  --blue: #0072B2;
-  --sky:  #63AAFF;
+  --blue: #286DC0;   /* brand link color on light */
+  --sky:  #63AAFF;   /* brand link color on dark (header nav) */
   /* Surfaces */
   --bg:        #FFFFFF;
   --bg-subtle: #F6F7F9;
@@ -91,14 +91,14 @@ a:hover { text-decoration: underline; }
   padding: 0 12px 0 38px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg);
 }
 .fl-search input::placeholder { color: var(--t-muted); }
-.fl-search input:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgba(0,114,178,.15); }
+.fl-search input:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgba(40,109,192,.15); }
 .fl-select {
   height: var(--control-h); font: inherit; font-size: 14px; color: var(--t-head);
   padding: 0 32px 0 12px; border: 1px solid var(--border); border-radius: 8px;
   background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236D6D6D' d='M6 8L2 4h8z'/%3E%3C/svg%3E") no-repeat right 12px center;
   -webkit-appearance: none; appearance: none; cursor: pointer;
 }
-.fl-select:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgba(0,114,178,.15); }
+.fl-select:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgba(40,109,192,.15); }
 .fl-clear { height: var(--control-h); font: inherit; font-size: 13px; font-weight: 600; color: var(--blue); background: none; border: none; cursor: pointer; padding: 0 6px; }
 .fl-clear:hover { text-decoration: underline; }
 .fl-clear[hidden] { display: none; }
@@ -108,6 +108,7 @@ a:hover { text-decoration: underline; }
 .fl-resultline strong { color: var(--t-head); font-weight: 700; }
 .fl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); gap: var(--gap); }
 .fl-card {
+  position: relative; /* anchors the embed-copy button overlay */
   display: flex; flex-direction: column; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
   overflow: hidden; transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease;
 }
@@ -117,6 +118,27 @@ a:hover { text-decoration: underline; }
 .fl-card__title { font-size: 15.5px; font-weight: 700; color: var(--t-head); line-height: 1.25; letter-spacing: -.01em; }
 .fl-card__foot { margin-top: auto; padding-top: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; font-size: 12.5px; color: var(--t-muted); }
 .fl-card__collection { color: var(--t-body); }
+
+/* Main click target: the link wraps thumb + body and fills the card */
+.fl-card__link { display: flex; flex-direction: column; flex: 1; color: inherit; text-decoration: none; }
+.fl-card__link:hover { text-decoration: none; }
+
+/* Embed-copy button overlaid top-right of the thumbnail */
+.fl-card__embed {
+  position: absolute; top: 8px; right: 8px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 5px;
+  height: 30px; padding: 0 9px; font: inherit; font-size: 12px; font-weight: 700;
+  color: var(--t-head); background: rgba(255,255,255,.92); border: 1px solid var(--border);
+  border-radius: 7px; cursor: pointer; -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  opacity: 0; transition: opacity .15s ease, color .15s ease, border-color .15s ease, background .15s ease;
+}
+.fl-card:hover .fl-card__embed, .fl-card__embed:focus-visible { opacity: 1; }
+.fl-card__embed:hover { color: var(--blue); border-color: var(--sky); }
+.fl-card__embed.is-copied { opacity: 1; color: #fff; background: var(--blue); border-color: var(--blue); }
+.fl-card__embed svg { display: block; flex: none; }
+.fl-card__embed-label { line-height: 1; }
+@media (hover: none) { .fl-card__embed { opacity: 1; } }   /* no hover on touch — keep it visible */
+@media (prefers-reduced-motion: reduce) { .fl-card__embed { transition: none; } }
 
 /* ── Empty / error ────────────────────────────────────────── */
 .fl-empty { text-align: center; padding: 64px 20px; color: var(--t-muted); }
@@ -213,6 +235,15 @@ a:hover { text-decoration: underline; }
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   function ym(d) { if (!d) return ""; const m = /^(\d{4})-(\d{2})/.exec(d); return m ? `${MONTHS[+m[2]-1]} ${m[1]}` : d; }
 
+  // ---- Embed snippet ----
+  // Hardcoded production embed.js URL — so a snippet copied from a PR preview (or a local build)
+  // is the final canonical embed code, not one pointing at the preview/localhost origin.
+  const EMBED_BASE = "https://budget-lab-yale.github.io/budget-lab-charts/embed/v1/embed.js";
+  const ICON_CODE = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6 2 12l6 6"/><path d="m16 6 6 6-6 6"/></svg>';
+  const ICON_CHECK = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17.5 19.5 7"/></svg>';
+  const embedLabel = (t) => `<span class="fl-card__embed-label">${t}</span>`;
+  function buildSnippet(id) { return `<script src="${EMBED_BASE}" chart="${id}"><\/script>`; }
+
   let DATA = [];
   const state = { q: "", sort: "newest" };
 
@@ -251,16 +282,62 @@ a:hover { text-decoration: underline; }
   function cardHTML(c) {
     const dateText = c.kind === "oneoff" && c.date ? ym(c.date) : "";
     const thumb = `<div class="fl-card__thumb" style="background-image:url('${esc(c.id)}/thumb.png')"></div>`;
-    return `<a class="fl-card" href="${esc(c.id)}/">
-      ${thumb}
-      <div class="fl-card__body">
-        <span class="fl-card__title">${esc(c.title)}</span>
-        <span class="fl-card__foot">
-          <span class="fl-card__collection">${esc(c.collectionTitle)}</span>
-          ${dateText ? `<span>${esc(dateText)}</span>` : ""}
-        </span>
-      </div>
-    </a>`;
+    return `<div class="fl-card">
+      <a class="fl-card__link" href="${esc(c.id)}/">
+        ${thumb}
+        <div class="fl-card__body">
+          <span class="fl-card__title">${esc(c.title)}</span>
+          <span class="fl-card__foot">
+            <span class="fl-card__collection">${esc(c.collectionTitle)}</span>
+            ${dateText ? `<span>${esc(dateText)}</span>` : ""}
+          </span>
+        </div>
+      </a>
+      <button class="fl-card__embed" type="button" data-embed-id="${esc(c.id)}" aria-label="Copy embed code for ${esc(c.title)}">${ICON_CODE}${embedLabel("Embed")}</button>
+    </div>`;
+  }
+
+  // ---- Copy-to-clipboard for the embed button ----
+  function fallbackCopy(text) {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", "");
+      ta.style.cssText = "position:absolute;left:-9999px;top:0";
+      document.body.appendChild(ta); ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      if (!ok) window.prompt("Copy the embed code:", text);
+      return ok;
+    } catch (_) {
+      window.prompt("Copy the embed code:", text);
+      return false;
+    }
+  }
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(() => true).catch(() => fallbackCopy(text));
+    }
+    return Promise.resolve(fallbackCopy(text));
+  }
+  function flashCopied(btn) {
+    if (!btn.dataset.label) btn.dataset.label = btn.getAttribute("aria-label") || "Copy embed code";
+    btn.classList.add("is-copied");
+    btn.innerHTML = ICON_CHECK + embedLabel("Copied");
+    btn.setAttribute("aria-label", "Embed code copied");
+    clearTimeout(btn._t);
+    btn._t = setTimeout(() => {
+      btn.classList.remove("is-copied");
+      btn.innerHTML = ICON_CODE + embedLabel("Embed");
+      btn.setAttribute("aria-label", btn.dataset.label);
+    }, 1600);
+  }
+  function onGridClick(e) {
+    const btn = e.target.closest(".fl-card__embed");
+    if (!btn) return;
+    e.preventDefault();
+    const id = btn.dataset.embedId;
+    if (!id) return;
+    Promise.resolve(copyText(buildSnippet(id))).then((ok) => { if (ok) flashCopied(btn); });
   }
 
   function apply() {
@@ -282,6 +359,7 @@ a:hover { text-decoration: underline; }
     els.sort.addEventListener("change", () => { state.sort = els.sort.value; apply(); });
     els.clear.addEventListener("click", reset);
     $("#empty-clear").addEventListener("click", reset);
+    grid.addEventListener("click", onGridClick);   // delegated — survives card re-renders
   }
 
   fetch("./catalog/index.json")
