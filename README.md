@@ -238,7 +238,7 @@ Publications embed a chart with **one `<script>` tag** — only `chart` is requi
 — so the height tracks the content as the embed column reflows (no fixed height, no inner scroll).
 
 ```html
-<script src="https://budget-lab-yale.github.io/budget-lab-charts/embed/v1/embed.js"
+<script src="https://charts.budgetlab.yale.edu/embed/v1/embed.js"
         chart="atus-childcare/childcare-by-activity"></script>
 ```
 
@@ -258,7 +258,7 @@ link can't be auto-injected. For accessibility-strict hosts, add a static `<nosc
 script:
 
 ```html
-<noscript><a href="https://budget-lab-yale.github.io/budget-lab-charts/atus-childcare/childcare-by-activity/">Open the chart</a></noscript>
+<noscript><a href="https://charts.budgetlab.yale.edu/atus-childcare/childcare-by-activity/">Open the chart</a></noscript>
 ```
 
 **How it's wired:** each rendered chart page includes the iframe-resizer *child* script (injected by
