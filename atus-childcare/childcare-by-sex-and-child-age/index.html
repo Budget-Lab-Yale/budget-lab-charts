@@ -198,6 +198,15 @@ body {
   gap: 18px 16px;
   width: 100%;
 }
+/* Horizontal-bar and variable-width figures never reflow their panes to extra rows; when they
+   don't fit, this wrapper scrolls horizontally instead (the grid takes its natural width). */
+.figure-grid-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.figure-grid-scroll > .figure-grid {
+  width: max-content;
+}
 .figure-pane {
   min-width: 0;
 }
@@ -1007,6 +1016,7 @@ var BudgetLabChart = (() => {
     const value = c.value ?? "value";
     const facet = c.facet ?? null;
     const shape = c.shape != null && c.shape !== "" ? c.shape : null;
+    const section = c.section != null && c.section !== "" ? c.section : null;
     let series;
     if (c.series != null && c.series !== "") {
       series = c.series;
@@ -1015,7 +1025,7 @@ var BudgetLabChart = (() => {
     } else {
       series = "series";
     }
-    return { x, value, series, facet, shape };
+    return { x, value, series, facet, shape, section };
   }
 
   // src/engine/vendor/plot-0.6.16.esm.min.js
@@ -24500,6 +24510,7 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
   var TBL_MARGIN_LEFT = 44;
   var TBL_MARGIN_RIGHT = 16;
   var TBL_MARGIN_TOP = 18;
+  var SHARED_LABELLESS_MARGIN_LEFT = 2;
 
   // src/engine/marks/point.ts
   function pointDodgeOffsets(seriesNames, pane) {
@@ -24949,7 +24960,7 @@ ${words.slice(bestI).join(" ")}`;
     return Math.round(maxBandLabelWidth(categories) * 0.355 + 12);
   }
   function bandLabelMarginBottom(categories, mode) {
-    if (mode === "rotate") return Math.round(Math.min(74, 18 + maxBandLabelWidth(categories) * 0.71));
+    if (mode === "rotate") return Math.round(Math.min(120, 18 + maxBandLabelWidth(categories) * 0.71));
     if (mode === "wrap") return 36;
     return 22;
   }
@@ -24957,36 +24968,104 @@ ${words.slice(bestI).join(" ")}`;
   function estimateLabelWidth(text, fontSize = TBL.size.axis) {
     return text.length * fontSize * AVG_CHAR_EM;
   }
-  function horizontalLeftGutter(categories, { pad = 10, min = TBL_MARGIN_LEFT, max = 240 } = {}) {
-    const longest = categories.reduce((w, c) => Math.max(w, estimateLabelWidth(c)), 0);
+  function wrapToWidth(label, maxPx, fontSize = TBL.size.axis) {
+    const words = label.split(/\s+/).filter(Boolean);
+    if (words.length <= 1) return label;
+    const lines = [];
+    let cur = "";
+    for (const w of words) {
+      const trial = cur ? `${cur} ${w}` : w;
+      if (!cur || estimateLabelWidth(trial, fontSize) <= maxPx) cur = trial;
+      else {
+        lines.push(cur);
+        cur = w;
+      }
+    }
+    if (cur) lines.push(cur);
+    return lines.join("\n");
+  }
+  function labelLineCount(label, maxPx, fontSize = TBL.size.axis) {
+    return wrapToWidth(label, maxPx, fontSize).split("\n").length;
+  }
+  var GUTTER_TEXT_PAD = 8;
+  function horizontalLeftGutter(categories, {
+    pad = 10,
+    min = TBL_MARGIN_LEFT,
+    max = 240,
+    fontSize = TBL.size.axis
+  } = {}) {
+    const longest = categories.reduce((w, c) => Math.max(w, estimateLabelWidth(c, fontSize)), 0);
     return Math.round(Math.max(min, Math.min(max, longest + pad)));
   }
-  function tblBandYAxis(categories, marginLeft = TBL_MARGIN_LEFT) {
+  var FACETED_CAT_LABEL_PX = 13;
+  function tblBandYAxis(categories, marginLeft = TBL_MARGIN_LEFT, fontSize = TBL.size.axis) {
+    const maxPx = marginLeft - GUTTER_TEXT_PAD;
+    const anyMultiline = categories.some((c) => wrapToWidth(c, maxPx, fontSize).includes("\n"));
     return [
       plot_0_6_16_esm_min_exports.text(categories, {
         y: (d) => d,
-        text: (d) => d,
+        text: (d) => wrapToWidth(d, maxPx, fontSize),
         frameAnchor: "left",
         dx: -marginLeft,
         textAnchor: "start",
         fill: TBL.color.axis,
-        fontSize: TBL.size.axis,
-        fontWeight: 500
+        fontSize,
+        fontWeight: 500,
+        // Center the wrapped block on the band only when multi-line (keeps single-line byte-identical).
+        ...anyMultiline ? { lineAnchor: "middle" } : {}
       })
     ];
   }
-  function tblFacetGroupYAxis(categories, marginLeft = TBL_MARGIN_LEFT) {
+  function tblFacetGroupYAxis(categories, marginLeft = TBL_MARGIN_LEFT, fontSize = TBL.size.axis) {
     const rows = categories.map((c) => ({ c }));
+    const maxPx = marginLeft - GUTTER_TEXT_PAD;
+    const anyMultiline = categories.some((c) => wrapToWidth(c, maxPx, fontSize).includes("\n"));
     return [
       plot_0_6_16_esm_min_exports.text(rows, {
         fy: (d) => d.c,
-        text: (d) => d.c,
+        text: (d) => wrapToWidth(d.c, maxPx, fontSize),
         frameAnchor: "left",
         dx: -marginLeft,
         textAnchor: "start",
         fill: TBL.color.axis,
-        fontSize: TBL.size.axis,
-        fontWeight: 500
+        fontSize,
+        fontWeight: 500,
+        ...anyMultiline ? { lineAnchor: "middle" } : {}
+      })
+    ];
+  }
+  var SECTION_SPACER_PREFIX = " section:";
+  function sectionSpacer(section) {
+    return SECTION_SPACER_PREFIX + section;
+  }
+  function tblSectionHeaderYAxis(spacers, marginLeft = TBL_MARGIN_LEFT, fontSize = TBL.size.axis, gap = 12) {
+    if (!spacers.length) return [];
+    return [
+      plot_0_6_16_esm_min_exports.text(spacers, {
+        fy: (d) => d.value,
+        text: (d) => d.label,
+        frameAnchor: "bottom-left",
+        dx: -marginLeft,
+        dy: -gap,
+        textAnchor: "start",
+        fill: TBL.color.heading,
+        fontSize,
+        fontWeight: 700
+      })
+    ];
+  }
+  function tblSectionTopHeader(header, marginLeft = TBL_MARGIN_LEFT, lift = 14, fontSize = TBL.size.axis) {
+    return [
+      plot_0_6_16_esm_min_exports.text([header], {
+        fy: (d) => d.category,
+        text: (d) => d.label,
+        frameAnchor: "top-left",
+        dx: -marginLeft,
+        dy: -lift,
+        textAnchor: "start",
+        fill: TBL.color.heading,
+        fontSize,
+        fontWeight: 700
       })
     ];
   }
@@ -24996,6 +25075,7 @@ ${words.slice(bestI).join(" ")}`;
   var ZERO_BASELINE_CLASS = "tbl-zero-baseline";
   var Y_TICK_LABEL_CLASS = "tbl-y-tick-label";
   var X_TICK_LABEL_CLASS = "tbl-x-tick-label";
+  var X_TICK_LABEL_TOP_CLASS = "tbl-x-tick-label-top";
   var ANNOTATION_LINE_CLASS = "tbl-annotation-line";
   function stretchLinesToFullWidth(group, leftLocalX, rightLocalX) {
     const lines = group.querySelectorAll("line");
@@ -25106,12 +25186,32 @@ ${words.slice(bestI).join(" ")}`;
         kept.setAttribute("transform", `translate(${tx3},${ty3 + dy3})`);
       }
     }
+    const topLabelGroups = Array.from(svg.querySelectorAll(`g.${X_TICK_LABEL_TOP_CLASS}`));
+    if (topLabelGroups.length) {
+      const TOP_TICK_PLACE = 12;
+      const kept = topLabelGroups[0];
+      for (let i = 1; i < topLabelGroups.length; i++) topLabelGroups[i]?.remove();
+      const ty3 = readTranslateY(kept);
+      const firstGrid = svg.querySelector(`g.${GRIDLINE_CLASS}`);
+      let facetTopLocal = topAbs - ty3;
+      if (firstGrid) {
+        const gl3 = firstGrid.querySelector("line");
+        if (gl3) facetTopLocal = Number(gl3.getAttribute("y1") ?? facetTopLocal);
+      }
+      const dy3 = TOP_TICK_PLACE - (ty3 + facetTopLocal);
+      if (dy3 !== 0) {
+        const tx3 = readTranslateX(kept);
+        kept.setAttribute("transform", `translate(${tx3},${ty3 + dy3})`);
+      }
+    }
+    const GRIDLINE_TOP_EXTEND = 8;
     for (const cls of [GRIDLINE_CLASS, ZERO_BASELINE_CLASS]) {
       const kept = collapseDuplicateGroups(cls);
       const group = kept[0];
       if (!group) continue;
       const ty3 = readTranslateY(group);
-      stretchLinesToFullHeight(group, topAbs - ty3, bottomAbs - ty3);
+      const top = cls === GRIDLINE_CLASS ? topAbs - GRIDLINE_TOP_EXTEND : topAbs;
+      stretchLinesToFullHeight(group, top - ty3, bottomAbs - ty3);
     }
   }
 
@@ -25145,7 +25245,7 @@ ${words.slice(bestI).join(" ")}`;
         validate: (r) => Number.isFinite(r._xn),
         buildXOpts(data, faceted = false) {
           const xMax = d3_7_9_0_esm_min_exports.max(data, (d) => d._xn);
-          const anchorAtZero = xAxisPolicy?.anchorAtZero !== false;
+          const anchorAtZero = xAxisPolicy?.anchorAtZero === true;
           const xMin = anchorAtZero ? Math.min(0, d3_7_9_0_esm_min_exports.min(data, (d) => d._xn)) : d3_7_9_0_esm_min_exports.min(data, (d) => d._xn);
           return {
             marginBottom: 22,
@@ -25379,41 +25479,13 @@ ${words.slice(bestI).join(" ")}`;
     };
   }
 
-  // src/engine/util.ts
-  function escapeHtml(s) {
-    return String(s ?? "").replace(
-      /[&<>"']/g,
-      (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
-    );
-  }
-  function inferUnitsFromSubtitle(subtitle) {
-    if (!subtitle) return "";
-    const lower = subtitle.toLowerCase();
-    if (lower.includes("percent") || lower.includes("percentage point")) return "%";
-    return "";
-  }
-
   // src/engine/marks/bar.ts
-  var VALUE_LABEL_MIN_PX = 25;
+  var HVALUE_TICK_PX = 18;
+  var SECTION_HEADER_GAP = 10;
+  var HMARGIN_BOTTOM_TICKS = 26;
+  var HMARGIN_BOTTOM_BARE = 8;
+  var HBAND_PADDING_OUTER = 0.02;
   var TOO_DENSE_PX = 10;
-  function makeValueFormatter(values, units, signed, decimals) {
-    const maxFrac = decimals != null ? decimals : Math.min(
-      2,
-      values.reduce((max, v) => {
-        if (!Number.isFinite(v)) return max;
-        const s = String(v);
-        const i = s.indexOf(".");
-        return Math.max(max, i < 0 ? 0 : s.length - i - 1);
-      }, 0)
-    );
-    return (d) => {
-      if (!Number.isFinite(d)) return "";
-      const mag = Math.abs(d).toFixed(maxFrac);
-      const body = units ? `${mag}${units}` : mag;
-      if (!signed) return body;
-      return d < 0 ? `\u2212${body}` : `+${body}`;
-    };
-  }
   function rectTagOrder(data, catField, categories) {
     const order = [];
     for (const cat of categories) {
@@ -25428,6 +25500,7 @@ ${words.slice(bestI).join(" ")}`;
     const catField = xField;
     const seriesNames = ctx.seriesNames ?? [];
     const horizontal = spec.orientation === "horizontal";
+    const catFont = ctx.pane && horizontal ? FACETED_CAT_LABEL_PX : TBL.size.axis;
     const clipOpt = ctx.clipMarks ? { clip: true } : {};
     const isMulti = seriesNames.length > 1;
     const categories = [];
@@ -25441,9 +25514,50 @@ ${words.slice(bestI).join(" ")}`;
         }
       }
     }
-    const units = inferUnitsFromSubtitle(spec.subtitle);
-    const showValueLabels = spec.valueLabels?.show !== false;
-    const signed = spec.valueLabels?.signed === true;
+    const sectioned = horizontal && data.some((r) => r._section != null);
+    let bandDomain = categories;
+    const sectionHeaders = [];
+    let topSectionHeader = null;
+    if (sectioned) {
+      const sectionOf = /* @__PURE__ */ new Map();
+      for (const r of data) {
+        const cat = r[catField];
+        if (cat && r._section != null && !sectionOf.has(cat)) sectionOf.set(cat, r._section);
+      }
+      const encountered = [];
+      const seenSec = /* @__PURE__ */ new Set();
+      for (const cat of categories) {
+        const s = sectionOf.get(cat) ?? "";
+        if (!seenSec.has(s)) {
+          seenSec.add(s);
+          encountered.push(s);
+        }
+      }
+      const order = spec.section_order && spec.section_order.length ? spec.section_order.filter((s) => seenSec.has(s)) : encountered;
+      const labels = spec.section_labels ?? {};
+      const domain = [];
+      let firstRendered = false;
+      for (const s of order) {
+        const catsInSection = categories.filter((cat) => (sectionOf.get(cat) ?? "") === s);
+        if (!catsInSection.length) continue;
+        if (!firstRendered) {
+          topSectionHeader = { category: catsInSection[0], label: labels[s] ?? s };
+          firstRendered = true;
+        } else {
+          const spacer = sectionSpacer(s);
+          domain.push(spacer);
+          sectionHeaders.push({ value: spacer, label: labels[s] ?? s });
+        }
+        for (const cat of catsInSection) domain.push(cat);
+      }
+      bandDomain = domain;
+    }
+    const xTicksMode = spec.x_axis_ticks ?? "bottom";
+    const hTopTicks = xTicksMode === "top" || xTicksMode === "both";
+    const hBottomTicks = xTicksMode !== "top";
+    const hMarginTop = (hTopTicks ? HVALUE_TICK_PX : 0) + SECTION_HEADER_GAP + (sectioned ? 12 : 8);
+    const hMarginBottom = hBottomTicks ? HMARGIN_BOTTOM_TICKS : HMARGIN_BOTTOM_BARE;
+    const topHeaderLift = SECTION_HEADER_GAP + catFont + 5;
     const highlightSet = spec.highlightSeries && spec.highlightSeries.length ? new Set(spec.highlightSeries) : null;
     const fillFor = (series) => {
       if (highlightSet) {
@@ -25460,30 +25574,30 @@ ${words.slice(bestI).join(" ")}`;
         `buildBarMarks: estimated bar width ~${estBarPx.toFixed(1)}px is below ${TOO_DENSE_PX}px; chart is too dense for grouped bars (consider a line chart or fewer series).`
       );
     }
-    const emitValueLabels = showValueLabels && !ctx.pane && estBarPx >= VALUE_LABEL_MIN_PX;
-    const allValues = data.map((r) => r._y).filter((v) => Number.isFinite(v));
-    const fmt = makeValueFormatter(allValues, units, signed, spec.valueLabels?.decimals);
     const overlay = [];
     if (!isMulti) {
       const fill = highlightSet ? (d) => fillFor(d.series) : seriesNames.length === 1 ? fillFor(seriesNames[0]) : TBL.color.blue;
       overlay.push(
         horizontal ? plot_0_6_16_esm_min_exports.barX(data, { y: xField, x: "_y", fill, ...clipOpt }) : plot_0_6_16_esm_min_exports.barY(data, { x: xField, y: "_y", fill, ...clipOpt })
       );
-      if (emitValueLabels) {
-        overlay.push(...buildValueLabelMarks(data, { band: xField }, fmt, horizontal));
-      }
       const onlySeries = seriesNames[0] ?? (data[0]?.series ?? "");
       const seriesOrder = categories.map(() => onlySeries);
       if (horizontal) {
-        const gutter = horizontalLeftGutter(categories);
+        const gutter = ctx.hideCategoryLabels ? SHARED_LABELLESS_MARGIN_LEFT : ctx.categoryGutter ?? horizontalLeftGutter(categories);
         return {
           underlay: [],
           overlay,
           tagging: [{ selector: 'g[aria-label="bar"] rect', seriesOrder }],
           dashedNames: /* @__PURE__ */ new Set(),
-          yScaleOpts: { type: "band", domain: categories, padding: 0.2, axis: null },
-          xAxisMarks: tblBandYAxis(categories, gutter),
-          marginLeft: gutter
+          yScaleOpts: { type: "band", domain: bandDomain, paddingInner: 0.2, paddingOuter: HBAND_PADDING_OUTER, align: 0, axis: null },
+          xAxisMarks: ctx.hideCategoryLabels ? [] : [
+            ...tblBandYAxis(categories, gutter, catFont),
+            ...tblSectionHeaderYAxis(sectionHeaders, gutter, catFont, SECTION_HEADER_GAP),
+            ...topSectionHeader ? tblSectionTopHeader(topSectionHeader, gutter, topHeaderLift, catFont) : []
+          ],
+          marginLeft: gutter,
+          marginTop: hMarginTop,
+          marginBottom: hMarginBottom
         };
       }
       return {
@@ -25500,15 +25614,10 @@ ${words.slice(bestI).join(" ")}`;
     const fillChannel = highlightSet ? (d) => fillFor(d.series) : "series";
     if (horizontal) {
       overlay.push(plot_0_6_16_esm_min_exports.barX(data, { fy: catField, y: "series", x: "_y", fill: fillChannel, ...clipOpt }));
-      if (emitValueLabels) {
-        overlay.push(
-          ...buildValueLabelMarks(data, { band: "series", facet: catField }, fmt, horizontal)
-        );
-      }
       const hRectSeriesOrder = rectTagOrder(data, catField, categories);
-      const fyGroupOpts = { domain: categories, padding: 0.2, paddingOuter: 0.2, axis: null };
+      const fyGroupOpts = { domain: bandDomain, paddingInner: 0.2, paddingOuter: HBAND_PADDING_OUTER, align: 0, axis: null };
       const innerYBandOpts = { type: "band", domain: seriesNames, padding: 0, axis: null };
-      const gutter = horizontalLeftGutter(categories);
+      const gutter = ctx.hideCategoryLabels ? SHARED_LABELLESS_MARGIN_LEFT : ctx.categoryGutter ?? horizontalLeftGutter(categories);
       return {
         underlay: [],
         overlay,
@@ -25518,16 +25627,17 @@ ${words.slice(bestI).join(" ")}`;
         dashedNames: /* @__PURE__ */ new Set(),
         yScaleOpts: innerYBandOpts,
         fyScaleOpts: fyGroupOpts,
-        xAxisMarks: tblFacetGroupYAxis(categories, gutter),
-        marginLeft: gutter
+        xAxisMarks: ctx.hideCategoryLabels ? [] : [
+          ...tblFacetGroupYAxis(categories, gutter, catFont),
+          ...tblSectionHeaderYAxis(sectionHeaders, gutter, catFont, SECTION_HEADER_GAP),
+          ...topSectionHeader ? tblSectionTopHeader(topSectionHeader, gutter, topHeaderLift, catFont) : []
+        ],
+        marginLeft: gutter,
+        marginTop: hMarginTop,
+        marginBottom: hMarginBottom
       };
     }
     overlay.push(plot_0_6_16_esm_min_exports.barY(data, { fx: catField, x: "series", y: "_y", fill: fillChannel, ...clipOpt }));
-    if (emitValueLabels) {
-      overlay.push(
-        ...buildValueLabelMarks(data, { band: "series", facet: catField }, fmt, horizontal)
-      );
-    }
     const rectSeriesOrder = rectTagOrder(data, catField, categories);
     const groupBandOpts = { domain: categories, padding: 0.2, paddingOuter: 0.2, axis: null };
     const innerBandOpts = { domain: seriesNames, padding: 0, axis: null };
@@ -25544,41 +25654,19 @@ ${words.slice(bestI).join(" ")}`;
       xAxisMarks: tblBandXAxis(categories, "fx", void 0, ctx.xLabelMode ?? "single")
     };
   }
-  function buildValueLabelMarks(data, channels, fmt, horizontal) {
-    const text = (d) => fmt(d._y);
-    const common = {
-      text,
-      fill: TBL.color.heading,
-      fontSize: TBL_VALUE_LABEL.fontSize,
-      fontWeight: TBL_VALUE_LABEL.fontWeight
-    };
-    const { gap, gapBelow } = TBL_VALUE_LABEL;
-    const pos = data.filter((d) => Number.isFinite(d._y) && d._y >= 0);
-    const neg = data.filter((d) => Number.isFinite(d._y) && d._y < 0);
-    const marks = [];
-    if (horizontal) {
-      const base2 = (rows, dx3, anchor) => plot_0_6_16_esm_min_exports.text(rows, {
-        ...common,
-        y: channels.band,
-        ...channels.facet ? { fy: channels.facet } : {},
-        x: "_y",
-        textAnchor: anchor,
-        dx: dx3
-      });
-      if (pos.length) marks.push(base2(pos, gap, "start"));
-      if (neg.length) marks.push(base2(neg, -gap, "end"));
-      return marks;
-    }
-    const base = (rows, dy3) => plot_0_6_16_esm_min_exports.text(rows, {
-      ...common,
-      x: channels.band,
-      ...channels.facet ? { fx: channels.facet } : {},
-      y: "_y",
-      dy: dy3
-    });
-    if (pos.length) marks.push(base(pos, -gap));
-    if (neg.length) marks.push(base(neg, gapBelow));
-    return marks;
+
+  // src/engine/util.ts
+  function escapeHtml(s) {
+    return String(s ?? "").replace(
+      /[&<>"']/g,
+      (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
+    );
+  }
+  function inferUnitsFromSubtitle(subtitle) {
+    if (!subtitle) return "";
+    const lower = subtitle.toLowerCase();
+    if (lower.includes("percent") || lower.includes("percentage point")) return "%";
+    return "";
   }
 
   // src/engine/series-keys.ts
@@ -25590,7 +25678,7 @@ ${words.slice(bestI).join(" ")}`;
   var SEGMENT_LABEL_MIN_PX = 25;
   var MARK_BLACK = tokens.structural.mark_black;
   var WHITE = "#FFFFFF";
-  function makeValueFormatter2(values, units, signed, decimals) {
+  function makeValueFormatter(values, units, signed, decimals) {
     const maxFrac = decimals != null ? decimals : Math.min(
       2,
       values.reduce((max, v) => {
@@ -25646,8 +25734,8 @@ ${words.slice(bestI).join(" ")}`;
     const netMode = normalize ? "none" : netDisplayCfg === "none" ? "none" : netDisplayCfg === "dot" ? "dot" : netDisplayCfg === "text" ? "text" : hasNegatives ? "dot" : "text";
     const units = inferUnitsFromSubtitle(spec.subtitle);
     const allValues = data.map((r) => r._y).filter((v) => Number.isFinite(v));
-    const netFmt = makeValueFormatter2([...netByCat.values()], units, netMode === "dot", spec.valueLabels?.decimals);
-    const segFmt = makeValueFormatter2(allValues, units, false, spec.valueLabels?.decimals);
+    const netFmt = makeValueFormatter([...netByCat.values()], units, netMode === "dot", spec.valueLabels?.decimals);
+    const segFmt = makeValueFormatter(allValues, units, false, spec.valueLabels?.decimals);
     const sumBySeries = /* @__PURE__ */ new Map();
     for (const r of data) {
       const y = r._y;
@@ -25965,6 +26053,7 @@ ${words.slice(bestI).join(" ")}`;
       );
     }
     const marks = [];
+    const labelMarks = [];
     const horizontal = layers.yScaleOpts != null;
     const faceted = layers.xScaleField === "fx";
     const fyFaceted = layers.fyScaleOpts != null;
@@ -25981,30 +26070,54 @@ ${words.slice(bestI).join(" ")}`;
         const n = typeof v === "number" ? v : v.getTime();
         return effMarginLeft + (n - xExtent[0]) / (xExtent[1] - xExtent[0]) * innerW;
       };
+      const hit = (a, b) => a[0] < b[1] + LABEL_GAP && b[0] < a[1] + LABEL_GAP;
+      const rowsOcc = [];
+      const reserve = (row, iv3) => {
+        while (rowsOcc.length <= row) rowsOcc.push([]);
+        rowsOcc[row].push(iv3);
+      };
+      const innerHForRows = height != null ? height - TBL_MARGIN_TOP - xOpts.marginBottom : null;
+      if (innerHForRows != null && innerHForRows > 0 && yDomain[1] > yDomain[0]) {
+        for (const m of ann.yAxis) {
+          if (!m.label) continue;
+          const py3 = TBL_MARGIN_TOP + (yDomain[1] - m.y) / (yDomain[1] - yDomain[0]) * innerHForRows;
+          const relSide = m.labelSide ?? "top";
+          const baseDy = relSide === "middle" ? 0 : relSide === "bottom" ? 6 : -7;
+          const ly3 = py3 + baseDy - (m.labelDy ?? 0);
+          const row = Math.max(0, Math.round((ly3 - TBL_MARGIN_TOP - LABEL_BASE_DY) / LABEL_ROW_H));
+          const w = m.label.length * LABEL_CHAR_PX;
+          const alongPos = m.labelPosition ?? "right";
+          const left = alongPos === "left";
+          const mid = alongPos === "middle";
+          const dx3 = m.labelDx != null ? m.labelDx : mid ? 0 : left ? 6 : -6;
+          const l = mid ? effMarginLeft + innerW / 2 + dx3 - w / 2 : left ? effMarginLeft + dx3 : width - effMarginRight + dx3 - w;
+          reserve(row, [l, l + w]);
+        }
+      }
       const labels = [];
       ann.bands.forEach((b, i) => {
         if (!b.label) return;
         const px3 = toPx(xOpts.markerToX({ x: b.start }));
         if (px3 == null) return;
         const w = b.label.length * LABEL_CHAR_PX;
-        labels.push({ id: `b${i}`, left: px3 + 6, right: px3 + 6 + w });
+        labels.push({ id: `b${i}`, iv: [px3 + 6, px3 + 6 + w] });
       });
       ann.xAxis.forEach((m, i) => {
-        if (!m.label || m.labelDy != null) return;
+        if (!m.label || (m.labelPosition ?? "top") !== "top") return;
         const px3 = toPx(xOpts.markerToX(m));
         if (px3 == null) return;
-        const anchor = m.labelAnchor ?? "start";
+        const side = m.labelSide ?? "right";
+        const anchor = side === "left" ? "end" : side === "middle" ? "middle" : "start";
         const dx3 = m.labelDx != null ? m.labelDx : anchor === "end" ? -4 : anchor === "middle" ? 0 : 4;
         const w = m.label.length * LABEL_CHAR_PX;
         const left = anchor === "end" ? px3 + dx3 - w : anchor === "middle" ? px3 + dx3 - w / 2 : px3 + dx3;
-        labels.push({ id: `m${i}`, left, right: left + w });
+        labels.push({ id: `m${i}`, iv: [left, left + w] });
       });
-      labels.sort((a, b) => a.left - b.left);
-      const rowRight = [];
+      labels.sort((a, b) => a.iv[0] - b.iv[0]);
       for (const l of labels) {
         let r = 0;
-        while (r < rowRight.length && rowRight[r] > l.left - LABEL_GAP) r++;
-        rowRight[r] = l.right;
+        while (rowsOcc[r]?.some((o) => hit(o, l.iv))) r++;
+        reserve(r, l.iv);
         staggerDy.set(l.id, LABEL_BASE_DY + r * LABEL_ROW_H);
       }
     }
@@ -26023,7 +26136,7 @@ ${words.slice(bestI).join(" ")}`;
         })
       );
       if (band.label) {
-        marks.push(
+        labelMarks.push(
           plot_0_6_16_esm_min_exports.text([{ x: x13, y: yDomain[1], t: band.label }], {
             x: "x",
             y: "y",
@@ -26043,6 +26156,9 @@ ${words.slice(bestI).join(" ")}`;
     marks.push(...layers.underlay);
     if (horizontal) {
       const xTickFmt = makeTickFormatter(yTicks, units);
+      const xTicksMode = spec.x_axis_ticks ?? "bottom";
+      const showBottomTicks = xTicksMode !== "top";
+      const showTopTicks = xTicksMode === "top" || xTicksMode === "both";
       marks.push(
         plot_0_6_16_esm_min_exports.ruleX(
           yTicks.filter((t60) => t60 !== 0),
@@ -26052,19 +26168,38 @@ ${words.slice(bestI).join(" ")}`;
             // Faceted (fy): tag so the collapse pass can find + stretch the per-facet copies.
             ...fyFaceted ? { className: GRIDLINE_CLASS } : {}
           }
-        ),
-        plot_0_6_16_esm_min_exports.text(yTicks, {
-          x: (d) => d,
-          text: xTickFmt,
-          frameAnchor: "bottom",
-          dy: 12,
-          textAnchor: "middle",
-          fill: TBL.color.axis,
-          fontSize: TBL.size.axis,
-          fontWeight: 500,
-          ...fyFaceted ? { className: X_TICK_LABEL_CLASS } : {}
-        })
+        )
       );
+      if (showBottomTicks) {
+        marks.push(
+          plot_0_6_16_esm_min_exports.text(yTicks, {
+            x: (d) => d,
+            text: xTickFmt,
+            frameAnchor: "bottom",
+            dy: 12,
+            textAnchor: "middle",
+            fill: TBL.color.axis,
+            fontSize: TBL.size.axis,
+            fontWeight: 500,
+            ...fyFaceted ? { className: X_TICK_LABEL_CLASS } : {}
+          })
+        );
+      }
+      if (showTopTicks) {
+        marks.push(
+          plot_0_6_16_esm_min_exports.text(yTicks, {
+            x: (d) => d,
+            text: xTickFmt,
+            frameAnchor: "top",
+            dy: -8,
+            textAnchor: "middle",
+            fill: TBL.color.axis,
+            fontSize: TBL.size.axis,
+            fontWeight: 500,
+            ...fyFaceted ? { className: X_TICK_LABEL_TOP_CLASS } : {}
+          })
+        );
+      }
       marks.push(...layers.xAxisMarks ?? []);
       marks.push(
         plot_0_6_16_esm_min_exports.ruleX([0], {
@@ -26114,16 +26249,20 @@ ${words.slice(bestI).join(" ")}`;
         })
       );
       if (m.label) {
-        const anchor = m.labelAnchor ?? "start";
-        const autoDy = staggerDy.get(`m${markerIdx}`) ?? 4;
-        marks.push(
+        const side = m.labelSide ?? "right";
+        const anchor = side === "left" ? "end" : side === "middle" ? "middle" : "start";
+        const pos = m.labelPosition ?? "top";
+        const vAnchor = pos === "middle" ? "middle" : pos === "bottom" ? "bottom" : "top";
+        const baseDy = pos === "top" ? staggerDy.get(`m${markerIdx}`) ?? 4 : pos === "bottom" ? -6 : 0;
+        const nudge = m.labelDy != null ? -m.labelDy : 0;
+        labelMarks.push(
           plot_0_6_16_esm_min_exports.text([{ x: mx3, t: m.label }], {
             x: "x",
             text: "t",
-            frameAnchor: "top",
+            frameAnchor: vAnchor,
             textAnchor: anchor,
             dx: m.labelDx != null ? m.labelDx : anchor === "end" ? -4 : anchor === "middle" ? 0 : 4,
-            dy: m.labelDy != null ? m.labelDy : autoDy,
+            dy: baseDy + nudge,
             fill: mColor,
             fontSize: TBL.size.annotation,
             fontWeight: 600,
@@ -26154,17 +26293,24 @@ ${words.slice(bestI).join(" ")}`;
       );
       if (m.label) {
         const fxDomain = faceted ? layers.fxScaleOpts?.domain : void 0;
-        const left = m.labelSide === "left";
-        const labelFx = fxDomain && fxDomain.length ? left ? fxDomain[0] : fxDomain[fxDomain.length - 1] : void 0;
-        marks.push(
+        const alongPos = m.labelPosition ?? "right";
+        const left = alongPos === "left";
+        const mid = alongPos === "middle";
+        const labelFx = fxDomain && fxDomain.length ? mid ? fxDomain[Math.floor(fxDomain.length / 2)] : left ? fxDomain[0] : fxDomain[fxDomain.length - 1] : void 0;
+        const relSide = m.labelSide ?? "top";
+        const lineAnchor = relSide === "middle" ? "middle" : relSide === "bottom" ? "top" : void 0;
+        const baseDy = relSide === "middle" ? 0 : relSide === "bottom" ? 6 : -7;
+        labelMarks.push(
           plot_0_6_16_esm_min_exports.text([{ y: m.y, t: m.label, ...labelFx != null ? { fx: labelFx } : {} }], {
             y: "y",
             text: "t",
             ...labelFx != null ? { fx: "fx" } : {},
-            frameAnchor: left ? "left" : "right",
-            textAnchor: left ? "start" : "end",
-            dx: m.labelDx != null ? m.labelDx : left ? 6 : -6,
-            dy: m.labelDy != null ? m.labelDy : -7,
+            frameAnchor: mid ? "middle" : left ? "left" : "right",
+            textAnchor: mid ? "middle" : left ? "start" : "end",
+            ...lineAnchor ? { lineAnchor } : {},
+            dx: m.labelDx != null ? m.labelDx : mid ? 0 : left ? 6 : -6,
+            // labelDy is + = UP → subtract it from the side's base SVG dy.
+            dy: baseDy - (m.labelDy ?? 0),
             fill: markerColor,
             fontSize: TBL.size.annotation,
             fontWeight: 600,
@@ -26181,7 +26327,7 @@ ${words.slice(bestI).join(" ")}`;
       const py3 = p.y;
       const pColor = p.color && (resolveColor(p.color) || p.color) || TBL.color.heading;
       const dx3 = p.dx != null ? p.dx : 0;
-      const dy3 = p.dy != null ? p.dy : p.connector ? -28 : -6;
+      const dy3 = p.dy != null ? -p.dy : p.connector ? -28 : -6;
       const anchor = dx3 < 0 ? "end" : dx3 > 0 ? "start" : "middle";
       const canLeader = p.connector && xExtent != null && xExtent[1] > xExtent[0] && innerWForPx != null && innerHForPx != null;
       if (canLeader) {
@@ -26225,9 +26371,12 @@ ${words.slice(bestI).join(" ")}`;
     if (gridFaceted && facet) {
       marks.push(...paneTitleMark(facet.cells));
     }
+    marks.push(...labelMarks);
     const plotOpts = {
       ...tblPlotDefaults({
-        marginBottom: xOpts.marginBottom,
+        // Horizontal bars override marginBottom (the value-tick row is short; the inherited
+        // categorical-label bottom margin would leave a big empty band under the axis).
+        marginBottom: layers.marginBottom ?? xOpts.marginBottom,
         ...height != null ? { height } : {},
         ...marginRight != null ? { marginRight } : {},
         // Horizontal bars supply a responsive left gutter sized to their longest category
@@ -26235,7 +26384,9 @@ ${words.slice(bestI).join(" ")}`;
         // shared-mode small-multiples `marginLeft` override wins when present (the label-less
         // columns' small gutter); it applies to vertical panes (line/bar/stacked) — horizontal
         // bars carry a category gutter and aren't used in shared mode.
-        ...marginLeft != null ? { marginLeft } : layers.marginLeft != null ? { marginLeft: layers.marginLeft } : {}
+        ...marginLeft != null ? { marginLeft } : layers.marginLeft != null ? { marginLeft: layers.marginLeft } : {},
+        // Sectioned horizontal bars request extra top margin for the first section's header.
+        ...layers.marginTop != null ? { marginTop: layers.marginTop } : {}
       }),
       ...width ? { width } : {},
       className: classNameSuffix ? `${PLOT_CLASS}-${classNameSuffix}` : PLOT_CLASS,
@@ -26300,30 +26451,118 @@ ${words.slice(bestI).join(" ")}`;
   function defaultColumns(n) {
     return Math.min(4, Math.max(1, Math.ceil(Math.sqrt(n))));
   }
-  var SHARED_LABELLESS_MARGIN_LEFT = 2;
-  function sharedColumnWidths(availW, columns, gap) {
-    const LM2 = TBL_MARGIN_LEFT;
+  var HORIZONTAL_PX_PER_BAR = 22;
+  var HORIZONTAL_CHROME_PX = 80;
+  var SECTION_HEADER_TOP_PX = 16;
+  var HORIZONTAL_LABEL_LINE_PX = 16;
+  var HORIZONTAL_HEIGHT_FLOOR = 400;
+  function horizontalBarHeight(opts) {
+    const { nCategories, nSeries, grouped, nSpacers, maxLabelLines, extraTopPx = 0 } = opts;
+    const barsPerCat = grouped ? Math.max(1, nSeries) : 1;
+    const catBarPx = barsPerCat * HORIZONTAL_PX_PER_BAR;
+    const labelPx = Math.max(1, maxLabelLines) * HORIZONTAL_LABEL_LINE_PX + 6;
+    const slotPx = Math.max(catBarPx, labelPx);
+    const inner = (nCategories + Math.max(0, nSpacers)) * slotPx;
+    return Math.max(HORIZONTAL_HEIGHT_FLOOR, Math.round(inner + HORIZONTAL_CHROME_PX + extraTopPx));
+  }
+  function countSections(rows, xField, sectionField, spec, categories) {
+    const sectionOf = /* @__PURE__ */ new Map();
+    for (const r of rows) {
+      const cat = r[xField];
+      const sec = r[sectionField];
+      if (cat && sec != null && !sectionOf.has(cat)) sectionOf.set(cat, sec);
+    }
+    const present = /* @__PURE__ */ new Set();
+    for (const c of categories) present.add(sectionOf.get(c) ?? "");
+    if (spec.section_order && spec.section_order.length) {
+      return spec.section_order.filter((s) => present.has(s)).length;
+    }
+    return present.size;
+  }
+  function orderedCategories(rows, xField, spec) {
+    const seen = [];
+    const set = /* @__PURE__ */ new Set();
+    for (const r of rows) {
+      const v = r[xField];
+      if (v != null && v !== "" && !set.has(v)) {
+        set.add(v);
+        seen.push(v);
+      }
+    }
+    if (spec.x_order && spec.x_order.length) {
+      const order = spec.x_order;
+      const rank = new Map(order.map((c, i) => [c, i]));
+      seen.sort((a, b) => (rank.get(a) ?? order.length) - (rank.get(b) ?? order.length));
+    }
+    return seen;
+  }
+  function sharedColumnWidths(availW, columns, gap, leftMargin = TBL_MARGIN_LEFT, weights) {
+    const LM2 = leftMargin;
     const lm3 = SHARED_LABELLESS_MARGIN_LEFT;
     const R = TBL_MARGIN_RIGHT;
     const C = Math.max(1, columns);
-    const dataW = C === 1 ? availW - LM2 - R : (availW - LM2 - (C - 1) * lm3 - C * R - (C - 1) * gap) / C;
+    const totalDataW = C === 1 ? availW - LM2 - R : availW - LM2 - (C - 1) * lm3 - C * R - (C - 1) * gap;
+    const w = weights && weights.length === C ? weights : Array.from({ length: C }, () => 1);
+    const sumW = w.reduce((a, b) => a + (b > 0 ? b : 0), 0) || C;
     const colWidths = [];
     const marginLeft = [];
+    let firstDataW = totalDataW;
     for (let c = 0; c < C; c++) {
       const isLeft = c === 0;
-      marginLeft.push(isLeft ? LM2 : lm3);
-      colWidths.push(dataW + (isLeft ? LM2 : lm3) + R);
+      const ml3 = isLeft ? LM2 : lm3;
+      const dataW = totalDataW * Math.max(0, w[c]) / sumW;
+      if (c === 0) firstDataW = dataW;
+      marginLeft.push(ml3);
+      colWidths.push(dataW + ml3 + R);
     }
-    return { dataW, colWidths, marginLeft };
+    return { dataW: firstDataW, colWidths, marginLeft };
+  }
+  function perPaneColumnWidths(availW, columns, gap, weights) {
+    const LM2 = TBL_MARGIN_LEFT;
+    const R = TBL_MARGIN_RIGHT;
+    const C = Math.max(1, columns);
+    const totalDataW = availW - C * LM2 - C * R - (C - 1) * gap;
+    const w = weights && weights.length === C ? weights : Array.from({ length: C }, () => 1);
+    const sumW = w.reduce((a, b) => a + (b > 0 ? b : 0), 0) || C;
+    const colWidths = [];
+    for (let c = 0; c < C; c++) {
+      const dataW = totalDataW * Math.max(0, w[c]) / sumW;
+      colWidths.push(dataW + LM2 + R);
+    }
+    return { colWidths };
   }
   function renderFigure(spec, rows, opts = {}) {
     const sm3 = spec.small_multiples;
     if (!sm3) throw new Error("renderFigure called without spec.small_multiples.");
     const mode = sm3.mode ?? "shared";
-    const facetField = resolveColumns(spec, rows).facet;
+    const cols = resolveColumns(spec, rows);
+    const facetField = cols.facet;
     if (!facetField) {
       throw new Error("small_multiples requires a facet column (set columns.facet).");
     }
+    const isHorizontalBar = spec.chartType === "bar" && spec.orientation === "horizontal";
+    const sharedCategories = isHorizontalBar ? orderedCategories(rows, cols.x, spec) : [];
+    const hGutter = isHorizontalBar ? horizontalLeftGutter(sharedCategories, { fontSize: FACETED_CAT_LABEL_PX }) : TBL_MARGIN_LEFT;
+    let autoHeight;
+    if (isHorizontalBar && opts.height == null) {
+      const nSeries = spec.series_order && spec.series_order.length ? spec.series_order.length : new Set(rows.map((r) => cols.series ? r[cols.series] : "").filter((s) => s !== "")).size;
+      const nSections = cols.section ? countSections(rows, cols.x, cols.section, spec, sharedCategories) : 0;
+      const nSpacers = Math.max(0, nSections - 1);
+      const maxPx = hGutter - GUTTER_TEXT_PAD;
+      const maxLabelLines = sharedCategories.reduce(
+        (m, c) => Math.max(m, labelLineCount(c, maxPx, FACETED_CAT_LABEL_PX)),
+        1
+      );
+      autoHeight = horizontalBarHeight({
+        nCategories: sharedCategories.length,
+        nSeries: Math.max(1, nSeries),
+        grouped: nSeries > 1,
+        nSpacers,
+        maxLabelLines,
+        extraTopPx: nSections > 0 ? SECTION_HEADER_TOP_PX : 0
+      });
+    }
+    const effHeight = opts.height ?? autoHeight;
     const encounterOrder = [];
     const seen = /* @__PURE__ */ new Set();
     for (const r of rows) {
@@ -26335,17 +26574,76 @@ ${words.slice(bestI).join(" ")}`;
     }
     const paneValues = sm3.pane_order && sm3.pane_order.length ? sm3.pane_order.filter((v) => seen.has(v)) : encounterOrder;
     if (!paneValues.length) throw new Error("No panes: facet_field produced no values in scope.");
-    const requestedColumns = opts.columns && opts.columns > 0 ? opts.columns : sm3.columns && sm3.columns > 0 ? sm3.columns : defaultColumns(paneValues.length);
+    const variableWidths = sm3.pane_widths != null && sm3.pane_widths !== "equal";
+    const requestedColumns = opts.columns && opts.columns > 0 ? opts.columns : sm3.columns && sm3.columns > 0 ? sm3.columns : variableWidths ? paneValues.length : defaultColumns(paneValues.length);
     const columns = Math.max(1, Math.min(requestedColumns, paneValues.length));
     const gridRows = Math.ceil(paneValues.length / columns);
     const titles = sm3.pane_titles ?? {};
     const titleFor = (value) => titles[value] ?? value;
     const seriesLabels = spec.series_labels ?? {};
+    const gridGap = opts.gridGap ?? 0;
+    const availW = opts.gridWidth ?? opts.width ?? 720;
+    let colWeights;
+    {
+      const pw3 = sm3.pane_widths;
+      if (Array.isArray(pw3) && pw3.length === columns) {
+        colWeights = pw3;
+      } else if (pw3 === "equal-bar") {
+        const barCount = (value) => {
+          const pr3 = rows.filter((r) => r[facetField] === value);
+          const catSet = /* @__PURE__ */ new Set();
+          const serSet = /* @__PURE__ */ new Set();
+          for (const r of pr3) {
+            const c = r[cols.x];
+            if (c) catSet.add(c);
+            const s = cols.series ? r[cols.series] : "";
+            if (s) serSet.add(s);
+          }
+          return Math.max(1, catSet.size) * Math.max(1, serSet.size);
+        };
+        const weights = Array.from({ length: columns }, () => 0);
+        paneValues.forEach((v, i) => {
+          const col = i % columns;
+          weights[col] = Math.max(weights[col], barCount(v));
+        });
+        colWeights = weights;
+      }
+    }
+    const coordinateXLabels = (dataWByCol) => {
+      if (isHorizontalBar || spec.xAxisType !== "categorical") return {};
+      const rank = { single: 0, wrap: 1, rotate: 2 };
+      const paneCats = paneValues.map((value, i) => {
+        const col = i % columns;
+        const catList = Array.from(
+          new Set(rows.filter((r) => r[facetField] === value).map((r) => r[cols.x]).filter(Boolean))
+        );
+        return { cats: catList, mode: bandLabelMode(catList, dataWByCol[col] ?? 0) };
+      });
+      let worst = "single";
+      for (const p of paneCats) if (rank[p.mode] > rank[worst]) worst = p.mode;
+      return { mode: worst, marginBottom: Math.max(...paneCats.map((p) => bandLabelMarginBottom(p.cats, worst))) };
+    };
     if (mode === "per-pane") {
+      const perPaneWidths = variableWidths ? perPaneColumnWidths(availW, columns, gridGap, colWeights).colWidths : void 0;
+      const perPaneDataW = perPaneWidths ? perPaneWidths.map((w) => w - TBL_MARGIN_LEFT - TBL_MARGIN_RIGHT) : Array.from({ length: columns }, () => (opts.width ?? availW) - TBL_MARGIN_LEFT - TBL_MARGIN_RIGHT);
+      const { mode: ppXLabelMode, marginBottom: ppMarginBottom } = coordinateXLabels(perPaneDataW);
       let firstLayers2;
       const panes2 = paneValues.map((value, i) => {
         const paneRows = rows.filter((r) => r[facetField] === value);
-        const p = renderPane(spec, paneRows, { ...opts, pane: true }, `p${i}`);
+        const col = i % columns;
+        const p = renderPane(
+          spec,
+          paneRows,
+          {
+            ...opts,
+            height: effHeight,
+            pane: true,
+            ...perPaneWidths ? { width: perPaneWidths[col] } : {},
+            ...ppXLabelMode ? { xLabelMode: ppXLabelMode } : {},
+            ...ppMarginBottom != null ? { marginBottom: ppMarginBottom } : {}
+          },
+          `p${i}`
+        );
         if (i === 0) firstLayers2 = p.layers;
         return {
           value,
@@ -26375,6 +26673,7 @@ ${words.slice(bestI).join(" ")}`;
         panes: panes2,
         columns,
         rows: gridRows,
+        ...perPaneWidths ? { columnWidths: perPaneWidths } : {},
         legendItems: legendItems2,
         shapeLegendItems: buildShapeLegendItems(spec, firstLayers2 ?? { underlay: [], overlay: [], tagging: [], dashedNames: /* @__PURE__ */ new Set() }),
         colorLegendTitle: spec.color_legend_title,
@@ -26396,14 +26695,21 @@ ${words.slice(bestI).join(" ")}`;
     let yHi = -Infinity;
     for (const value of paneValues) {
       const paneRows = rows.filter((r) => r[facetField] === value);
-      const [lo3, hi3] = renderPane(spec, paneRows, { ...opts, pane: true }, "probe").yDomain;
+      const [lo3, hi3] = renderPane(spec, paneRows, { ...opts, height: effHeight, pane: true }, "probe").yDomain;
       if (lo3 < yLo) yLo = lo3;
       if (hi3 > yHi) yHi = hi3;
     }
     const sharedYDomain = [yLo, yHi];
-    const gridGap = opts.gridGap ?? 0;
-    const availW = opts.gridWidth ?? opts.width ?? 720;
-    const { colWidths, marginLeft: colMarginLeft } = sharedColumnWidths(availW, columns, gridGap);
+    const { colWidths, marginLeft: colMarginLeft } = sharedColumnWidths(
+      availW,
+      columns,
+      gridGap,
+      hGutter,
+      colWeights
+    );
+    const { mode: forcedXLabelMode, marginBottom: forcedMarginBottom } = coordinateXLabels(
+      colWidths.map((w, c) => w - colMarginLeft[c] - TBL_MARGIN_RIGHT)
+    );
     let firstLayers;
     const panes = paneValues.map((value, i) => {
       const col = i % columns;
@@ -26413,11 +26719,19 @@ ${words.slice(bestI).join(" ")}`;
         paneRows,
         {
           ...opts,
+          height: effHeight,
           pane: true,
           yDomain: sharedYDomain,
-          hideYAxisLabels: col > 0,
           width: colWidths[col],
-          marginLeft: colMarginLeft[col]
+          ...forcedXLabelMode ? { xLabelMode: forcedXLabelMode } : {},
+          ...forcedMarginBottom != null ? { marginBottom: forcedMarginBottom } : {},
+          ...isHorizontalBar ? {
+            categoryGutter: col === 0 ? hGutter : SHARED_LABELLESS_MARGIN_LEFT,
+            hideCategoryLabels: col > 0
+          } : {
+            hideYAxisLabels: col > 0,
+            marginLeft: colMarginLeft[col]
+          }
         },
         `p${i}`
       );
@@ -26502,6 +26816,7 @@ ${words.slice(bestI).join(" ")}`;
         _y: valRaw === "" || valRaw == null ? null : +valRaw
       };
       if (cols.shape) row._shape = r[cols.shape] ?? "";
+      if (cols.section) row._section = r[cols.section] ?? "";
       row[adapter.xField] = adapter.parseX(xRaw);
       for (const band of spec.confidence_bands ?? []) {
         if (row.series === band.series) {
@@ -26614,8 +26929,9 @@ ${words.slice(bestI).join(" ")}`;
     });
     const catsForX = spec.xAxisType === "categorical" ? Array.from(new Set(dataInScope.map((r) => r._xc).filter((c) => !!c))) : [];
     const dataWidthForX = (opts.width ?? 720) - (opts.marginLeft ?? TBL_MARGIN_LEFT) - (opts.marginRight ?? TBL_MARGIN_RIGHT);
-    const xLabelMode = bandLabelMode(catsForX, dataWidthForX);
+    const xLabelMode = opts.xLabelMode ?? bandLabelMode(catsForX, dataWidthForX);
     const xOpts = adapter.buildXOpts(dataInScope, facetInfo != null, xLabelMode);
+    if (opts.marginBottom != null) xOpts.marginBottom = opts.marginBottom;
     const units = inferUnitsFromSubtitle(spec.subtitle);
     const effWidth = opts.width ?? 720;
     const effHeight = opts.height ?? 320;
@@ -26645,7 +26961,10 @@ ${words.slice(bestI).join(" ")}`;
       ...xLabelMode !== "single" ? { xLabelMode } : {},
       // Dynamic stack order (area): the live layer passes a reordered list when a series is selected
       // (selected-to-bottom); the mark stacks in this order while legend/colors stay series_order.
-      ...opts.stackOrder ? { stackOrder: opts.stackOrder } : {}
+      ...opts.stackOrder ? { stackOrder: opts.stackOrder } : {},
+      // Horizontal faceted bars: suppress category labels on non-leftmost panes; use the shared gutter.
+      ...opts.hideCategoryLabels ? { hideCategoryLabels: true } : {},
+      ...opts.categoryGutter != null ? { categoryGutter: opts.categoryGutter } : {}
     });
     const facetOpt = facetInfo ? {
       columns: facetInfo.columns,
@@ -27356,6 +27675,7 @@ ${words.slice(bestI).join(" ")}`;
       if (groups.length) {
         const parsed = [];
         for (const g of groups) {
+          if (!g.querySelector("rect")) continue;
           const transform = g.getAttribute("transform") ?? "";
           const m = /translate\(\s*-?[\d.]+\s*[ ,]\s*([\d.+-]+)/.exec(transform);
           const ty3 = m ? parseFloat(m[1]) : 0;
@@ -27933,6 +28253,7 @@ ${words.slice(bestI).join(" ")}`;
       const groups = Array.from(svgEl3.querySelectorAll('g[aria-label="bar"] > g'));
       const parsed = [];
       for (const gg3 of groups) {
+        if (!gg3.querySelector("rect")) continue;
         const tf3 = gg3.getAttribute("transform") ?? "";
         const m = horizontal ? /translate\(\s*-?[\d.]+\s*[ ,]\s*([\d.+-]+)/.exec(tf3) : /translate\(\s*([\d.+-]+)/.exec(tf3);
         if (m) parsed.push({ t: parseFloat(m[1]), g: gg3 });
@@ -27975,14 +28296,84 @@ ${words.slice(bestI).join(" ")}`;
       if (!valByCat.has(r._xc)) valByCat.set(r._xc, /* @__PURE__ */ new Map());
       valByCat.get(r._xc).set(r.series, r._y);
     }
-    const rectsByCat = buildRectsByCategory(svgEl3, opts);
+    const horizontal = opts.horizontal === true;
+    const rectsByCat = buildRectsByCategory(svgEl3, opts, horizontal);
+    const plotW = W10 - ml3 - mr3;
     const doc = svgEl3.ownerDocument;
     const g = makeCoordGroup(svgEl3);
     const axisRows = makeAxisRows(svgEl3, mt3 + plotH);
+    const accentFont = opts.accentLabel?.font;
+    const labelKey = (cat) => accentFont ? wrapToWidth(cat, ml3 - GUTTER_TEXT_PAD, accentFont).replace(/\n/g, "") : cat;
+    const labelEls = /* @__PURE__ */ new Map();
+    if (opts.accentLabel) {
+      for (const t60 of Array.from(svgEl3.querySelectorAll("text"))) {
+        labelEls.set((t60.textContent ?? "").trim(), t60);
+      }
+    }
+    let accented = null;
+    const restoreAccent = () => {
+      if (accented) {
+        accented.setAttribute("font-weight", "500");
+        accented.setAttribute("fill", TBL.color.axis);
+        accented = null;
+      }
+    };
     return (category, active = false) => {
       while (g.firstChild) g.removeChild(g.firstChild);
+      restoreAccent();
       if (category == null) {
         g.setAttribute("opacity", "0");
+        return;
+      }
+      if (horizontal) {
+        const rawH = readCategoryBandsH(svgEl3, {
+          rows: opts.rows,
+          isFaceted: opts.isFaceted,
+          categories: opts.categories
+        });
+        const idx2 = rawH.findIndex((b) => b.category === category);
+        const vals2 = valByCat.get(category);
+        if (idx2 < 0 || !vals2) {
+          g.setAttribute("opacity", "0");
+          return;
+        }
+        const centers = rawH.map((bb3) => (bb3.yMin + bb3.yMax) / 2);
+        let step = Infinity;
+        for (let i = 1; i < centers.length; i++) step = Math.min(step, centers[i] - centers[i - 1]);
+        if (!Number.isFinite(step)) step = rawH[idx2].yMax - rawH[idx2].yMin + 8;
+        const c = centers[idx2];
+        const regYmin = Math.max(mt3, c - step / 2);
+        const regYmax = Math.min(mt3 + plotH, c + step / 2);
+        const regX0 = opts.regionFromLeftEdge ? 0 : ml3;
+        const regX1 = W10 + (opts.regionExtendRight ?? 0);
+        addCoordRegion(g, doc, regX0, regX1 - regX0, regYmin, regYmax - regYmin);
+        const weight2 = active ? 700 : 600;
+        const colorFor2 = (s) => opts.colors?.get(s) || COORD_LABEL_DARK;
+        if (opts.accentLabel) {
+          const el3 = labelEls.get(labelKey(category));
+          if (el3) {
+            el3.setAttribute("font-weight", "700");
+            el3.setAttribute("fill", COORD_LABEL_DARK);
+            accented = el3;
+          }
+        }
+        const pillGap = opts.pillGap ?? 6;
+        const valid2 = (rectsByCat.get(category) ?? []).map((rect) => ({ rect, v: vals2.get(rect.series) })).filter((x) => x.v != null && !Number.isNaN(x.v));
+        for (const x of valid2) {
+          const tipX = x.v >= 0 ? x.rect.x + x.rect.w : x.rect.x;
+          const cy3 = x.rect.y + x.rect.h / 2;
+          addCoordPill(
+            g,
+            doc,
+            tipX + (x.v >= 0 ? pillGap : -pillGap),
+            cy3,
+            x.v >= 0 ? "start" : "end",
+            yFormat(x.v),
+            colorFor2(x.rect.series),
+            weight2
+          );
+        }
+        g.setAttribute("opacity", "1");
         return;
       }
       const raw = readCategoryBands(svgEl3, {
@@ -28833,6 +29224,7 @@ ${words.slice(bestI).join(" ")}`;
       const cols = figMeta.columns;
       const gridRows = figMeta.rows;
       const paneChartH = TALL_PANE_TYPES.has(spec.chartType) ? TALL_PANE_CHART_H : PANE_CHART_H;
+      const isHorizontalBarFig = spec.chartType === "bar" && spec.orientation === "horizontal";
       const isShared = (spec.small_multiples?.mode ?? "shared") === "shared";
       const shared = isShared ? sharedColumnWidths(INNER_W, cols, COL_GAP) : null;
       const equalPaneW = Math.floor((INNER_W - COL_GAP * (cols - 1)) / cols);
@@ -28843,27 +29235,29 @@ ${words.slice(bestI).join(" ")}`;
         colX.push(acc);
         acc += colWidth(c) + COL_GAP;
       }
-      const fig = isShared ? renderFigure(spec, rows, { gridWidth: INNER_W, gridGap: COL_GAP, height: paneChartH, columns: cols }) : renderFigure(spec, rows, { width: equalPaneW, height: paneChartH, columns: cols });
+      const fig = isShared ? renderFigure(spec, rows, { gridWidth: INNER_W, gridGap: COL_GAP, height: isHorizontalBarFig ? void 0 : paneChartH, columns: cols }) : renderFigure(spec, rows, { width: equalPaneW, height: isHorizontalBarFig ? void 0 : paneChartH, columns: cols });
+      const effPaneH = isHorizontalBarFig && fig.panes[0]?.svg ? Number(fig.panes[0].svg.getAttribute("height")) || paneChartH : paneChartH;
       const gridTop = chartTop;
       fig.panes.forEach((pane, i) => {
         const col = i % cols;
         const row = Math.floor(i / cols);
         const x = colX[col];
         const w = colWidth(col);
-        const y = gridTop + row * (PANE_TITLE_H + paneChartH + ROW_GAP);
+        const y = gridTop + row * (PANE_TITLE_H + effPaneH + ROW_GAP);
+        const titleDx = isHorizontalBarFig ? Number(pane.svg?.dataset.marginLeft) || 0 : 0;
         root.appendChild(
-          textEl2(x, y + 12, pane.title, { size: 11, weight: W_SEMI, fill: HEADING })
+          textEl2(x + titleDx, y + 12, pane.title, { size: 11, weight: W_SEMI, fill: HEADING })
         );
         if (pane.svg) {
           const ps3 = pane.svg;
           ps3.setAttribute("x", String(x));
           ps3.setAttribute("y", String(y + PANE_TITLE_H));
           ps3.setAttribute("width", String(w));
-          ps3.setAttribute("height", String(paneChartH));
+          ps3.setAttribute("height", String(effPaneH));
           root.appendChild(ps3);
         }
       });
-      contentHeight = gridRows * (PANE_TITLE_H + paneChartH) + (gridRows - 1) * ROW_GAP;
+      contentHeight = gridRows * (PANE_TITLE_H + effPaneH) + (gridRows - 1) * ROW_GAP;
     }
     const H_eff = isFigure ? Math.round(chartTop + contentHeight + bottomH) : H10;
     if (H_eff !== H10) {
@@ -28929,26 +29323,50 @@ ${words.slice(bestI).join(" ")}`;
   // src/engine/render-live.ts
   var MIN_CHART_WIDTH = 390;
   var FIXED_CHART_HEIGHT = 400;
-  var HORIZONTAL_PX_PER_ROW = 34;
-  var HORIZONTAL_CHROME_PX = 80;
   function computeChartHeight(spec, rows) {
     if (spec.orientation !== "horizontal" || spec.chartType !== "bar" && spec.chartType !== "stacked") {
       return FIXED_CHART_HEIGHT;
     }
     const cols = resolveColumns(spec, rows);
-    const cats = /* @__PURE__ */ new Set();
+    const catList = [];
+    const catSeen = /* @__PURE__ */ new Set();
     const series = /* @__PURE__ */ new Set();
+    const sectionOf = /* @__PURE__ */ new Map();
     for (const r of rows) {
       const cat = r[cols.x];
-      if (typeof cat === "string" && cat !== "") cats.add(cat);
+      if (typeof cat === "string" && cat !== "" && !catSeen.has(cat)) {
+        catSeen.add(cat);
+        catList.push(cat);
+      }
       const s = cols.series ? r[cols.series] : null;
       if (typeof s === "string" && s !== "") series.add(s);
+      if (cols.section && typeof cat === "string" && cat !== "" && !sectionOf.has(cat)) {
+        const sec = r[cols.section];
+        if (typeof sec === "string") sectionOf.set(cat, sec);
+      }
     }
-    const nCats = Math.max(1, cats.size);
+    const nCats = Math.max(1, catList.length);
     const nSeries = spec.series_order && spec.series_order.length ? spec.series_order.length : Math.max(1, series.size);
     const grouped = spec.chartType === "bar" && nSeries > 1;
-    const rowCount = grouped ? nCats * nSeries : nCats;
-    return Math.max(FIXED_CHART_HEIGHT, Math.round(rowCount * HORIZONTAL_PX_PER_ROW + HORIZONTAL_CHROME_PX));
+    let nSections = 0;
+    if (cols.section) {
+      const present = new Set(catList.map((c) => sectionOf.get(c) ?? ""));
+      nSections = spec.section_order && spec.section_order.length ? spec.section_order.filter((s) => present.has(s)).length : present.size;
+    }
+    const nSpacers = Math.max(0, nSections - 1);
+    const gutter = horizontalLeftGutter(catList);
+    const maxLabelLines = catList.reduce(
+      (m, c) => Math.max(m, labelLineCount(c, gutter - GUTTER_TEXT_PAD)),
+      1
+    );
+    return horizontalBarHeight({
+      nCategories: nCats,
+      nSeries,
+      grouped,
+      nSpacers,
+      maxLabelLines,
+      extraTopPx: nSections > 0 ? SECTION_HEADER_TOP_PX : 0
+    });
   }
   var LEGEND_COLUMN_WIDTH = 160;
   var LEGEND_GAP = 16;
@@ -29553,6 +29971,8 @@ ${words.slice(bestI).join(" ")}`;
     };
   }
   var PANE_MIN_WIDTH = 240;
+  var HBAR_PANE_MIN_WIDTH = 240;
+  var HBAR_GUTTER_RESERVE = 200;
   var PANE_HEIGHT = 240;
   var GRID_GAP = 16;
   function buildFigureHeader(card, doc, spec, eyebrowText) {
@@ -29646,7 +30066,7 @@ ${words.slice(bestI).join(" ")}`;
     }
     const categorical = ctx.spec.xAxisType === "categorical";
     const horizontal = ctx.spec.orientation === "horizontal";
-    const useCoord = ctx.onResolve != null && !horizontal;
+    const useCoord = ctx.onResolve != null;
     const markerSymbols = ctx.spec.points && ctx.spec.chartType === "line" ? new Map(ctx.seriesOrder.map((s, i) => [s, markerSymbolForIndex(i)])) : void 0;
     if (categorical && ctx.spec.chartType === "line") {
       attachCategoricalLineCrosshair(svg, {
@@ -29690,6 +30110,19 @@ ${words.slice(bestI).join(" ")}`;
           catsSeen.add(cat);
           cats.push(cat);
         }
+      }
+      const sectionCol = ctx.spec.columns?.section;
+      if (sectionCol) {
+        const sectionOf = /* @__PURE__ */ new Map();
+        for (const r of ctx.dataInScope) {
+          if (r._xc && r._section != null && !sectionOf.has(r._xc)) sectionOf.set(r._xc, r._section);
+        }
+        const secOrder = ctx.spec.section_order && ctx.spec.section_order.length ? ctx.spec.section_order : [...new Set(cats.map((c) => sectionOf.get(c) ?? ""))];
+        const rankOf = (c) => {
+          const i = secOrder.indexOf(sectionOf.get(c) ?? "");
+          return i < 0 ? secOrder.length : i;
+        };
+        cats.sort((a, b) => rankOf(a) - rankOf(b));
       }
       attachBandCrosshair(svg, {
         rows: ctx.dataInScope.map((r) => ({ _xc: r._xc, series: r.series, _y: r._y })),
@@ -29738,7 +30171,13 @@ ${words.slice(bestI).join(" ")}`;
           colors: ctx.colors,
           seriesLabels: ctx.seriesLabels,
           seriesOrder: ctx.seriesOrder,
-          yFormat: (v) => formatValue(v, ctx.units, ctx.spec.tooltip_decimals)
+          yFormat: (v) => formatValue(v, ctx.units, ctx.spec.tooltip_decimals),
+          horizontal,
+          ...horizontal ? {
+            regionFromLeftEdge: true,
+            regionExtendRight: ctx.coordExtendRight ?? 0,
+            ...ctx.coordAccentLabel ? { accentLabel: { font: FACETED_CAT_LABEL_PX } } : {}
+          } : {}
         });
       }
       return void 0;
@@ -29795,9 +30234,19 @@ ${words.slice(bestI).join(" ")}`;
     legendSlot.className = "figure-legend-slot";
     card.appendChild(legendSlot);
     appendAxisTitleEl(card, doc, "figure-y-axis-title", spec.y_axis_title ?? null);
+    const smCfg = spec.small_multiples;
+    const variableWidths = smCfg.pane_widths != null && smCfg.pane_widths !== "equal";
+    const noStack = spec.chartType === "bar" && spec.orientation === "horizontal" || variableWidths;
     const grid = doc.createElement("div");
     grid.className = "figure-grid";
-    card.appendChild(grid);
+    if (noStack) {
+      const scroll = doc.createElement("div");
+      scroll.className = "figure-grid-scroll";
+      scroll.appendChild(grid);
+      card.appendChild(scroll);
+    } else {
+      card.appendChild(grid);
+    }
     appendAxisTitleEl(card, doc, "figure-x-axis-title", spec.x_axis_title ?? null);
     renderSourceLine(card, {
       note: spec.note,
@@ -29821,27 +30270,33 @@ ${words.slice(bestI).join(" ")}`;
     const paneMinWidth = isPointFigure ? 160 : PANE_MIN_WIDTH;
     const TALL_PANE_TYPES2 = /* @__PURE__ */ new Set(["dotplot", "bar", "stacked"]);
     const paneHeight = TALL_PANE_TYPES2.has(spec.chartType) ? 320 : PANE_HEIGHT;
+    const isHorizontalBarFig = spec.chartType === "bar" && spec.orientation === "horizontal";
+    const figHeight = isHorizontalBarFig ? void 0 : paneHeight;
     const drawGrid = (outerWidth) => {
       const baseCols = sm3.columns && sm3.columns > 0 ? sm3.columns : 0;
       const fitCols = Math.max(1, Math.floor((outerWidth + GRID_GAP) / (paneMinWidth + GRID_GAP)));
-      const cols = Math.max(1, Math.min(baseCols || fitCols, fitCols, paneCount()));
-      const paneW = Math.max(paneMinWidth, Math.floor((outerWidth - GRID_GAP * (cols - 1)) / cols));
-      const sig = isShared ? `s:${cols}:${outerWidth}` : `p:${cols}:${paneW}`;
+      const cols = noStack ? Math.max(1, Math.min(baseCols || paneCount(), paneCount())) : Math.max(1, Math.min(baseCols || fitCols, fitCols, paneCount()));
+      const minPerPane = isHorizontalBarFig ? HBAR_PANE_MIN_WIDTH : paneMinWidth;
+      const naturalW = cols * minPerPane + (cols - 1) * GRID_GAP + (isHorizontalBarFig ? HBAR_GUTTER_RESERVE : 0);
+      const gridW = noStack ? Math.max(outerWidth, naturalW) : outerWidth;
+      const useGridWidth = isShared || variableWidths;
+      const paneW = Math.max(paneMinWidth, Math.floor((gridW - GRID_GAP * (cols - 1)) / cols));
+      const sig = useGridWidth ? `s:${cols}:${gridW}` : `p:${cols}:${paneW}`;
       if (sig === lastSig) return;
       let fig;
       try {
-        fig = isShared ? renderFigure(spec, rows, {
-          gridWidth: outerWidth,
+        fig = useGridWidth ? renderFigure(spec, rows, {
+          gridWidth: gridW,
           gridGap: GRID_GAP,
-          height: paneHeight,
+          height: figHeight,
           columns: cols
-        }) : renderFigure(spec, rows, { width: paneW, height: paneHeight, columns: cols });
+        }) : renderFigure(spec, rows, { width: paneW, height: figHeight, columns: cols });
       } catch (e) {
         grid.innerHTML = `<div class="figure-error">${e.message}</div>`;
         return;
       }
       lastSig = sig;
-      if (isShared && fig.columnWidths && fig.columnWidths.length) {
+      if (fig.columnWidths && fig.columnWidths.length) {
         grid.style.gridTemplateColumns = fig.columnWidths.map((w) => `${w}px`).join(" ");
       } else {
         grid.style.gridTemplateColumns = "";
@@ -29854,6 +30309,10 @@ ${words.slice(bestI).join(" ")}`;
         const title = doc.createElement("div");
         title.className = "figure-pane-title";
         title.textContent = pane.title;
+        if (isHorizontalBarFig && pane.svg) {
+          const ml3 = Number(pane.svg.dataset.marginLeft) || 0;
+          if (ml3 > 0) title.style.paddingInlineStart = `${ml3}px`;
+        }
         cell.appendChild(title);
         if (pane.svg) cell.appendChild(pane.svg);
         grid.appendChild(cell);
@@ -29885,6 +30344,7 @@ ${words.slice(bestI).join(" ")}`;
           });
           return;
         }
+        const col = idx % fig.columns;
         const driver = wireFigureSvg(pane.svg, handle, {
           spec,
           dataInScope: pane.dataInScope ?? [],
@@ -29897,6 +30357,12 @@ ${words.slice(bestI).join(" ")}`;
           tooltipXFormat: pane.tooltipXFormat,
           showTotalDot: pane.showTotalDot,
           onPillDriver: (d) => pillDrivers.push(d),
+          // Horizontal coordinated cursor: bridge the inter-pane gap (all but the last column) so the
+          // shaded row is continuous, and accent the category label on the leftmost (label-bearing) pane.
+          ...isHorizontalBarFig ? {
+            coordExtendRight: col < fig.columns - 1 ? GRID_GAP : 0,
+            coordAccentLabel: col === 0
+          } : {},
           ...coordinated ? { onResolve: (key) => emit(idx, key) } : {}
         });
         drivers.push(driver ?? (() => {
