@@ -976,8 +976,32 @@ tr.tbl-table-group td {
 /* Rows hidden by a collapsed group use the hidden attribute; enforce display:none in case a
    display rule elsewhere would otherwise resurrect them. */
 .tbl-table tr[hidden] { display: none; }
-/* Expand/collapse-all: shares .figure-download-btn chrome (border, hover) via its class list;
-   only the marker class is needed for tests/tools to find it. */
+/* Expand/collapse-all control. Marker class .tbl-table-collapse-all is always present (tests/tools
+   find the control by it). Placement chrome is added by the caller: in the footer action row it
+   takes .figure-download-btn; in the stub-header corner (default) it takes the compact corner
+   chrome below — a small muted text button seated at the bottom-left of the corner cell (the
+   corner <th>'s vertical-align:bottom + text-align:left do the seating, so on a multi-tier header
+   it aligns to the leaf header row), beside the carets it toggles. */
+.tbl-table-collapse-all-corner {
+  appearance: none;
+  display: inline-block;
+  font: var(--tw-medium) 11px/1 var(--tbl-font-sans);
+  color: var(--tbl-text-muted);
+  background: transparent;
+  border: 1px solid var(--tbl-border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-top: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tbl-table-collapse-all-corner:hover,
+.tbl-table-collapse-all-corner:focus-visible {
+  border-color: var(--tbl-navy);
+  color: #fff;
+  background: var(--tbl-navy);
+  outline: none;
+}
 
 /* Group note: italic, muted, smaller — sits directly under the heading, no rule, no fill. */
 tr.tbl-table-group-note th,
@@ -25977,11 +26001,12 @@ ${words.slice(bestI).join(" ")}`;
     const overlay = [];
     if (!isMulti) {
       const barColorOverride = resolveColor(spec.bar_color);
+      const accentFill = ctx.accentColor;
       const singleFillFor = (series) => {
         if (highlightSet && !highlightSet.has(series)) return TBL.color.annotationDim;
-        return barColorOverride ?? fillFor(series);
+        return accentFill ?? barColorOverride ?? fillFor(series);
       };
-      const baseFill = highlightSet ? (d) => singleFillFor(d.series) : seriesNames.length === 1 ? singleFillFor(seriesNames[0]) : barColorOverride ?? TBL.color.blue;
+      const baseFill = highlightSet ? (d) => singleFillFor(d.series) : seriesNames.length === 1 ? singleFillFor(seriesNames[0]) : accentFill ?? barColorOverride ?? TBL.color.blue;
       const categoryColorMap = spec.category_colors ? Object.fromEntries(
         Object.entries(spec.category_colors).map(([k, v]) => [k, resolveColor(v)])
       ) : null;
@@ -27485,6 +27510,10 @@ ${words.slice(bestI).join(" ")}`;
       // Dynamic stack order (area): the live layer passes a reordered list when a series is selected
       // (selected-to-bottom); the mark stacks in this order while legend/colors stay series_order.
       ...opts.stackOrder ? { stackOrder: opts.stackOrder } : {},
+      // Inline-selector accent: let a no-series/single-series bar chart recolor its bars to the
+      // active option's color (the bar analogue of the single-series line recolor above). The bar
+      // mark makes it win over bar_color/default; multi-series charts keep their palette.
+      ...opts.accentColor ? { accentColor: opts.accentColor } : {},
       // Horizontal faceted bars: suppress category labels on non-leftmost panes; use the shared gutter.
       ...opts.hideCategoryLabels ? { hideCategoryLabels: true } : {},
       ...opts.categoryGutter != null ? { categoryGutter: opts.categoryGutter } : {}
@@ -28110,7 +28139,7 @@ ${words.slice(bestI).join(" ")}`;
     return best.category;
   }
   function buildBandTooltipHtml(category, rows, opts) {
-    const { isStacked, showTotalDot, colors, seriesLabels, seriesOrder, yFormat, categoryLabels, swatchShape } = opts;
+    const { isStacked, showTotalDot, colors, seriesLabels, seriesOrder, yFormat, categoryLabels, swatchShape, renderedFills } = opts;
     const fmt = yFormat ?? ((v) => String(v));
     const catRows = rows.filter((r) => r._xc === category);
     const valBySeries = /* @__PURE__ */ new Map();
@@ -28124,7 +28153,7 @@ ${words.slice(bestI).join(" ")}`;
       const v = valBySeries.get(series);
       if (v == null) continue;
       total += v;
-      const dot = colors?.get(series) || "currentColor";
+      const dot = renderedFills?.get(series) || colors?.get(series) || "currentColor";
       const display = seriesLabels && seriesLabels[series] || series;
       const swCls = swatchShape === "rect" ? "tbl-tooltip-swatch is-square" : "tbl-tooltip-swatch";
       html += `<div class="tbl-tooltip-row"><span class="${swCls}" style="background: ${dot}"></span><span><span class="tbl-tooltip-label">${escapeHtml(display)}:</span> <span class="tbl-tooltip-value">${escapeHtml(fmt(v))}</span></span></div>`;
@@ -28278,6 +28307,16 @@ ${words.slice(bestI).join(" ")}`;
     hit.style.cursor = "default";
     svgEl3.appendChild(hit);
     const tip = emitOnly ? null : getSharedTooltip(svgEl3.ownerDocument);
+    const renderedFills = !emitOnly && opts.swatchShape === "rect" ? (() => {
+      const m = /* @__PURE__ */ new Map();
+      svgEl3.querySelectorAll('g[aria-label="bar"] rect').forEach((r) => {
+        const s = r.getAttribute("data-series") ?? "";
+        if (m.has(s)) return;
+        const f = renderedRectFill(r, svgEl3);
+        if (f) m.set(s, f);
+      });
+      return m;
+    })() : void 0;
     function showHighlight(bandMin, bandMax) {
       if (!hl3) return;
       if (horizontal) {
@@ -28359,7 +28398,8 @@ ${words.slice(bestI).join(" ")}`;
         seriesOrder: opts.seriesOrder,
         yFormat,
         categoryLabels: opts.categoryLabels,
-        swatchShape: opts.swatchShape
+        swatchShape: opts.swatchShape,
+        renderedFills
       });
       tip.innerHTML = html;
       const offset = 14;
@@ -29778,7 +29818,7 @@ ${words.slice(bestI).join(" ")}`;
       const shared = isShared ? sharedColumnWidths(INNER_W, cols, COL_GAP) : null;
       const equalPaneW = Math.floor((INNER_W - COL_GAP * (cols - 1)) / cols);
       const useGridW = isShared || isHorizontalBarFig;
-      const fig = useGridW ? renderFigure(spec, rows, { gridWidth: INNER_W, gridGap: COL_GAP, height: isHorizontalBarFig ? void 0 : paneChartH, columns: cols }) : renderFigure(spec, rows, { width: equalPaneW, height: isHorizontalBarFig ? void 0 : paneChartH, columns: cols });
+      const fig = useGridW ? renderFigure(spec, rows, { gridWidth: INNER_W, gridGap: COL_GAP, height: isHorizontalBarFig ? void 0 : paneChartH, columns: cols, ...accentColor ? { accentColor } : {} }) : renderFigure(spec, rows, { width: equalPaneW, height: isHorizontalBarFig ? void 0 : paneChartH, columns: cols, ...accentColor ? { accentColor } : {} });
       const figColWidths = !isShared && isHorizontalBarFig ? fig.columnWidths : void 0;
       const colWidth = (col) => shared?.colWidths[col] ?? figColWidths?.[col] ?? equalPaneW;
       const colX = [];
@@ -31024,6 +31064,7 @@ ${words.slice(bestI).join(" ")}`;
     const card = doc.createElement("div");
     card.className = "figure-card";
     const selections = resolveSelections(spec, opts.selections);
+    let requestFigureRedraw;
     const closeTitleSelectors = buildFigureHeader(
       card,
       doc,
@@ -31033,7 +31074,8 @@ ${words.slice(bestI).join(" ")}`;
         selectors: spec.title_selectors,
         selections,
         onSelect: opts.onSelect,
-        seriesColors: spec.series_colors
+        seriesColors: spec.series_colors,
+        afterChange: () => requestFigureRedraw?.()
       } : void 0
     );
     const legendSlot = doc.createElement("div");
@@ -31077,6 +31119,7 @@ ${words.slice(bestI).join(" ")}`;
     const TALL_PANE_TYPES2 = /* @__PURE__ */ new Set(["dotplot", "bar", "stacked"]);
     const paneHeight = TALL_PANE_TYPES2.has(spec.chartType) ? 320 : PANE_HEIGHT;
     const isHorizontalBarFig = spec.chartType === "bar" && spec.orientation === "horizontal";
+    const isCategoricalBarFig = spec.chartType === "bar" || spec.chartType === "stacked";
     const figHeight = isHorizontalBarFig ? void 0 : paneHeight;
     const drawGrid = (outerWidth) => {
       const baseCols = sm3.columns && sm3.columns > 0 ? sm3.columns : 0;
@@ -31089,14 +31132,22 @@ ${words.slice(bestI).join(" ")}`;
       const paneW = Math.max(paneMinWidth, Math.floor((gridW - GRID_GAP * (cols - 1)) / cols));
       const sig = useGridWidth ? `s:${cols}:${gridW}` : `p:${cols}:${paneW}`;
       if (sig === lastSig) return;
+      const rawAccent = spec.title_selectors ? resolveActiveOptionColor(spec.title_selectors, selections, spec.series_colors) : void 0;
+      const accentColor = rawAccent ? resolveColor(rawAccent) : void 0;
       let fig;
       try {
         fig = useGridWidth ? renderFigure(spec, rows, {
           gridWidth: gridW,
           gridGap: GRID_GAP,
           height: figHeight,
-          columns: cols
-        }) : renderFigure(spec, rows, { width: paneW, height: figHeight, columns: cols });
+          columns: cols,
+          ...accentColor ? { accentColor } : {}
+        }) : renderFigure(spec, rows, {
+          width: paneW,
+          height: figHeight,
+          columns: cols,
+          ...accentColor ? { accentColor } : {}
+        });
       } catch (e) {
         grid.innerHTML = `<div class="figure-error">${e.message}</div>`;
         return;
@@ -31137,7 +31188,7 @@ ${words.slice(bestI).join(" ")}`;
         shapeTitle: fig.shapeLegendTitle
       }) : null;
       card.classList.toggle("is-selectable", handle != null);
-      const coordinated = sm3.coordinated_cursor !== false && fig.panes.length > 1;
+      const coordinated = sm3.coordinated_cursor !== false && (fig.panes.length > 1 || isCategoricalBarFig);
       const drivers = [];
       const emit = (sourceIdx, key) => {
         for (let i = 0; i < drivers.length; i++) drivers[i](key, i === sourceIdx);
@@ -31179,6 +31230,10 @@ ${words.slice(bestI).join(" ")}`;
       drawGrid(w);
     };
     const initialWidth = card.clientWidth || opts.width || 720;
+    requestFigureRedraw = () => {
+      lastSig = "";
+      draw(card.clientWidth || initialWidth);
+    };
     draw(initialWidth);
     let resizeRaf = null;
     let ro3;
@@ -31282,12 +31337,34 @@ ${words.slice(bestI).join(" ")}`;
       });
     }
     let leaves = [...leafMap.values()];
-    if (spec.column_order && spec.column_order.length) {
-      const order = spec.column_order;
-      const rank = new Map(order.map((k, i) => [k, i]));
+    const columnGroupOrderLevels = !spec.column_group_order || spec.column_group_order.length === 0 ? [] : Array.isArray(spec.column_group_order[0]) ? spec.column_group_order : [spec.column_group_order];
+    const columnGroupRankMaps = columnGroupOrderLevels.map(
+      (list) => list ? new Map(list.map((v, i) => [v, i])) : void 0
+    );
+    const colRank = spec.column_order && spec.column_order.length ? new Map(spec.column_order.map((k, i) => [k, i])) : null;
+    const colOrderLen = spec.column_order?.length ?? 0;
+    const superDepth = headerCols.length - 1;
+    if (superDepth > 0 || colRank) {
+      const superFirstSeen = Array.from({ length: superDepth }, () => /* @__PURE__ */ new Map());
+      for (const l of leaves) {
+        for (let s = 0; s < superDepth; s++) {
+          const key = l.path.slice(0, s + 1).join(SEP);
+          const m = superFirstSeen[s];
+          if (!m.has(key)) m.set(key, m.size);
+        }
+      }
       leaves = leaves.map((l, i) => ({ l, i })).sort((a, b) => {
-        const ra3 = rank.has(a.l.lastValue) ? rank.get(a.l.lastValue) : order.length + a.i;
-        const rb3 = rank.has(b.l.lastValue) ? rank.get(b.l.lastValue) : order.length + b.i;
+        for (let s = 0; s < superDepth; s++) {
+          const va3 = a.l.path[s] ?? "";
+          const vb3 = b.l.path[s] ?? "";
+          const rankMap = columnGroupRankMaps[s];
+          const listLen = columnGroupOrderLevels[s]?.length ?? 0;
+          const ka3 = rankMap?.has(va3) ? rankMap.get(va3) : listLen + superFirstSeen[s].get(a.l.path.slice(0, s + 1).join(SEP));
+          const kb3 = rankMap?.has(vb3) ? rankMap.get(vb3) : listLen + superFirstSeen[s].get(b.l.path.slice(0, s + 1).join(SEP));
+          if (ka3 !== kb3) return ka3 - kb3;
+        }
+        const ra3 = colRank?.has(a.l.lastValue) ? colRank.get(a.l.lastValue) : colOrderLen + a.i;
+        const rb3 = colRank?.has(b.l.lastValue) ? colRank.get(b.l.lastValue) : colOrderLen + b.i;
         return ra3 - rb3;
       }).map((x) => x.l);
     }
@@ -33079,7 +33156,7 @@ ${words.slice(bestI).join(" ")}`;
   function buildCollapseAllButton(doc, panes, refresh) {
     const btn = doc.createElement("button");
     btn.type = "button";
-    btn.className = "figure-download-btn tbl-table-collapse-all";
+    btn.className = "tbl-table-collapse-all";
     const anyExpanded = () => panes.some((p) => p.keys().some((k) => !p.collapsed.has(k)));
     const sync = () => {
       const label = anyExpanded() ? "Collapse all" : "Expand all";
@@ -33148,7 +33225,24 @@ ${words.slice(bestI).join(" ")}`;
       attachTableInteractivity(table, model, spec, () => applyVis?.());
       if (spec.collapsible) {
         applyVis = attachCollapsible(table, collapsed, () => syncCollapseAll?.());
+        if (collapsibleControl === "stub-header" && collapseAllEl) {
+          table.querySelector("thead th.tbl-table-stub-header")?.appendChild(collapseAllEl);
+        }
       }
+    }
+    const collapsibleControl = spec.collapsible?.control ?? "stub-header";
+    let collapseAllEl;
+    if (spec.collapsible) {
+      const allBtn = buildCollapseAllButton(
+        doc,
+        [{ collapsed, keys: () => liveGroupKeys(canvasScroll) }],
+        () => applyVis?.()
+      );
+      syncCollapseAll = allBtn.sync;
+      collapseAllEl = allBtn.el;
+      allBtn.el.classList.add(
+        collapsibleControl === "footer" ? "figure-download-btn" : "tbl-table-collapse-all-corner"
+      );
     }
     const initialWidth = opts.width ?? (container.clientWidth || 720);
     draw(initialWidth);
@@ -33160,14 +33254,8 @@ ${words.slice(bestI).join(" ")}`;
       opts.downloadName,
       spec.collapsible ? () => [...collapsed] : void 0
     );
-    if (spec.collapsible) {
-      const allBtn = buildCollapseAllButton(
-        doc,
-        [{ collapsed, keys: () => liveGroupKeys(canvasScroll) }],
-        () => applyVis?.()
-      );
-      syncCollapseAll = allBtn.sync;
-      actions.insertBefore(allBtn.el, actions.firstChild);
+    if (collapseAllEl && collapsibleControl === "footer") {
+      actions.insertBefore(collapseAllEl, actions.firstChild);
     }
     renderSourceLine(card, {
       note,
@@ -33238,6 +33326,9 @@ ${words.slice(bestI).join(" ")}`;
         }
         for (const fn3 of lp3.model.footnotes) if (!fnMap.has(fn3.marker)) fnMap.set(fn3.marker, fn3.text);
       });
+      if (spec.collapsible && collapsibleControl === "stub-header" && collapseAllEl) {
+        paneScrolls[0].querySelector("thead th.tbl-table-stub-header")?.appendChild(collapseAllEl);
+      }
       fnBlock.replaceChildren();
       if (fnMap.size > 0) {
         for (const [marker, text] of fnMap) {
@@ -33253,6 +33344,22 @@ ${words.slice(bestI).join(" ")}`;
         fnBlock.remove();
       }
     }
+    const collapsibleControl = spec.collapsible?.control ?? "stub-header";
+    let collapseAllEl;
+    if (spec.collapsible) {
+      const allBtn = buildCollapseAllButton(
+        doc,
+        paneCollapse.map((pc3, i) => ({ collapsed: pc3.collapsed, keys: () => liveGroupKeys(paneScrolls[i]) })),
+        () => {
+          for (const pc3 of paneCollapse) pc3.applyVis?.();
+        }
+      );
+      syncCollapseAll = allBtn.sync;
+      collapseAllEl = allBtn.el;
+      allBtn.el.classList.add(
+        collapsibleControl === "footer" ? "figure-download-btn" : "tbl-table-collapse-all-corner"
+      );
+    }
     const initialWidth = opts.width ?? (container.clientWidth || 720);
     drawAll(initialWidth);
     const note = Array.isArray(spec.notes) ? spec.notes.join("\n") : spec.notes;
@@ -33263,16 +33370,8 @@ ${words.slice(bestI).join(" ")}`;
       opts.downloadName,
       spec.collapsible ? () => [...new Set(paneCollapse.flatMap((pc3) => [...pc3.collapsed]))] : void 0
     );
-    if (spec.collapsible) {
-      const allBtn = buildCollapseAllButton(
-        doc,
-        paneCollapse.map((pc3, i) => ({ collapsed: pc3.collapsed, keys: () => liveGroupKeys(paneScrolls[i]) })),
-        () => {
-          for (const pc3 of paneCollapse) pc3.applyVis?.();
-        }
-      );
-      syncCollapseAll = allBtn.sync;
-      actions.insertBefore(allBtn.el, actions.firstChild);
+    if (collapseAllEl && collapsibleControl === "footer") {
+      actions.insertBefore(collapseAllEl, actions.firstChild);
     }
     renderSourceLine(card, {
       note,
