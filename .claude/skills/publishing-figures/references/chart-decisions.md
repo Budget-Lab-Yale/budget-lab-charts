@@ -32,9 +32,9 @@ first-of-month `YYYY-MM-DD` and use `temporal`. Ask the user only when genuinely
 
 House style is a takeaway sentence, not a variable description — compare
 "Capital and corporate revenue increases offset labor revenue losses in most scenarios" with
-"Revenue by income type". If the user supplies only a descriptive title, offer a takeaway
-alternative once; use whatever they pick. Units belong in `subtitle` (e.g. "Percent of GDP,
-fiscal years"), not in the data.
+"Revenue by income type". Titles come from the user: when asking, mention the house style, but
+do not draft titles for them unless they ask for help. Units belong in `subtitle` (e.g.
+"Percent of GDP, fiscal years"), not in the data.
 
 ## Colors
 

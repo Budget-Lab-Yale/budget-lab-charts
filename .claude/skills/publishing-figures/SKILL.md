@@ -53,21 +53,33 @@ because files encode them permanently or silently distort the publication:
    figure numbering. Never write placeholders into real files; a placeholder title in
    `article.yaml` reaches the public catalog if merged unnoticed.
 
-When a question needs free text (a title, a date, a name), make your best proposal the option —
-the question UI's built-in "Other" carries custom answers. Never offer a "let me specify" /
-"another date" stub option: it returns no value and forces a dead-end follow-up round.
+**The interview gathers information — it does not offer it.** Titles, subtitles, descriptions,
+and note text are things the user knows and you don't: ask for them and wait; never draft or
+propose them (you may help wordsmith later if asked). Use option lists only for genuinely
+enumerable choices (chart type, numbering scheme, anomaly handling, yes/no confirmations).
+Never include a "let me specify" / "another value" stub option — it carries no value and forces
+a dead-end follow-up; free text arrives through the question UI's built-in "Other".
+
+Two fixed conventions:
+
+- **Publication date**: exactly two paths — today (spell the date out) or the user types a
+  date. Do not suggest alternative dates.
+- **Source**: default is `The Budget Lab`; offer that plus the option to give a different
+  attribution.
 
 **Interview stages** (skip anything already specified or already answered by the data):
 
-- **Stage 1 — collection**: title; publication date (or cadence, for trackers); confirm the
-  proposed slug. `url:` stays `""` until the article is live.
-- **Stage 2 — figure list**: confirm the list of figures (title each) and the numbering scheme
-  — `"Figure 1"`, `"Appendix Figure 1"`, `"Table 1"` labels live in the collection file's
-  `figures:` map, keyed by figure folder name.
+- **Stage 1 — collection**: title (user-supplied); publication date (or cadence, for
+  trackers); confirm the slug derived from the title. `url:` stays `""` until the article is
+  live.
+- **Stage 2 — figure list**: the list of figures with user-supplied titles, and the numbering
+  scheme — `"Figure 1"`, `"Appendix Figure 1"`, `"Table 1"` labels live in the collection
+  file's `figures:` map, keyed by figure folder name.
 - **Stage 3 — per-figure design**: chart type (recommend one from
   [references/chart-decisions.md](references/chart-decisions.md)), colors (default palette
-  unless the user wants specific hues), annotations (none is the default), source and note
-  text. For several similar figures, ask once whether the choices apply to all.
+  unless the user wants specific hues), annotations (none is the default), source (default
+  `The Budget Lab`) and note text. For several similar figures, ask once whether the choices
+  apply to all.
 
 **Decide silently, then surface in a summary** (do not ask): `<yyyy>/<mm>` path from the date;
 `columns:` mapping from CSV headers; `xAxisType` inferred from x values (`YYYY-MM-DD` →
