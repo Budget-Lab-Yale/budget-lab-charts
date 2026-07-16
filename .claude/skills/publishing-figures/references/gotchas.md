@@ -21,6 +21,12 @@ Some existing charts use `xAxisPolicy.markers` / `xAxisPolicy.bands` / `yAxisPol
 Those are deprecated aliases — even though committed examples contain them, write the modern
 `annotations:` block (CONFIG-REFERENCE.md § Annotations) in new charts.
 
+## `columns.section requires chartType "bar" with orientation "horizontal"`
+
+The section axis works only on plain horizontal **bar** charts — not `stacked`, even horizontal.
+For a sectioned stacked distribution, drop `columns.section`/`section_order` and convey the
+grouping through `x_order` instead.
+
 ## `series_order names series ["X"] not found in the data`
 
 Config keys must match CSV values **byte-for-byte**: en-dash vs hyphen (`High–income` ≠
