@@ -10,6 +10,132 @@ The engine is **the tool**; this repo is **the content**.
 
 ---
 
+## Quick start: creating figures for a publication
+
+An article is a folder holding one `article.yaml` (the article's metadata) plus one sub-folder
+per figure, each containing a `chart.yaml` (the chart spec) and a `data.csv` (the data). You commit
+that folder tree and open a PR; CI validates it and renders a live preview of every figure. The
+chart engine runs in CI, so you don't install or invoke it directly.
+
+This section covers creating a new article from scratch. To add a single figure to an existing
+article, or to update a tracker, see [Adding a chart](#adding-a-chart) and
+[Updating a tracker](#updating-a-tracker) below.
+
+**One-time setup**
+
+```sh
+git clone https://github.com/Budget-Lab-Yale/budget-lab-charts.git
+cd budget-lab-charts
+npm install            # only needed for the optional local preview in step 6
+```
+
+**Steps**
+
+1. **Branch off `main`.**
+   ```sh
+   git checkout main && git pull
+   git checkout -b add-<article-slug>
+   ```
+
+2. **Choose the article's slug.** You create it now, and it becomes the permanent first segment of
+   every chart id in the article. Requirements: lowercase, ASCII, hyphenated; it should clearly identify the
+   durable product; and it must be
+   **unique across the entire repo**. List the slugs already in use to confirm yours is free:
+   ```sh
+   grep -rh '^slug:' charts/
+   ```
+
+3. **Create the article folder** under `charts/articles/<year>/<month>/<slug>/`, using the
+   publication month and the slug from step 2:
+   ```
+   charts/articles/2026/07/my-article/
+   ```
+
+4. **Write `article.yaml`** in that folder — the article's metadata plus the figure-number label
+   for each chart:
+   ```yaml
+   title: "How potential AI futures would play out in the current tax system"
+   slug: "ai-fiscal"                   # must match the folder name
+   date: "2026-07-01"                  # publication date
+   url: ""                             # leave empty until published
+   figures:                            # chart-folder name → figure label
+     revenue-headline: "Figure 1"
+     revenue-by-income-type: "Figure 2"
+   ```
+   Field-by-field detail is in [CONFIG-REFERENCE.md](CONFIG-REFERENCE.md); the tracker variant is
+   in [Adding a collection](#adding-a-collection) below.
+
+5. **Create one folder per figure** inside the article folder, and add its two files. Each folder
+   name is that chart's permanent id segment — lowercase, hyphenated, and the same names referenced
+   in the `figures:` map above.
+
+   `data.csv` — long format. Column headers and category values can be the raw/short names from
+   your export; you map and rename them for display in `chart.yaml`:
+   ```
+   speed,labor,rev
+   Slow,comp,4.73
+   Slow,prop,8.17
+   Slow,exp,11.63
+   ```
+
+   `chart.yaml` — map the CSV columns onto the chart's roles and rename the series for display:
+   ```yaml
+   chartType: bar               # line | area | bar | stacked | scatter | dotplot
+   title: "Tax revenue is higher when AI adoption is faster and when inequality rises"
+   subtitle: "Change in federal revenue, FY 2030, billions USD"
+   source: "The Budget Lab AI-Revenue Microsimulation Model."
+   xAxisType: categorical       # temporal | numeric | quarterly | categorical
+   columns:                     # map each CSV column onto a chart role
+     x: speed
+     value: rev
+     series: labor              # optional — omit for a single-series chart
+   series_order: [comp, prop, exp]   # order + filter, keyed by the raw CSV values
+   series_labels:               # rename the raw series keys for the legend and tooltip
+     comp: "Compressive"
+     prop: "Proportional"
+     exp: "Expansive"
+   data: data.csv
+   ```
+   `chartType`, `title`, `xAxisType`, and `data` are required; everything else is optional. For the
+   full list of fields, chart types, and CSV formatting, see
+   [CONFIG-REFERENCE.md](CONFIG-REFERENCE.md). Existing articles under `charts/articles/` are good
+   working examples to copy from.
+
+6. **Preview locally (optional)** to refine the design before pushing:
+   ```sh
+   npm run dev          # live preview at http://localhost:5173
+   ```
+   Select a chart in the sidebar and edit its `chart.yaml`/`data.csv`; the preview reloads on save.
+   If you skip this, the PR preview in step 8 serves the same purpose.
+
+7. **Commit and open a PR.**
+   ```sh
+   git add charts/
+   git commit -m "Add my-article charts"
+   git push -u origin add-<article-slug>
+   ```
+   Then open the PR on GitHub (or `gh pr create`).
+
+8. **Review the PR preview.** CI validates the files and, once the `validate` check passes, comments
+   a live preview URL for the full gallery. The preview may take some time to load, just wait. **Do not skip this step.** Check each figure there. A failing `validate` check
+   reports the cause — commonly a `chart.yaml` typo, a column name that doesn't match the CSV, or a
+   slug/folder-name mismatch. Fix and push again.
+
+9. **Merge.** After the figures are approved, merge the PR. The article's charts publish to the live
+   gallery automatically.
+
+Two constraints:
+
+- The `slug` in `article.yaml` must match the article folder name, and every chart-folder name in
+  the `figures:` map must match a real chart folder.
+- Folder names are permanent ids. To change a chart's displayed name, edit `title`; to change a
+  figure number, edit the `figures:` map. Do not rename the folders.
+
+The sections below are the full reference — config fields, id rules, single-chart and tracker
+workflows, embedding, and CI.
+
+---
+
 ## What this repo does
 
 - Stores one `chart.yaml` + `data.csv` per figure, in a dated folder hierarchy.
@@ -93,37 +219,18 @@ Run order: validate → build → catalog → site → thumbs (`npm run all` doe
 
 ## Adding a chart
 
-The authoring step is just **a folder + two files**; CI does the rest.
+Adding a single figure to a collection that already exists is the quick start minus the collection
+setup: create a `<chart>/` folder under the collection, add `data.csv` + `chart.yaml`, and — for a
+numbered figure — add the folder name to the collection's `figures:` map. Open a PR; CI validates
+and previews. The folder name is the chart's permanent id segment (lowercase/ASCII/hyphenated); set
+it once and don't rename it.
 
-1. Create a folder under the collection. The **folder name is the chart's id segment** —
-   choose it once (lowercase/ASCII/hyphenated) and don't rename it later.
-   - one-off: `charts/articles/<year>/<month>/<collection>/<chart>/`
-   - tracker: `charts/trackers/<collection>/<chart>/`
-2. Add `data.csv` — long format, **any column names**, e.g.:
-   ```
-   age_bin,cohort,sex_label,mean_hours
-   18-21,Gen X,Men,0.5
-   ...
-   ```
-3. Write `chart.yaml` — the `columns:` block maps your CSV columns onto the engine's roles:
-   ```yaml
-   chartType: line              # line | area | bar | stacked | scatter | dotplot
-   title: "..."
-   xAxisType: categorical       # temporal | numeric | quarterly | categorical
-   columns:
-     x: age_bin                 # default "time" if the columns block is omitted
-     value: mean_hours          # default "value"
-     series: cohort             # OPTIONAL — omit for a single-series chart
-     facet: sex_label           # OPTIONAL — defines small-multiples panes
-   data: data.csv
-   ```
-   There is **no `slug`** and **no `eyebrow`** in `chart.yaml` (identity is the folder; the figure
-   number is the article's, below).
-4. Open a PR. CI runs `validate`, builds the site, and comments a **preview URL**.
-5. Review the chart on that URL; merge when it looks right. Merging publishes it to Pages.
+- one-off: `charts/articles/<year>/<month>/<collection>/<chart>/`
+- tracker: `charts/trackers/<collection>/<chart>/`
 
-To preview locally before opening the PR: `npm run all`, then serve `_site/` over HTTP
-(`npx http-server _site`) — the gallery fetches the catalog, so `file://` won't work.
+`chart.yaml` has **no `slug`** and **no `eyebrow`** — identity is the folder, and the figure number
+lives in the collection's `figures:` map. The `columns:` block defaults to `x: time` / `value: value`
+if omitted; `series` and `facet` are optional (`facet` defines small-multiples panes).
 
 ### chart.yaml fields
 
@@ -138,7 +245,8 @@ table.yaml, collection files, and the CSV format).
 ## Adding a collection
 
 A collection is one article (one-off) or one tracker (living). Its `slug` is the first segment
-of every chart id under it — durable, unique repo-wide, never a date.
+of every chart id under it — durable, unique repo-wide, never a date. The quick start walks through
+the one-off article case; the two collection-file schemas are below.
 
 **One-off** — `charts/articles/<year>/<month>/<collection>/article.yaml`:
 
