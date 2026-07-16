@@ -1,0 +1,14 @@
+chartType: stacked
+title: "Combined Effects of the OBBBA and Tariffs"
+subtitle: "Average annual change in household resources as a percentage of current law income after transfers and taxes (2026–2034)"
+xAxisType: categorical
+columns:
+  x: decile
+  value: value
+  series: component
+series_order: ["OBBBA (via CBO)", "2025 Tariff Increases"]
+x_axis_title: "Income Decile"
+tooltip_decimals: 1
+note: "Subtotals may not add to totals due to rounding."
+source: "The Budget Lab"
+data: data.csv

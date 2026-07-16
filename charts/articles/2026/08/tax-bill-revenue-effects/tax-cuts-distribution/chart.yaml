@@ -1,0 +1,17 @@
+chartType: stacked
+orientation: horizontal
+title: "Distribution of Tax Cuts Against Current Policy, 2026"
+xAxisType: categorical
+columns:
+  x: unit
+  value: share
+  series: cut_size
+series_order: ["No cut or tax increase", "< $100", "$100 - $500", "$500 - $1,000", "$1,000 - $5,000", "> $5,000"]
+barStack:
+  netDisplay: none
+yAxisPolicy:
+  max: 100
+tooltip_decimals: 1
+note: "Estimate universe is nondependent tax units, including nonfilers. Income percentile thresholds are calculated with respect to positive income only and are adult-weighted. 'Income' is measured as AGI plus: above-the-line deductions, nontaxable interest, nontaxable pension income (including OASI benefits), nondeductible capital losses, employer-side payroll taxes, and inheritances."
+source: "The Budget Lab calculations."
+data: data.csv

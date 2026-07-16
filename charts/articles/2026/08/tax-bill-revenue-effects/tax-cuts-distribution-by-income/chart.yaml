@@ -1,0 +1,25 @@
+chartType: stacked
+orientation: horizontal
+title: "Distribution of Tax Cuts Against Current Policy By Income Group, 2026"
+xAxisType: categorical
+columns:
+  x: income_group
+  value: share
+  series: cut_size
+  facet: section
+x_order: ["Quintile 1", "Quintile 2", "Quintile 3", "Quintile 4", "Quintile 5", "Top 10%", "Top 5%", "Top 1%", "Top 0.1%"]
+small_multiples:
+  columns: 1
+  pane_order: ["By Quintile", "Top Quintile Breakout"]
+  pane_titles:
+    "By Quintile": "By Quintile"
+    "Top Quintile Breakout": "Within Top Quintile"
+series_order: ["No cut or tax increase", "< $100", "$100 - $500", "$500 - $1,000", "$1,000 - $5,000", "> $5,000"]
+barStack:
+  netDisplay: none
+yAxisPolicy:
+  max: 100
+tooltip_decimals: 1
+note: "Estimate universe is nondependent tax units, including nonfilers. Income percentile thresholds are calculated with respect to positive income only and are adult-weighted. 'Income' is measured as AGI plus: above-the-line deductions, nontaxable interest, nontaxable pension income (including OASI benefits), nondeductible capital losses, employer-side payroll taxes, and inheritances. Income group cutoffs are approximately: Quintile 2 ($21,170), Quintile 3 ($43,845), Quintile 4 ($75,995), Quintile 5 ($137,565), Top 10% ($213,480), Top 5% ($319,275), Top 1% ($845,270), and Top 0.1% ($3,973,435)."
+source: "The Budget Lab calculations."
+data: data.csv
