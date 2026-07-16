@@ -1172,6 +1172,7 @@ var BudgetLabChart = (() => {
     const facet = c.facet ?? null;
     const shape = c.shape != null && c.shape !== "" ? c.shape : null;
     const section = c.section != null && c.section !== "" ? c.section : null;
+    const kind = c.kind != null && c.kind !== "" ? c.kind : null;
     let series;
     if (c.series != null && c.series !== "") {
       series = c.series;
@@ -1180,7 +1181,7 @@ var BudgetLabChart = (() => {
     } else {
       series = "series";
     }
-    return { x, value, series, facet, shape, section };
+    return { x, value, series, facet, shape, section, kind };
   }
 
   // src/spec/title.ts
@@ -24816,7 +24817,7 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
       xAxis: keep(resolved.xAxis),
       yAxis: keep(resolved.yAxis),
       bands: resolved.bands,
-      points: resolved.points
+      points: keep(resolved.points)
     };
   }
   var VALUE_FORMAT_DEFAULT_DECIMALS = 2;
@@ -24925,6 +24926,65 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
       min: Math.min(0, negMin),
       max: posMax * headroom
     };
+  }
+  function kindOf(row) {
+    const k = (row._kind ?? "").trim();
+    return k === "total" || k === "skip" ? k : "delta";
+  }
+  function computeWaterfallSteps(data) {
+    let running = 0;
+    const steps = [];
+    for (const row of data) {
+      const cat = row._xc ?? row.time ?? "";
+      const kind = kindOf(row);
+      if (kind === "skip") {
+        steps.push({ row, cat, kind, delta: 0, base: running, top: running, level: running, before: running, rise: true });
+        continue;
+      }
+      const before = running;
+      if (kind === "total") {
+        const v10 = row._y;
+        const level = v10 == null || !Number.isFinite(v10) ? running : v10;
+        running = level;
+        steps.push({ row, cat, kind, delta: level, base: Math.min(0, level), top: Math.max(0, level), level, before, rise: level >= 0 });
+        continue;
+      }
+      const v = Number.isFinite(row._y) ? row._y : 0;
+      const after = before + v;
+      running = after;
+      steps.push({ row, cat, kind, delta: v, base: Math.min(before, after), top: Math.max(before, after), level: after, before, rise: v >= 0 });
+    }
+    return steps;
+  }
+  function computeWaterfallYExtent(data) {
+    const vals = [0];
+    for (const s of computeWaterfallSteps(data)) {
+      if (s.kind === "skip") continue;
+      vals.push(s.base, s.top);
+    }
+    const lo3 = Math.min(...vals);
+    const hi3 = Math.max(...vals);
+    return {
+      min: lo3 < 0 ? lo3 * HEADROOM_NET_TEXT : lo3,
+      max: hi3 > 0 ? hi3 * HEADROOM_NET_TEXT : hi3
+    };
+  }
+  function waterfallValueDecimals(data, explicit) {
+    if (explicit != null) return explicit;
+    const vals = [];
+    for (const s of computeWaterfallSteps(data)) {
+      if (s.kind === "skip") continue;
+      vals.push(s.delta, s.level);
+    }
+    return Math.min(
+      2,
+      vals.reduce((max, v) => {
+        if (!Number.isFinite(v)) return max;
+        const str = String(v);
+        const i = str.indexOf(".");
+        return Math.max(max, i < 0 ? 0 : str.length - i - 1);
+      }, 0)
+    );
   }
   function makeTickFormatter(ticks, units = "") {
     const maxFrac = ticks.reduce((max, t60) => {
@@ -25585,8 +25645,9 @@ ${words.slice(bestI).join(" ")}`;
               labelMode,
               tagCategoryLabels
             ),
-            // Vertical reference markers are meaningless on a band scale.
-            markerToX: () => null,
+            // Categorical: a marker/point `x` resolves to the category string itself, which Plot's
+            // band scale positions at the band (bar) center; unknown categories → null (dropped).
+            markerToX: (m) => seen.has(m.x) ? m.x : null,
             tooltipXParse: void 0,
             tooltipXFormat: void 0
           };
@@ -26408,6 +26469,106 @@ ${words.slice(bestI).join(" ")}`;
     ];
   }
 
+  // src/engine/marks/waterfall.ts
+  var DEFAULT_INCREASE = "blue";
+  var DEFAULT_DECREASE = "red";
+  var DEFAULT_TOTAL = "navy";
+  function makeLevelFormatter(units, decimals) {
+    const maxFrac = decimals;
+    return (v) => {
+      if (!Number.isFinite(v)) return "";
+      const s = v.toFixed(maxFrac);
+      return units ? `${s}${units}` : s;
+    };
+  }
+  function buildWaterfallMarks(data, spec, ctx) {
+    const catField = ctx.xField;
+    const clipOpt = ctx.clipMarks ? { clip: true } : {};
+    const steps = computeWaterfallSteps(data);
+    const categories = steps.map((s) => s.cat);
+    const barSteps = steps.filter((s) => s.kind !== "skip");
+    const wf2 = spec.waterfall ?? {};
+    const incColor = resolveColor(wf2.colors?.increase) ?? resolveColor(DEFAULT_INCREASE);
+    const decColor = resolveColor(wf2.colors?.decrease) ?? resolveColor(DEFAULT_DECREASE);
+    const totColor = resolveColor(wf2.colors?.total) ?? resolveColor(DEFAULT_TOTAL);
+    const categoryColorMap = spec.category_colors ? Object.fromEntries(
+      Object.entries(spec.category_colors).map(([k, v]) => [k, resolveColor(v)])
+    ) : null;
+    const fillFor = (s) => {
+      const byCat = categoryColorMap?.[s.cat];
+      if (byCat != null) return byCat;
+      if (s.kind === "total") return totColor;
+      return s.rise ? incColor : decColor;
+    };
+    const barRows = steps.map((s) => ({
+      _xc: s.cat,
+      _base: s.base,
+      _top: s.top,
+      _fill: s.kind === "skip" ? "none" : fillFor(s)
+    }));
+    const overlay = [];
+    const connectors = wf2.connectors !== false;
+    if (connectors && barSteps.length > 1) {
+      const connColor = resolveColor(wf2.connectorColor) ?? TBL.color.annotationDim;
+      const connRows = [];
+      for (let i = 0; i < barSteps.length - 1; i++) {
+        connRows.push({ x1: barSteps[i].cat, x2: barSteps[i + 1].cat, y: barSteps[i].level });
+      }
+      overlay.push(
+        plot_0_6_16_esm_min_exports.link(connRows, {
+          x1: "x1",
+          x2: "x2",
+          y1: "y",
+          y2: "y",
+          stroke: connColor,
+          strokeWidth: 1,
+          strokeDasharray: "1 3"
+        })
+      );
+    }
+    overlay.push(
+      plot_0_6_16_esm_min_exports.barY(barRows, { x: "_xc", y1: "_base", y2: "_top", fill: (d) => d._fill, ...clipOpt })
+    );
+    if (spec.valueLabels?.show === true) {
+      const units = inferUnitsFromSubtitle(spec.subtitle);
+      const fmt = makeLevelFormatter(units, waterfallValueDecimals(data, spec.valueLabels?.decimals));
+      const labelSize = ctx.pane ? 10.5 : TBL_VALUE_LABEL.fontSize;
+      const pushLabels = (rising) => {
+        const rows = barSteps.filter((s) => s.rise === rising).map((s) => ({ _xc: s.cat, level: s.level, fill: fillFor(s) }));
+        if (!rows.length) return;
+        overlay.push(
+          plot_0_6_16_esm_min_exports.text(rows, {
+            x: "_xc",
+            y: "level",
+            text: (d) => fmt(d.level),
+            textAnchor: "middle",
+            dy: rising ? -TBL_VALUE_LABEL.gap : TBL_VALUE_LABEL.gapBelow,
+            fontSize: labelSize,
+            fontWeight: TBL_VALUE_LABEL.fontWeight,
+            fill: (d) => d.fill
+          })
+        );
+      };
+      pushLabels(true);
+      pushLabels(false);
+    }
+    return {
+      underlay: [],
+      overlay,
+      tagging: [
+        // One rect per non-skip step, in barRows (= declaration) order; tag them the single-series
+        // key so the live layer treats the whole chart as one series (per-bar fill is read off the
+        // rendered rect). Category labels (adapter-drawn on `x`) tagged in full band-domain order.
+        { selector: 'g[aria-label="bar"] rect', seriesOrder: barRows.map(() => SINGLE_SERIES_KEY) },
+        { selector: `g.${CAT_LABEL_CLASS} text`, seriesOrder: [], categoryOrder: categories }
+      ],
+      dashedNames: /* @__PURE__ */ new Set(),
+      // Explicit band domain (declaration order, incl. skip slots) so a skipped step still reserves
+      // its axis position; padding matches single-series bars.
+      xScaleOpts: { domain: categories, paddingInner: 0.2, paddingOuter: 0.2 }
+    };
+  }
+
   // src/engine/marks/index.ts
   var REGISTRY = {
     line: buildLineMarks,
@@ -26416,7 +26577,8 @@ ${words.slice(bestI).join(" ")}`;
     stacked: buildStackedMarks,
     // Both point types share one builder; it branches on x-scale (numeric vs categorical point).
     scatter: buildPointMarks,
-    dotplot: buildPointMarks
+    dotplot: buildPointMarks,
+    waterfall: buildWaterfallMarks
   };
   function markBuilderFor(chartType) {
     const builder = REGISTRY[chartType];
@@ -26484,7 +26646,7 @@ ${words.slice(bestI).join(" ")}`;
     if (xExtent && xExtent[1] > xExtent[0] && width != null) {
       const innerW = width - effMarginLeft - effMarginRight;
       const toPx = (v) => {
-        if (v == null) return null;
+        if (v == null || typeof v === "string") return null;
         const n = typeof v === "number" ? v : v.getTime();
         return effMarginLeft + (n - xExtent[0]) / (xExtent[1] - xExtent[0]) * innerW;
       };
@@ -26694,7 +26856,7 @@ ${words.slice(bestI).join(" ")}`;
       if (!horizontal) {
         xAxisAnn.forEach((m, markerIdx) => {
           const mx3 = xOpts.markerToX(m);
-          if (mx3 == null) return;
+          if (mx3 == null || typeof mx3 === "string") return;
           drawXAxisMarker(mx3, m, staggerDy.get(`m${markerIdx}`) ?? 4);
         });
       }
@@ -26774,8 +26936,7 @@ ${words.slice(bestI).join(" ")}`;
       const dx3 = p.dx != null ? p.dx : 0;
       const dy3 = p.dy != null ? -p.dy : p.connector ? -28 : -6;
       const anchor = dx3 < 0 ? "end" : dx3 > 0 ? "start" : "middle";
-      const canLeader = p.connector && xExtent != null && xExtent[1] > xExtent[0] && innerWForPx != null && innerHForPx != null;
-      if (canLeader) {
+      if (p.connector && typeof px3 !== "string" && xExtent != null && xExtent[1] > xExtent[0] && innerWForPx != null && innerHForPx != null) {
         const dppx = (xExtent[1] - xExtent[0]) / innerWForPx;
         const dppy = (yDomain[1] - yDomain[0]) / innerHForPx;
         const baseN = typeof px3 === "number" ? px3 : px3.getTime();
@@ -26798,8 +26959,9 @@ ${words.slice(bestI).join(" ")}`;
       } else if (p.connector) {
         marks.push(plot_0_6_16_esm_min_exports.dot([{ x: px3, y: py3 }], { x: "x", y: "y", r: 3, fill: pColor }));
       }
+      const labelText = p.maxWidth != null ? wrapToWidth(p.label, p.maxWidth, TBL.size.annotation) : p.label;
       marks.push(
-        plot_0_6_16_esm_min_exports.text([{ x: px3, y: py3, t: p.label }], {
+        plot_0_6_16_esm_min_exports.text([{ x: px3, y: py3, t: labelText }], {
           x: "x",
           y: "y",
           text: "t",
@@ -27298,6 +27460,7 @@ ${words.slice(bestI).join(" ")}`;
       };
       if (cols.shape) row._shape = r[cols.shape] ?? "";
       if (cols.section) row._section = r[cols.section] ?? "";
+      if (cols.kind) row._kind = r[cols.kind] ?? "";
       if (spec.projected_field) {
         row._projected = isTruthyFlag(r[spec.projected_field]);
       }
@@ -27381,6 +27544,13 @@ ${words.slice(bestI).join(" ")}`;
       const barExtent = computeBarYExtent(dataInScope, spec, chartType);
       const resolvedMin = policy.min ?? Math.min(barExtent.min, ...markerYs);
       const resolvedMax = Math.max(policy.max ?? barExtent.max, ...markerYs);
+      hardDomain = [resolvedMin, resolvedMax];
+    } else if (chartType === "waterfall") {
+      includeZero = policy.min == null;
+      const markerYs = ann.yAxis.map((m) => m.y).filter(Number.isFinite);
+      const wfExtent = computeWaterfallYExtent(dataInScope);
+      const resolvedMin = policy.min ?? Math.min(wfExtent.min, ...markerYs);
+      const resolvedMax = Math.max(policy.max ?? wfExtent.max, ...markerYs);
       hardDomain = [resolvedMin, resolvedMax];
     } else if (chartType === "area") {
       includeZero = true;
@@ -28392,6 +28562,7 @@ ${words.slice(bestI).join(" ")}`;
   }
   var COORD_NS = "http://www.w3.org/2000/svg";
   var COORD_LABEL_DARK = "#1A1A2E";
+  var TOTAL_PILL_COLOR = "#000000";
   function addCoordDot(g, doc, cx3, cy3, color, symbol) {
     if (symbol && symbol !== "circle") {
       const p = doc.createElementNS(COORD_NS, "path");
@@ -28803,6 +28974,31 @@ ${words.slice(bestI).join(" ")}`;
     Array.from(byKey.keys()).sort((a, b) => a - b).forEach((k, i) => out.set(categories[i] ?? String(i), byKey.get(k)));
     return out;
   }
+  function readNetDotMarkers(svgEl3) {
+    const circles = svgEl3.querySelectorAll(
+      `g.tbl-net-marker circle, circle[data-series="${TOTAL_SERIES_KEY}"]`
+    );
+    const seen = /* @__PURE__ */ new Set();
+    const out = [];
+    for (const c of circles) {
+      if (seen.has(c)) continue;
+      seen.add(c);
+      let cx3 = parseFloat(c.getAttribute("cx") ?? "0");
+      let cy3 = parseFloat(c.getAttribute("cy") ?? "0");
+      const r = parseFloat(c.getAttribute("r") ?? "8");
+      let el3 = c.parentElement;
+      while (el3 && el3 !== svgEl3) {
+        const m = /translate\(\s*(-?[\d.]+)(?:\s*[ ,]\s*(-?[\d.]+))?/.exec(el3.getAttribute("transform") ?? "");
+        if (m) {
+          cx3 += parseFloat(m[1]);
+          cy3 += parseFloat(m[2] ?? "0");
+        }
+        el3 = el3.parentElement;
+      }
+      out.push({ cx: cx3, cy: cy3, r });
+    }
+    return out;
+  }
   function attachSecondaryBandCursor(svgEl3, opts) {
     const noop = () => {
     };
@@ -28913,7 +29109,7 @@ ${words.slice(bestI).join(" ")}`;
       });
       const idx = raw.findIndex((b) => b.category === category);
       const vals = valByCat.get(category);
-      if (idx < 0 || !vals) {
+      if (idx < 0 || !vals && !opts.waterfall) {
         g.setAttribute("opacity", "0");
         return;
       }
@@ -28927,10 +29123,18 @@ ${words.slice(bestI).join(" ")}`;
           addCoordCategoryHighlight(g, doc, svgEl3, mt3 + plotH, rawCenter, category, detectBandLabelMode(svgEl3, mt3 + plotH), ys3);
         }
       }
-      const valid = (rectsByCat.get(category) ?? []).map((rect) => ({ rect, v: vals.get(rect.series) })).filter((x) => x.v != null && !Number.isNaN(x.v));
+      const valid = (rectsByCat.get(category) ?? []).map((rect) => ({ rect, v: vals?.get(rect.series) })).filter((x) => x.v != null && !Number.isNaN(x.v));
       const colorFor = (s) => opts.colors?.get(s) || COORD_LABEL_DARK;
       const pillColor = (r) => r.fill ?? colorFor(r.series);
-      if (opts.isStacked) {
+      if (opts.waterfall) {
+        if (opts.waterfall.deltaCats.has(category)) {
+          for (const x of valid) {
+            const cy3 = x.rect.y + x.rect.h / 2;
+            const text = `${x.v >= 0 ? "+" : ""}${yFormat(x.v)}`;
+            addCoordPill(g, doc, x.rect.cx, cy3, "middle", text, pillColor(x.rect), weight);
+          }
+        }
+      } else if (opts.isStacked) {
         const cys = spreadLabelYs(valid.map((x) => x.rect.y + x.rect.h / 2), COORD_PILL_H, mt3, mt3 + plotH);
         valid.forEach((x, i) => addCoordPill(g, doc, x.rect.cx, cys[i], "middle", yFormat(x.v), pillColor(x.rect), weight));
       } else {
@@ -29282,6 +29486,7 @@ ${words.slice(bestI).join(" ")}`;
         isFaceted: opts.isFaceted,
         categories: opts.categories
       }, opts.horizontal);
+      const segPillYByCat = /* @__PURE__ */ new Map();
       for (const [category, rects] of rectsByCat) {
         if (category === suppressedCat) continue;
         const vals = valByCat.get(category);
@@ -29300,6 +29505,7 @@ ${words.slice(bestI).join(" ")}`;
           }
         } else if (opts.isStacked) {
           const cys = spreadLabelYs(valid.map((x) => x.rect.y + x.rect.h / 2), COORD_PILL_H, mt3, mt3 + plotH);
+          segPillYByCat.set(category, cys);
           valid.forEach((x, i) => addCoordPill(g, doc, x.rect.cx, cys[i], "middle", yFormat(x.v), pillColor(x.rect), weight));
         } else {
           const ys3 = staggerBarLabels(
@@ -29312,6 +29518,44 @@ ${words.slice(bestI).join(" ")}`;
             COORD_PILL_H
           );
           valid.forEach((x, i) => addCoordPill(g, doc, x.rect.cx, ys3[i], "middle", yFormat(x.v), pillColor(x.rect), weight));
+        }
+      }
+      if (opts.showTotalDot && active.has(TOTAL_SERIES_KEY)) {
+        const dots = readNetDotMarkers(svgEl3);
+        if (dots.length) {
+          const loY = mt3 + COORD_PILL_H / 2;
+          const hiY = mt3 + plotH - COORD_PILL_H / 2;
+          const midX = ml3 + (W10 - ml3 - mr3) / 2;
+          for (const [category, rects] of rectsByCat) {
+            if (category === suppressedCat || !rects.length) continue;
+            const vals = valByCat.get(category);
+            if (!vals) continue;
+            let net = 0;
+            let any = false;
+            for (const v of vals.values()) {
+              if (v != null && Number.isFinite(v)) {
+                net += v;
+                any = true;
+              }
+            }
+            if (!any) continue;
+            if (opts.horizontal) {
+              const yc3 = rects[0].y + rects[0].h / 2;
+              const dot = dots.reduce((a, b) => Math.abs(b.cy - yc3) < Math.abs(a.cy - yc3) ? b : a);
+              const toRight = dot.cx <= midX;
+              const ax3 = toRight ? dot.cx + dot.r + 4 : dot.cx - dot.r - 4;
+              addCoordPill(g, doc, ax3, dot.cy, toRight ? "start" : "end", yFormat(net), TOTAL_PILL_COLOR, weight);
+            } else {
+              const cx3 = rects[0].cx;
+              const dot = dots.reduce((a, b) => Math.abs(b.cx - cx3) < Math.abs(a.cx - cx3) ? b : a);
+              const below = dot.cy + dot.r + COORD_PILL_H / 2 + 2;
+              const above = dot.cy - dot.r - COORD_PILL_H / 2 - 2;
+              const segYs = segPillYByCat.get(category) ?? [];
+              const clear = (y) => segYs.every((sy3) => Math.abs(sy3 - y) >= COORD_PILL_H);
+              const py3 = below <= hiY && clear(below) ? below : above >= loY && clear(above) ? above : Math.min(Math.max(below <= hiY ? below : above, loY), hiY);
+              addCoordPill(g, doc, dot.cx, py3, "middle", yFormat(net), TOTAL_PILL_COLOR, weight);
+            }
+          }
         }
       }
       g.setAttribute("opacity", "1");
@@ -29866,7 +30110,7 @@ ${words.slice(bestI).join(" ")}`;
   var FIXED_CHART_HEIGHT = 400;
   function computeChartHeight(spec, rows) {
     if (spec.orientation !== "horizontal" || spec.chartType !== "bar" && spec.chartType !== "stacked") {
-      return FIXED_CHART_HEIGHT;
+      return spec.chartType === "waterfall" ? 460 : FIXED_CHART_HEIGHT;
     }
     const cols = resolveColumns(spec, rows);
     const catList = [];
@@ -30434,6 +30678,14 @@ ${words.slice(bestI).join(" ")}`;
       } else if (spec.xAxisType === "categorical") {
         const isStacked = spec.chartType === "stacked";
         const isFaceted = isBarCategoryFaceted(spec, dataInScope, seriesOrder.length);
+        const waterfallCursor = spec.chartType === "waterfall" ? {
+          deltaCats: new Set(
+            dataInScope.filter((r) => {
+              const k = (r._kind ?? "").trim();
+              return k !== "total" && k !== "skip";
+            }).map((r) => r._xc)
+          )
+        } : void 0;
         const catsSeen = /* @__PURE__ */ new Set();
         const cats = [];
         for (const r of dataInScope) {
@@ -30446,7 +30698,8 @@ ${words.slice(bestI).join(" ")}`;
         const orderedCats = sectionOrderedCategories(spec, dataInScope, cats);
         const bandRows = dataInScope.map((r) => ({ _xc: r._xc, series: r.series, _y: r._y }));
         const horizontalBar = spec.orientation === "horizontal";
-        const bandYFormat = (v) => formatValue(v, units, spec.tooltip_decimals);
+        const wfDecimals = spec.chartType === "waterfall" ? waterfallValueDecimals(dataInScope, spec.valueLabels?.decimals) : void 0;
+        const bandYFormat = (v) => formatValue(v, units, wfDecimals ?? spec.tooltip_decimals);
         const useTooltip = showTotalDot === true;
         let secondaryDriver = null;
         attachBandCrosshair(svg, {
@@ -30479,7 +30732,8 @@ ${words.slice(bestI).join(" ")}`;
           colors,
           seriesOrder,
           yFormat: bandYFormat,
-          horizontal: horizontalBar
+          horizontal: horizontalBar,
+          showTotalDot
         });
         if (!useTooltip) {
           secondaryDriver = attachSecondaryBandCursor(svg, {
@@ -30495,7 +30749,8 @@ ${words.slice(bestI).join(" ")}`;
             // Horizontal: shade into the left label gutter + bold the hovered row label (no pill).
             // Vertical: shade stops at the baseline (matching faceted vertical); the x-axis category
             // name gets its own frosted pill from attachSecondaryBandCursor's addCoordCategoryHighlight.
-            ...horizontalBar ? { regionFromLeftEdge: true, accentLabel: { font: FACETED_CAT_LABEL_PX } } : {}
+            ...horizontalBar ? { regionFromLeftEdge: true, accentLabel: { font: FACETED_CAT_LABEL_PX } } : {},
+            ...waterfallCursor ? { waterfall: waterfallCursor } : {}
           });
         }
       } else {
@@ -30950,10 +31205,20 @@ ${words.slice(bestI).join(" ")}`;
           colors: ctx.colors,
           seriesOrder: ctx.seriesOrder,
           yFormat: (v) => formatValue(v, ctx.units, ctx.spec.tooltip_decimals),
-          horizontal
+          horizontal,
+          showTotalDot: ctx.showTotalDot
         })
       );
       if (coord) {
+        const wfCursor = ctx.spec.chartType === "waterfall" ? {
+          deltaCats: new Set(
+            ctx.dataInScope.filter((r) => {
+              const k = (r._kind ?? "").trim();
+              return k !== "total" && k !== "skip";
+            }).map((r) => r._xc)
+          )
+        } : void 0;
+        const wfDecimals = wfCursor ? waterfallValueDecimals(ctx.dataInScope, ctx.spec.valueLabels?.decimals) : void 0;
         return attachSecondaryBandCursor(svg, {
           rows: ctx.dataInScope.map((r) => ({ _xc: r._xc, series: r.series, _y: r._y })),
           isStacked,
@@ -30962,13 +31227,14 @@ ${words.slice(bestI).join(" ")}`;
           colors: ctx.colors,
           seriesLabels: ctx.seriesLabels,
           seriesOrder: ctx.seriesOrder,
-          yFormat: (v) => formatValue(v, ctx.units, ctx.spec.tooltip_decimals),
+          yFormat: (v) => formatValue(v, ctx.units, wfDecimals ?? ctx.spec.tooltip_decimals),
           horizontal,
           ...horizontal ? {
             regionFromLeftEdge: true,
             regionExtendRight: ctx.coordExtendRight ?? 0,
             ...ctx.coordAccentLabel ? { accentLabel: { font: FACETED_CAT_LABEL_PX } } : {}
-          } : {}
+          } : {},
+          ...wfCursor ? { waterfall: wfCursor } : {}
         });
       }
       return void 0;
@@ -31072,9 +31338,10 @@ ${words.slice(bestI).join(" ")}`;
     };
     const isShared = (sm3.mode ?? "shared") === "shared";
     const isPointFigure = spec.chartType === "dotplot" || spec.chartType === "scatter";
-    const paneMinWidth = isPointFigure ? 160 : PANE_MIN_WIDTH;
+    const isWaterfallFig = spec.chartType === "waterfall";
+    const paneMinWidth = isPointFigure ? 160 : isWaterfallFig ? 320 : PANE_MIN_WIDTH;
     const TALL_PANE_TYPES2 = /* @__PURE__ */ new Set(["dotplot", "bar", "stacked"]);
-    const paneHeight = TALL_PANE_TYPES2.has(spec.chartType) ? 320 : PANE_HEIGHT;
+    const paneHeight = isWaterfallFig ? 420 : TALL_PANE_TYPES2.has(spec.chartType) ? 320 : PANE_HEIGHT;
     const isHorizontalBarFig = spec.chartType === "bar" && spec.orientation === "horizontal";
     const isCategoricalBarFig = spec.chartType === "bar" || spec.chartType === "stacked";
     const figHeight = isHorizontalBarFig ? void 0 : paneHeight;
