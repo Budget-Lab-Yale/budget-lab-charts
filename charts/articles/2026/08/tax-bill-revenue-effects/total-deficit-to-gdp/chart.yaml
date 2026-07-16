@@ -1,0 +1,11 @@
+chartType: line
+title: "Total deficit to GDP"
+subtitle: "Percent of GDP"
+xAxisType: numeric
+tooltip_decimals: 1
+columns:
+  x: year
+  value: value
+  series: scenario
+source: "The Budget Lab"
+data: data.csv

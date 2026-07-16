@@ -1,0 +1,10 @@
+title: "Budget effects by bill section"
+subtitle: "Billions USD"
+data: data.csv
+stub: [section]
+header: [version, window]
+value: value
+emphasis_rows: [Total]
+format:
+  default: { decimals: 0, thousands: true }
+source: "The Budget Lab"

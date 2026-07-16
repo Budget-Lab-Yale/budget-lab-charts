@@ -1,0 +1,14 @@
+chartType: line
+title: "Debt to GDP"
+subtitle: "Percent of GDP"
+xAxisType: numeric
+tooltip_decimals: 1
+columns:
+  x: year
+  value: value
+  series: scenario
+annotations:
+  xAxis:
+    - { x: "2040", label: "Future Event" }
+source: "The Budget Lab"
+data: data.csv

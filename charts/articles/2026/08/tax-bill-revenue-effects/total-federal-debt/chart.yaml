@@ -1,0 +1,13 @@
+chartType: line
+title: "Total federal debt"
+subtitle: "Trillions USD"
+xAxisType: numeric
+columns:
+  x: year
+  value: value
+  series: scenario
+annotations:
+  yAxis:
+    - { y: 120, label: "$120 trillion" }
+source: "The Budget Lab"
+data: data.csv

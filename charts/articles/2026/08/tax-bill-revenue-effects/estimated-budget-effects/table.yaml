@@ -1,0 +1,9 @@
+title: "Estimated budget effects"
+subtitle: "Billions USD"
+data: data.csv
+stub: [group, variant]
+header: [measure, window]
+value: value
+format:
+  default: { decimals: 0, thousands: true }
+source: "The Budget Lab"
