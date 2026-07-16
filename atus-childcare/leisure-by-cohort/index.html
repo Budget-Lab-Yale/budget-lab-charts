@@ -26129,7 +26129,8 @@ ${words.slice(bestI).join(" ")}`;
 
   // src/engine/marks/stacked.ts
   var NET_DOT_CLASS = "tbl-net-marker";
-  var NET_LABEL_CLASS = "tbl-net-label";
+  var NET_DOT_R = 8;
+  var NET_DOT_PANE_R = 5.6;
   var SEGMENT_LABEL_MIN_PX = 25;
   var MARK_BLACK = tokens.structural.mark_black;
   var WHITE = "#FFFFFF";
@@ -26258,62 +26259,9 @@ ${words.slice(bestI).join(" ")}`;
         horizontal ? plot_0_6_16_esm_min_exports.text(netRows, { ...common, y: "_xc", x: "posTop", textAnchor: "start", dx: TBL_VALUE_LABEL.gap }) : plot_0_6_16_esm_min_exports.text(netRows, { ...common, x: "_xc", y: "posTop", textAnchor: "middle", dy: -TBL_VALUE_LABEL.gap })
       );
     } else if (netMode === "dot") {
-      const netLabelFill2 = spec.barStack?.netLabelColor === "black" ? MARK_BLACK : WHITE;
-      if (horizontal) {
-        overlay.push(
-          plot_0_6_16_esm_min_exports.dot(netRows, {
-            y: "_xc",
-            x: "net",
-            r: 10,
-            fill: WHITE,
-            stroke: MARK_BLACK,
-            strokeWidth: 2,
-            className: NET_DOT_CLASS
-          })
-        );
-        if (!pane) {
-          overlay.push(
-            plot_0_6_16_esm_min_exports.text(netRows, {
-              y: "_xc",
-              x: "net",
-              text: (d) => netFmt(d.net),
-              fill: netLabelFill2,
-              fontSize: TBL_VALUE_LABEL.fontSize,
-              fontWeight: TBL_VALUE_LABEL.fontWeight,
-              textAnchor: "middle",
-              dy: 20,
-              className: NET_LABEL_CLASS
-            })
-          );
-        }
-      } else {
-        overlay.push(
-          plot_0_6_16_esm_min_exports.dot(netRows, {
-            x: "_xc",
-            y: "net",
-            r: 10,
-            fill: WHITE,
-            stroke: MARK_BLACK,
-            strokeWidth: 2,
-            className: NET_DOT_CLASS
-          })
-        );
-        if (!pane) {
-          overlay.push(
-            plot_0_6_16_esm_min_exports.text(netRows, {
-              x: "_xc",
-              y: "net",
-              text: (d) => netFmt(d.net),
-              fill: netLabelFill2,
-              fontSize: TBL_VALUE_LABEL.fontSize,
-              fontWeight: TBL_VALUE_LABEL.fontWeight,
-              textAnchor: "middle",
-              dy: 20,
-              className: NET_LABEL_CLASS
-            })
-          );
-        }
-      }
+      const netDotR = pane ? NET_DOT_PANE_R : NET_DOT_R;
+      const netDot = horizontal ? plot_0_6_16_esm_min_exports.dot(netRows, { y: "_xc", x: "net", r: netDotR, fill: WHITE, stroke: MARK_BLACK, strokeWidth: 2, className: NET_DOT_CLASS }) : plot_0_6_16_esm_min_exports.dot(netRows, { x: "_xc", y: "net", r: netDotR, fill: WHITE, stroke: MARK_BLACK, strokeWidth: 2, className: NET_DOT_CLASS });
+      overlay.push(netDot);
     }
     if (netMode !== "dot" && !pane && spec.valueLabels?.show === true) {
       let lightSeries = null;
@@ -26346,18 +26294,11 @@ ${words.slice(bestI).join(" ")}`;
       {
         selector: `g.${NET_DOT_CLASS} circle`,
         seriesOrder: Array(categories.length).fill(TOTAL_SERIES_KEY)
-      },
-      // The net LABEL text is suppressed in panes, so only tag it for the single chart.
-      ...pane ? [] : [
-        {
-          selector: `g.${NET_LABEL_CLASS} text`,
-          seriesOrder: Array(categories.length).fill(TOTAL_SERIES_KEY)
-        }
-      ]
+      }
     ] : [];
     const showTotalDot = netMode === "dot" ? true : netMode === "text" ? false : void 0;
     if (horizontal) {
-      const gutter = horizontalLeftGutter(categories, { fontSize: catFont });
+      const gutter = ctx.hideCategoryLabels ? SHARED_LABELLESS_MARGIN_LEFT : ctx.categoryGutter ?? horizontalLeftGutter(categories, { fontSize: catFont });
       return {
         underlay: [],
         overlay,
@@ -26370,7 +26311,7 @@ ${words.slice(bestI).join(" ")}`;
         ],
         dashedNames: /* @__PURE__ */ new Set(),
         yScaleOpts: { type: "band", domain: categories, padding: 0.2, axis: null },
-        xAxisMarks: tblBandYAxis(categories, gutter, catFont),
+        xAxisMarks: ctx.hideCategoryLabels ? [] : tblBandYAxis(categories, gutter, catFont),
         marginLeft: gutter,
         seriesColors,
         legendVisualOrder,
@@ -27055,7 +26996,8 @@ ${words.slice(bestI).join(" ")}`;
     if (!facetField) {
       throw new Error("small_multiples requires a facet column (set columns.facet).");
     }
-    const isHorizontalBar = spec.chartType === "bar" && spec.orientation === "horizontal";
+    const isHorizontalStacked = spec.chartType === "stacked" && spec.orientation === "horizontal";
+    const isHorizontalBar = (spec.chartType === "bar" || spec.chartType === "stacked") && spec.orientation === "horizontal";
     const sharedCategories = isHorizontalBar ? orderedCategories(rows, cols.x, spec) : [];
     const hGutter = isHorizontalBar ? horizontalLeftGutter(sharedCategories, { fontSize: FACETED_CAT_LABEL_PX }) : TBL_MARGIN_LEFT;
     let autoHeight;
@@ -27068,10 +27010,19 @@ ${words.slice(bestI).join(" ")}`;
         (m, c) => Math.max(m, labelLineCount(c, maxPx, FACETED_CAT_LABEL_PX)),
         1
       );
+      const catsByFacet = /* @__PURE__ */ new Map();
+      for (const r of rows) {
+        const f = facetField ? r[facetField] : "";
+        const c = r[cols.x];
+        if (!c) continue;
+        if (!catsByFacet.has(f)) catsByFacet.set(f, /* @__PURE__ */ new Set());
+        catsByFacet.get(f).add(c);
+      }
+      const maxPaneCats = Math.max(1, ...[...catsByFacet.values()].map((s) => s.size));
       autoHeight = horizontalBarHeight({
-        nCategories: sharedCategories.length,
+        nCategories: maxPaneCats,
         nSeries: Math.max(1, nSeries),
-        grouped: nSeries > 1,
+        grouped: nSeries > 1 && !isHorizontalStacked,
         nSpacers,
         maxLabelLines,
         extraTopPx: nSections > 0 ? SECTION_HEADER_TOP_PX : 0
@@ -27114,7 +27065,7 @@ ${words.slice(bestI).join(" ")}`;
             const s = cols.series ? r[cols.series] : "";
             if (s) serSet.add(s);
           }
-          return Math.max(1, catSet.size) * Math.max(1, serSet.size);
+          return isHorizontalStacked ? Math.max(1, catSet.size) : Math.max(1, catSet.size) * Math.max(1, serSet.size);
         };
         const weights = Array.from({ length: columns }, () => 0);
         paneValues.forEach((v, i) => {
@@ -30497,6 +30448,7 @@ ${words.slice(bestI).join(" ")}`;
         const bandRows = dataInScope.map((r) => ({ _xc: r._xc, series: r.series, _y: r._y }));
         const horizontalBar = spec.orientation === "horizontal";
         const bandYFormat = (v) => formatValue(v, units, spec.tooltip_decimals);
+        const useTooltip = showTotalDot === true;
         let secondaryDriver = null;
         attachBandCrosshair(svg, {
           rows: bandRows,
@@ -30511,10 +30463,12 @@ ${words.slice(bestI).join(" ")}`;
           categoryLabels: spec.x_labels,
           swatchShape: "rect",
           orientation: horizontalBar ? "horizontal" : "vertical",
-          emitOnly: true,
-          onResolve: (cat) => {
-            pillDriver?.setSuppressedCategory(cat);
-            secondaryDriver?.(cat, true);
+          ...useTooltip ? {} : {
+            emitOnly: true,
+            onResolve: (cat) => {
+              pillDriver?.setSuppressedCategory(cat);
+              secondaryDriver?.(cat, true);
+            }
           }
         });
         pillDriver = attachHighlightPills(svg, {
@@ -30528,21 +30482,23 @@ ${words.slice(bestI).join(" ")}`;
           yFormat: bandYFormat,
           horizontal: horizontalBar
         });
-        secondaryDriver = attachSecondaryBandCursor(svg, {
-          rows: bandRows,
-          isStacked,
-          isFaceted,
-          categories: orderedCats,
-          colors,
-          seriesLabels,
-          seriesOrder,
-          yFormat: bandYFormat,
-          horizontal: horizontalBar,
-          // Horizontal: shade into the left label gutter + bold the hovered row label (no pill).
-          // Vertical: shade stops at the baseline (matching faceted vertical); the x-axis category
-          // name gets its own frosted pill from attachSecondaryBandCursor's addCoordCategoryHighlight.
-          ...horizontalBar ? { regionFromLeftEdge: true, accentLabel: { font: FACETED_CAT_LABEL_PX } } : {}
-        });
+        if (!useTooltip) {
+          secondaryDriver = attachSecondaryBandCursor(svg, {
+            rows: bandRows,
+            isStacked,
+            isFaceted,
+            categories: orderedCats,
+            colors,
+            seriesLabels,
+            seriesOrder,
+            yFormat: bandYFormat,
+            horizontal: horizontalBar,
+            // Horizontal: shade into the left label gutter + bold the hovered row label (no pill).
+            // Vertical: shade stops at the baseline (matching faceted vertical); the x-axis category
+            // name gets its own frosted pill from attachSecondaryBandCursor's addCoordCategoryHighlight.
+            ...horizontalBar ? { regionFromLeftEdge: true, accentLabel: { font: FACETED_CAT_LABEL_PX } } : {}
+          });
+        }
       } else {
         attachCrosshair(svg, {
           rows: dataInScope.map((r) => ({ time: r.time, series: r.series, value: r._y })),
@@ -30958,6 +30914,8 @@ ${words.slice(bestI).join(" ")}`;
         }
       }
       const cats = sectionOrderedCategories(ctx.spec, ctx.dataInScope, catsRaw);
+      const useTooltip = ctx.showTotalDot === true;
+      const coord = useCoord && !useTooltip;
       attachBandCrosshair(svg, {
         rows: ctx.dataInScope.map((r) => ({ _xc: r._xc, series: r.series, _y: r._y })),
         isStacked,
@@ -30972,7 +30930,7 @@ ${words.slice(bestI).join(" ")}`;
         swatchShape: "rect",
         orientation: horizontal ? "horizontal" : "vertical",
         // Coordinated: hit-test + emit only (no tooltip/highlight); the coordinated renderer draws.
-        ...useCoord ? { emitOnly: true, onResolve: (cat) => ctx.onResolve(cat) } : {}
+        ...coord ? { emitOnly: true, onResolve: (cat) => ctx.onResolve(cat) } : {}
       });
       if (handle) {
         svg.querySelectorAll(".tbl-band-crosshair-hit").forEach((el3) => {
@@ -30996,7 +30954,7 @@ ${words.slice(bestI).join(" ")}`;
           horizontal
         })
       );
-      if (useCoord) {
+      if (coord) {
         return attachSecondaryBandCursor(svg, {
           rows: ctx.dataInScope.map((r) => ({ _xc: r._xc, series: r.series, _y: r._y })),
           isStacked,
