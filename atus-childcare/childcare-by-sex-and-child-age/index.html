@@ -26719,9 +26719,8 @@ ${words.slice(bestI).join(" ")}`;
       });
     }
     const markerList = yAxisAnn;
-    const markerPalette = tblColorScale(markerList.length + 1);
     markerList.forEach((m, i) => {
-      const markerColor = m.color && (resolveColor(m.color) || m.color) || markerPalette[i + 1] || TBL.color.annotationDim;
+      const markerColor = m.color && (resolveColor(m.color) || m.color) || TBL.color.annotationDim;
       marks.push(
         plot_0_6_16_esm_min_exports.ruleY([m.y], {
           stroke: markerColor,
