@@ -1,0 +1,7 @@
+unit,cut_size,share
+All tax units,No cut or tax increase,30.7107
+All tax units,< $100,15.6963
+All tax units,$100 - $500,21.2959
+All tax units,"$500 - $1,000",12.3828
+All tax units,"$1,000 - $5,000",18.3733
+All tax units,"> $5,000",1.541

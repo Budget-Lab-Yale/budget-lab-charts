@@ -1,0 +1,55 @@
+income_group,section,cut_size,share
+Quintile 1,By Quintile,No cut or tax increase,86.4817
+Quintile 1,By Quintile,< $100,11.1304
+Quintile 1,By Quintile,$100 - $500,2.1392
+Quintile 1,By Quintile,"$500 - $1,000",0.1122
+Quintile 1,By Quintile,"$1,000 - $5,000",0.1288
+Quintile 1,By Quintile,"> $5,000",0.0077
+Quintile 2,By Quintile,No cut or tax increase,47.3408
+Quintile 2,By Quintile,< $100,33.4677
+Quintile 2,By Quintile,$100 - $500,13.3966
+Quintile 2,By Quintile,"$500 - $1,000",4.5631
+Quintile 2,By Quintile,"$1,000 - $5,000",1.2277
+Quintile 2,By Quintile,"> $5,000",0.004
+Quintile 3,By Quintile,No cut or tax increase,9.8359
+Quintile 3,By Quintile,< $100,30.7364
+Quintile 3,By Quintile,$100 - $500,27.0494
+Quintile 3,By Quintile,"$500 - $1,000",20.9704
+Quintile 3,By Quintile,"$1,000 - $5,000",11.3974
+Quintile 3,By Quintile,"> $5,000",0.0104
+Quintile 4,By Quintile,No cut or tax increase,2.346
+Quintile 4,By Quintile,< $100,2.6134
+Quintile 4,By Quintile,$100 - $500,37.6604
+Quintile 4,By Quintile,"$500 - $1,000",20.9456
+Quintile 4,By Quintile,"$1,000 - $5,000",36.1317
+Quintile 4,By Quintile,"> $5,000",0.3029
+Quintile 5,By Quintile,No cut or tax increase,5.7783
+Quintile 5,By Quintile,< $100,1.1813
+Quintile 5,By Quintile,$100 - $500,26.92
+Quintile 5,By Quintile,"$500 - $1,000",15.4821
+Quintile 5,By Quintile,"$1,000 - $5,000",43.2553
+Quintile 5,By Quintile,"> $5,000",7.383
+Top 10%,Top Quintile Breakout,No cut or tax increase,9.9758
+Top 10%,Top Quintile Breakout,< $100,1.0322
+Top 10%,Top Quintile Breakout,$100 - $500,25.359
+Top 10%,Top Quintile Breakout,"$500 - $1,000",13.1263
+Top 10%,Top Quintile Breakout,"$1,000 - $5,000",38.0209
+Top 10%,Top Quintile Breakout,"> $5,000",12.4857
+Top 5%,Top Quintile Breakout,No cut or tax increase,18.0919
+Top 5%,Top Quintile Breakout,< $100,1.0769
+Top 5%,Top Quintile Breakout,$100 - $500,24.424
+Top 5%,Top Quintile Breakout,"$500 - $1,000",7.9341
+Top 5%,Top Quintile Breakout,"$1,000 - $5,000",30.4693
+Top 5%,Top Quintile Breakout,"> $5,000",18.0038
+Top 1%,Top Quintile Breakout,No cut or tax increase,54.539
+Top 1%,Top Quintile Breakout,< $100,0.672
+Top 1%,Top Quintile Breakout,$100 - $500,29.0173
+Top 1%,Top Quintile Breakout,"$500 - $1,000",3.4005
+Top 1%,Top Quintile Breakout,"$1,000 - $5,000",8.8352
+Top 1%,Top Quintile Breakout,"> $5,000",3.5361
+Top 0.1%,Top Quintile Breakout,No cut or tax increase,78.501
+Top 0.1%,Top Quintile Breakout,< $100,0.3111
+Top 0.1%,Top Quintile Breakout,$100 - $500,17.0362
+Top 0.1%,Top Quintile Breakout,"$500 - $1,000",1.2238
+Top 0.1%,Top Quintile Breakout,"$1,000 - $5,000",2.0404
+Top 0.1%,Top Quintile Breakout,"> $5,000",0.8875
