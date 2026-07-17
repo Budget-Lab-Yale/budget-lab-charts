@@ -782,11 +782,9 @@ body {
   white-space: nowrap;
 }
 
-/* Header→body separator (bug #4): a single continuous rule under the WHOLE header block,
-   including the stub corner. Applied to the bottom-tier <th> AND the rowspanning corner so it
-   does not break over the stub in multi-tier tables. */
-.tbl-table thead tr:last-child th,
-.tbl-table thead th.tbl-table-stub-header {
+/* Header→body separator: every header cell whose bottom edge is the header base, so the rule
+   stays continuous across rowspanning cells (stub corner, blank-group data columns). */
+.tbl-table thead th.is-header-bottom {
   border-bottom: 1px solid var(--tbl-axis-stroke);
 }
 
@@ -25329,27 +25327,12 @@ ${words.slice(bestI).join(" ")}`;
     ];
   }
   var SECTION_SPACER_PREFIX = " section:";
-  function sectionSpacer(section) {
-    return SECTION_SPACER_PREFIX + section;
+  var SECTION_SPACER_SLOTS = 2;
+  function sectionSpacerSlot(section, i) {
+    return `${SECTION_SPACER_PREFIX}${i}:${section}`;
   }
   function isSectionSpacer(v) {
     return v.startsWith(SECTION_SPACER_PREFIX);
-  }
-  function tblSectionHeaderYAxis(spacers, marginLeft = TBL_MARGIN_LEFT, fontSize = TBL.size.axis, gap = 12) {
-    if (!spacers.length) return [];
-    return [
-      plot_0_6_16_esm_min_exports.text(spacers, {
-        fy: (d) => d.value,
-        text: (d) => d.label,
-        frameAnchor: "bottom-left",
-        dx: -marginLeft,
-        dy: -gap,
-        textAnchor: "start",
-        fill: TBL.color.heading,
-        fontSize,
-        fontWeight: 700
-      })
-    ];
   }
   function tblSectionTopHeader(header, marginLeft = TBL_MARGIN_LEFT, lift = 14, fontSize = TBL.size.axis) {
     return [
@@ -26010,9 +25993,8 @@ ${words.slice(bestI).join(" ")}`;
           topSectionHeader = { category: catsInSection[0], label: labels[s] ?? s };
           firstRendered = true;
         } else {
-          const spacer = sectionSpacer(s);
-          domain.push(spacer);
-          sectionHeaders.push({ value: spacer, label: labels[s] ?? s });
+          for (let i = 0; i < SECTION_SPACER_SLOTS; i++) domain.push(sectionSpacerSlot(s, i));
+          sectionHeaders.push({ category: catsInSection[0], label: labels[s] ?? s });
         }
         for (const cat of catsInSection) domain.push(cat);
       }
@@ -26052,7 +26034,7 @@ ${words.slice(bestI).join(" ")}`;
       fyScaleOpts: { domain: bandDomain, paddingInner: 0.2, paddingOuter: HBAND_PADDING_OUTER, align: 0, axis: null },
       xAxisMarks: ctx.hideCategoryLabels ? [] : [
         ...tblFacetGroupYAxis(categories, gutter, catFont),
-        ...tblSectionHeaderYAxis(sectionHeaders, gutter, catFont, SECTION_HEADER_GAP),
+        ...sectionHeaders.flatMap((h) => tblSectionTopHeader(h, gutter, topHeaderLift, catFont)),
         ...topSectionHeader ? tblSectionTopHeader(topSectionHeader, gutter, topHeaderLift, catFont) : []
       ],
       marginLeft: gutter,
@@ -26102,7 +26084,7 @@ ${words.slice(bestI).join(" ")}`;
           yScaleOpts: { type: "band", domain: bandDomain, paddingInner: 0.2, paddingOuter: HBAND_PADDING_OUTER, align: 0, axis: null },
           xAxisMarks: ctx.hideCategoryLabels ? [] : [
             ...tblBandYAxis(categories, gutter, catFont),
-            ...tblSectionHeaderYAxis(sectionHeaders, gutter, catFont, SECTION_HEADER_GAP),
+            ...sectionHeaders.flatMap((h) => tblSectionTopHeader(h, gutter, topHeaderLift, catFont)),
             ...topSectionHeader ? tblSectionTopHeader(topSectionHeader, gutter, topHeaderLift, catFont) : []
           ],
           marginLeft: gutter,
@@ -27082,6 +27064,40 @@ ${words.slice(bestI).join(" ")}`;
     const inner = (nCategories + Math.max(0, nSpacers)) * slotPx;
     return Math.max(HORIZONTAL_HEIGHT_FLOOR, Math.round(inner + HORIZONTAL_CHROME_PX + extraTopPx));
   }
+  function horizontalBarChartHeight(spec, rows) {
+    const cols = resolveColumns(spec, rows);
+    const categories = orderedCategories(rows, cols.x, spec);
+    const nCats = Math.max(1, categories.length);
+    const series = /* @__PURE__ */ new Set();
+    for (const r of rows) {
+      const s = cols.series ? r[cols.series] : "";
+      if (s) series.add(s);
+    }
+    const nSeries = spec.series_order && spec.series_order.length ? spec.series_order.length : Math.max(1, series.size);
+    const grouped = spec.chartType === "bar" && nSeries > 1;
+    const nSections = cols.section ? countSections(rows, cols.x, cols.section, spec, categories) : 0;
+    const nSpacers = Math.max(0, nSections - 1) * SECTION_SPACER_SLOTS;
+    const gutter = horizontalLeftGutter(categories, { fontSize: FACETED_CAT_LABEL_PX });
+    const maxLabelLines = categories.reduce(
+      (m, c) => Math.max(m, labelLineCount(c, gutter - GUTTER_TEXT_PAD, FACETED_CAT_LABEL_PX)),
+      1
+    );
+    return horizontalBarHeight({
+      nCategories: nCats,
+      nSeries,
+      grouped,
+      nSpacers,
+      maxLabelLines,
+      extraTopPx: nSections > 0 ? SECTION_HEADER_TOP_PX : 0
+    });
+  }
+  function figurePaneHeight(spec) {
+    const horizontal = spec.orientation === "horizontal";
+    if (horizontal && (spec.chartType === "bar" || spec.chartType === "stacked")) return void 0;
+    if (spec.chartType === "waterfall") return 420;
+    if (spec.chartType === "dotplot" || spec.chartType === "bar" || spec.chartType === "stacked") return 320;
+    return 240;
+  }
   function countSections(rows, xField, sectionField, spec, categories) {
     const sectionOf = /* @__PURE__ */ new Map();
     for (const r of rows) {
@@ -27162,16 +27178,20 @@ ${words.slice(bestI).join(" ")}`;
     const sharedCategories = isHorizontalBar ? orderedCategories(rows, cols.x, spec) : [];
     const hGutter = isHorizontalBar ? horizontalLeftGutter(sharedCategories, { fontSize: FACETED_CAT_LABEL_PX }) : TBL_MARGIN_LEFT;
     let autoHeight;
+    let nSpacers = 0;
+    let catsByFacet;
+    let effSlotPx = 0;
+    let chromeExtra = 0;
     if (isHorizontalBar && opts.height == null) {
       const nSeries = spec.series_order && spec.series_order.length ? spec.series_order.length : new Set(rows.map((r) => cols.series ? r[cols.series] : "").filter((s) => s !== "")).size;
       const nSections = cols.section ? countSections(rows, cols.x, cols.section, spec, sharedCategories) : 0;
-      const nSpacers = Math.max(0, nSections - 1);
+      nSpacers = Math.max(0, nSections - 1) * SECTION_SPACER_SLOTS;
       const maxPx = hGutter - GUTTER_TEXT_PAD;
       const maxLabelLines = sharedCategories.reduce(
         (m, c) => Math.max(m, labelLineCount(c, maxPx, FACETED_CAT_LABEL_PX)),
         1
       );
-      const catsByFacet = /* @__PURE__ */ new Map();
+      catsByFacet = /* @__PURE__ */ new Map();
       for (const r of rows) {
         const f = facetField ? r[facetField] : "";
         const c = r[cols.x];
@@ -27180,14 +27200,17 @@ ${words.slice(bestI).join(" ")}`;
         catsByFacet.get(f).add(c);
       }
       const maxPaneCats = Math.max(1, ...[...catsByFacet.values()].map((s) => s.size));
-      autoHeight = horizontalBarHeight({
-        nCategories: maxPaneCats,
-        nSeries: Math.max(1, nSeries),
-        grouped: nSeries > 1 && !isHorizontalStacked,
-        nSpacers,
-        maxLabelLines,
-        extraTopPx: nSections > 0 ? SECTION_HEADER_TOP_PX : 0
-      });
+      const barsPerCat = nSeries > 1 && !isHorizontalStacked ? Math.max(1, nSeries) : 1;
+      const slotPxNatural = Math.max(
+        barsPerCat * HORIZONTAL_PX_PER_BAR,
+        Math.max(1, maxLabelLines) * HORIZONTAL_LABEL_LINE_PX + 6
+      );
+      chromeExtra = HORIZONTAL_CHROME_PX + (nSections > 0 ? SECTION_HEADER_TOP_PX : 0);
+      const busiestSlots = maxPaneCats + nSpacers;
+      const naturalBusiest = busiestSlots * slotPxNatural + chromeExtra;
+      const hBusy = Math.max(HORIZONTAL_HEIGHT_FLOOR, naturalBusiest);
+      effSlotPx = (hBusy - chromeExtra) / busiestSlots;
+      autoHeight = Math.round(hBusy);
     }
     const effHeight = opts.height ?? autoHeight;
     const encounterOrder = [];
@@ -27201,6 +27224,10 @@ ${words.slice(bestI).join(" ")}`;
     }
     const paneValues = sm3.pane_order && sm3.pane_order.length ? sm3.pane_order.filter((v) => seen.has(v)) : encounterOrder;
     if (!paneValues.length) throw new Error("No panes: facet_field produced no values in scope.");
+    const perPaneHeights = isHorizontalBar && opts.height == null ? paneValues.map((v) => {
+      const slots = Math.max(1, catsByFacet?.get(v)?.size ?? 1) + nSpacers;
+      return Math.round(slots * effSlotPx + chromeExtra);
+    }) : void 0;
     const variableWidths = sm3.pane_widths != null && sm3.pane_widths !== "equal";
     const requestedColumns = opts.columns && opts.columns > 0 ? opts.columns : sm3.columns && sm3.columns > 0 ? sm3.columns : variableWidths ? paneValues.length : defaultColumns(paneValues.length);
     const columns = Math.max(1, Math.min(requestedColumns, paneValues.length));
@@ -27263,7 +27290,7 @@ ${words.slice(bestI).join(" ")}`;
           paneRows,
           {
             ...opts,
-            height: effHeight,
+            height: perPaneHeights ? perPaneHeights[i] : effHeight,
             pane: true,
             paneFacetValue: value,
             ...perPaneWidths ? { width: perPaneWidths[col] } : {},
@@ -27311,6 +27338,7 @@ ${words.slice(bestI).join(" ")}`;
         columns,
         rows: gridRows,
         ...perPaneWidths ? { columnWidths: perPaneWidths } : {},
+        ...perPaneHeights ? { paneHeights: perPaneHeights } : {},
         legendItems: legendItems2,
         shapeLegendItems: buildShapeLegendItems(spec, firstLayers2 ?? { underlay: [], overlay: [], tagging: [], dashedNames: /* @__PURE__ */ new Set() }),
         colorLegendTitle: spec.color_legend_title,
@@ -27361,7 +27389,7 @@ ${words.slice(bestI).join(" ")}`;
         paneRows,
         {
           ...opts,
-          height: effHeight,
+          height: perPaneHeights ? perPaneHeights[i] : effHeight,
           pane: true,
           paneFacetValue: value,
           yDomain: sharedYDomain,
@@ -27408,6 +27436,7 @@ ${words.slice(bestI).join(" ")}`;
       columns,
       rows: gridRows,
       columnWidths: colWidths,
+      ...perPaneHeights ? { paneHeights: perPaneHeights } : {},
       legendItems,
       shapeLegendItems: buildShapeLegendItems(spec, firstLayers ?? { underlay: [], overlay: [], tagging: [], dashedNames: /* @__PURE__ */ new Set() }),
       colorLegendTitle: spec.color_legend_title,
@@ -28213,12 +28242,14 @@ ${words.slice(bestI).join(" ")}`;
     hit.addEventListener("pointerleave", hide);
     hit.addEventListener("pointerdown", update);
   }
-  function widenBandsToMidpoints(bands, lo3, hi3) {
+  function widenBandsToMidpoints(bands, lo3, hi3, boundaryAfter) {
     if (!bands.length) return [];
     const centers = bands.map((b) => (b.min + b.max) / 2);
     return centers.map((c, i) => {
-      const prev = i > 0 ? centers[i - 1] : null;
-      const next = i < centers.length - 1 ? centers[i + 1] : null;
+      const hasPrev = i > 0 && !boundaryAfter?.[i - 1];
+      const hasNext = i < centers.length - 1 && !boundaryAfter?.[i];
+      const prev = hasPrev ? centers[i - 1] : null;
+      const next = hasNext ? centers[i + 1] : null;
       const left = prev != null ? (prev + c) / 2 : next != null ? c - (next - c) / 2 : bands[i].min;
       const right = next != null ? (c + next) / 2 : prev != null ? c + (c - prev) / 2 : bands[i].max;
       return { min: Math.max(lo3, left), max: Math.min(hi3, right) };
@@ -28350,17 +28381,26 @@ ${words.slice(bestI).join(" ")}`;
       if (groups.length) {
         const parsed = [];
         for (const g of groups) {
-          if (!g.querySelector("rect")) continue;
           const transform = g.getAttribute("transform") ?? "";
           const m = /translate\(\s*-?[\d.]+\s*[ ,]\s*([\d.+-]+)/.exec(transform);
           const ty3 = m ? parseFloat(m[1]) : 0;
-          parsed.push({ y: ty3, g });
+          parsed.push({ y: ty3, g, hasRect: !!g.querySelector("rect") });
         }
         parsed.sort((a, b) => a.y - b.y);
-        return parsed.map((p, i) => {
-          const cat = categories[i] ?? String(i);
+        const bands2 = [];
+        const boundaryAfter = [];
+        let sawEmptySinceLastReal = false;
+        let ci3 = 0;
+        for (const p of parsed) {
+          if (!p.hasRect) {
+            if (bands2.length) sawEmptySinceLastReal = true;
+            continue;
+          }
+          if (sawEmptySinceLastReal && bands2.length) boundaryAfter[bands2.length - 1] = true;
+          sawEmptySinceLastReal = false;
+          const cat = categories[ci3] ?? String(ci3);
+          ci3++;
           const rects = Array.from(p.g.querySelectorAll("rect"));
-          if (!rects.length) return { category: cat, yMin: p.y, yMax: p.y + 1 };
           let yMin = Infinity;
           let yMax = -Infinity;
           for (const rect of rects) {
@@ -28369,12 +28409,14 @@ ${words.slice(bestI).join(" ")}`;
             if (ry3 < yMin) yMin = ry3;
             if (ry3 + rh3 > yMax) yMax = ry3 + rh3;
           }
-          return { category: cat, yMin, yMax };
-        });
+          bands2.push({ category: cat, yMin, yMax });
+          boundaryAfter.push(false);
+        }
+        return { bands: bands2, boundaryAfter };
       }
     }
     const allRects = Array.from(svgEl3.querySelectorAll('g[aria-label="bar"] rect'));
-    if (!allRects.length) return [];
+    if (!allRects.length) return { bands: [], boundaryAfter: [] };
     const yToBand = /* @__PURE__ */ new Map();
     for (const rect of allRects) {
       const ry3 = parseFloat(rect.getAttribute("y") ?? "0");
@@ -28389,11 +28431,12 @@ ${words.slice(bestI).join(" ")}`;
       }
     }
     const sortedKeys = Array.from(yToBand.keys()).sort((a, b) => a - b);
-    return sortedKeys.map((key, i) => {
+    const bands = sortedKeys.map((key, i) => {
       const band = yToBand.get(key);
       const cat = categories[i] ?? String(i);
       return { category: cat, yMin: band.yMin, yMax: band.yMax };
     });
+    return { bands, boundaryAfter: bands.map(() => false) };
   }
   function attachBandCrosshair(svgEl3, opts) {
     if (!svgEl3 || !opts.rows?.length) return;
@@ -28461,11 +28504,12 @@ ${words.slice(bestI).join(" ")}`;
       if (horizontal) {
         const scaleY = H11 / rect.height;
         const svgY = (evt.clientY - rect.top) * scaleY;
-        const raw = readCategoryBandsH(svgEl3, opts);
+        const { bands: raw, boundaryAfter } = readCategoryBandsH(svgEl3, opts);
         const wide = widenBandsToMidpoints(
           raw.map((b) => ({ min: b.yMin, max: b.yMax })),
           mt3,
-          H11 - mb3
+          H11 - mb3,
+          boundaryAfter
         );
         const bands = raw.map((b, i) => ({
           category: b.category,
@@ -29047,7 +29091,7 @@ ${words.slice(bestI).join(" ")}`;
         return;
       }
       if (horizontal) {
-        const rawH = readCategoryBandsH(svgEl3, {
+        const { bands: rawH } = readCategoryBandsH(svgEl3, {
           rows: opts.rows,
           isFaceted: opts.isFaceted,
           categories: opts.categories
@@ -29863,9 +29907,6 @@ ${words.slice(bestI).join(" ")}`;
   function drawLines2(root, lines, x, firstBaseline, lineHeight, opt) {
     return drawLines(document, root, lines, x, firstBaseline, lineHeight, opt);
   }
-  var PANE_CHART_H = 240;
-  var TALL_PANE_TYPES = /* @__PURE__ */ new Set(["dotplot", "bar", "stacked"]);
-  var TALL_PANE_CHART_H = 320;
   var PANE_TITLE_H = 18;
   var COL_GAP = 20;
   var ROW_GAP = 18;
@@ -29949,6 +29990,7 @@ ${words.slice(bestI).join(" ")}`;
   }
   function buildExportSvg(spec, rows, opts = {}) {
     const isFigure = spec.small_multiples != null;
+    const isSingleHorizontalBar = !isFigure && (spec.chartType === "bar" || spec.chartType === "stacked") && spec.orientation === "horizontal";
     const meta = isFigure ? renderFigure(spec, rows, { width: INNER_W }) : renderChart(spec, rows, { width: INNER_W });
     const legendItems = meta.legendItems ?? [];
     const shapeLegendItems = meta.shapeLegendItems ?? [];
@@ -29991,7 +30033,7 @@ ${words.slice(bestI).join(" ")}`;
     if (xAxisTitle) bottomH += 14;
     let contentHeight;
     if (!isFigure) {
-      contentHeight = Math.max(160, H10 - chartTop - bottomH);
+      contentHeight = isSingleHorizontalBar ? horizontalBarChartHeight(spec, rows) : Math.max(160, H10 - chartTop - bottomH);
       const { svg: chartSvg } = renderChart(spec, rows, {
         width: INNER_W,
         height: contentHeight,
@@ -30006,13 +30048,13 @@ ${words.slice(bestI).join(" ")}`;
       const figMeta = meta;
       const cols = figMeta.columns;
       const gridRows = figMeta.rows;
-      const paneChartH = TALL_PANE_TYPES.has(spec.chartType) ? TALL_PANE_CHART_H : PANE_CHART_H;
-      const isHorizontalBarFig = spec.chartType === "bar" && spec.orientation === "horizontal";
+      const paneChartH = figurePaneHeight(spec);
+      const isHorizontalBarFig = (spec.chartType === "bar" || spec.chartType === "stacked") && spec.orientation === "horizontal";
       const isShared = (spec.small_multiples?.mode ?? "shared") === "shared";
       const shared = isShared ? sharedColumnWidths(INNER_W, cols, COL_GAP) : null;
       const equalPaneW = Math.floor((INNER_W - COL_GAP * (cols - 1)) / cols);
       const useGridW = isShared || isHorizontalBarFig;
-      const fig = useGridW ? renderFigure(spec, rows, { gridWidth: INNER_W, gridGap: COL_GAP, height: isHorizontalBarFig ? void 0 : paneChartH, columns: cols, ...accentColor ? { accentColor } : {} }) : renderFigure(spec, rows, { width: equalPaneW, height: isHorizontalBarFig ? void 0 : paneChartH, columns: cols, ...accentColor ? { accentColor } : {} });
+      const fig = useGridW ? renderFigure(spec, rows, { gridWidth: INNER_W, gridGap: COL_GAP, height: paneChartH, columns: cols, ...accentColor ? { accentColor } : {} }) : renderFigure(spec, rows, { width: equalPaneW, height: paneChartH, columns: cols, ...accentColor ? { accentColor } : {} });
       const figColWidths = !isShared && isHorizontalBarFig ? fig.columnWidths : void 0;
       const colWidth = (col) => shared?.colWidths[col] ?? figColWidths?.[col] ?? equalPaneW;
       const colX = [];
@@ -30021,14 +30063,31 @@ ${words.slice(bestI).join(" ")}`;
         colX.push(acc);
         acc += colWidth(c) + COL_GAP;
       }
-      const effPaneH = isHorizontalBarFig && fig.panes[0]?.svg ? Number(fig.panes[0].svg.getAttribute("height")) || paneChartH : paneChartH;
-      const gridTop = chartTop;
+      const paneH = (i) => Number(fig.panes[i]?.svg?.getAttribute("height")) || paneChartH || 240;
+      const rowHeights = [];
+      for (let r = 0; r < gridRows; r++) {
+        let h = 0;
+        for (let c = 0; c < cols; c++) {
+          const i = r * cols + c;
+          if (i < fig.panes.length) h = Math.max(h, paneH(i));
+        }
+        rowHeights.push(h);
+      }
+      const rowY = [];
+      {
+        let acc2 = chartTop;
+        for (let r = 0; r < gridRows; r++) {
+          rowY.push(acc2);
+          acc2 += PANE_TITLE_H + rowHeights[r] + ROW_GAP;
+        }
+      }
       fig.panes.forEach((pane, i) => {
         const col = i % cols;
         const row = Math.floor(i / cols);
         const x = colX[col];
         const w = colWidth(col);
-        const y = gridTop + row * (PANE_TITLE_H + effPaneH + ROW_GAP);
+        const y = rowY[row];
+        const h = paneH(i);
         const titleDx = isHorizontalBarFig ? Number(pane.svg?.dataset.marginLeft) || 0 : 0;
         root.appendChild(
           textEl2(x + titleDx, y + 12, pane.title, { size: 11, weight: W_SEMI, fill: HEADING })
@@ -30038,13 +30097,13 @@ ${words.slice(bestI).join(" ")}`;
           ps3.setAttribute("x", String(x));
           ps3.setAttribute("y", String(y + PANE_TITLE_H));
           ps3.setAttribute("width", String(w));
-          ps3.setAttribute("height", String(effPaneH));
+          ps3.setAttribute("height", String(h));
           root.appendChild(ps3);
         }
       });
-      contentHeight = gridRows * (PANE_TITLE_H + effPaneH) + (gridRows - 1) * ROW_GAP;
+      contentHeight = rowHeights.reduce((s, h) => s + PANE_TITLE_H + h, 0) + (gridRows - 1) * ROW_GAP;
     }
-    const H_eff = isFigure ? Math.round(chartTop + contentHeight + bottomH) : H10;
+    const H_eff = isFigure || isSingleHorizontalBar ? Math.round(chartTop + contentHeight + bottomH) : H10;
     if (H_eff !== H10) {
       root.setAttribute("height", String(H_eff));
       bgRect.setAttribute("height", String(H_eff));
@@ -30112,46 +30171,7 @@ ${words.slice(bestI).join(" ")}`;
     if (spec.orientation !== "horizontal" || spec.chartType !== "bar" && spec.chartType !== "stacked") {
       return spec.chartType === "waterfall" ? 460 : FIXED_CHART_HEIGHT;
     }
-    const cols = resolveColumns(spec, rows);
-    const catList = [];
-    const catSeen = /* @__PURE__ */ new Set();
-    const series = /* @__PURE__ */ new Set();
-    const sectionOf = /* @__PURE__ */ new Map();
-    for (const r of rows) {
-      const cat = r[cols.x];
-      if (typeof cat === "string" && cat !== "" && !catSeen.has(cat)) {
-        catSeen.add(cat);
-        catList.push(cat);
-      }
-      const s = cols.series ? r[cols.series] : null;
-      if (typeof s === "string" && s !== "") series.add(s);
-      if (cols.section && typeof cat === "string" && cat !== "" && !sectionOf.has(cat)) {
-        const sec = r[cols.section];
-        if (typeof sec === "string") sectionOf.set(cat, sec);
-      }
-    }
-    const nCats = Math.max(1, catList.length);
-    const nSeries = spec.series_order && spec.series_order.length ? spec.series_order.length : Math.max(1, series.size);
-    const grouped = spec.chartType === "bar" && nSeries > 1;
-    let nSections = 0;
-    if (cols.section) {
-      const present = new Set(catList.map((c) => sectionOf.get(c) ?? ""));
-      nSections = spec.section_order && spec.section_order.length ? spec.section_order.filter((s) => present.has(s)).length : present.size;
-    }
-    const nSpacers = Math.max(0, nSections - 1);
-    const gutter = horizontalLeftGutter(catList, { fontSize: FACETED_CAT_LABEL_PX });
-    const maxLabelLines = catList.reduce(
-      (m, c) => Math.max(m, labelLineCount(c, gutter - GUTTER_TEXT_PAD, FACETED_CAT_LABEL_PX)),
-      1
-    );
-    return horizontalBarHeight({
-      nCategories: nCats,
-      nSeries,
-      grouped,
-      nSpacers,
-      maxLabelLines,
-      extraTopPx: nSections > 0 ? SECTION_HEADER_TOP_PX : 0
-    });
+    return horizontalBarChartHeight(spec, rows);
   }
   var LEGEND_COLUMN_WIDTH = 160;
   var LEGEND_GAP = 16;
@@ -30845,7 +30865,6 @@ ${words.slice(bestI).join(" ")}`;
   var PANE_MIN_WIDTH = 240;
   var HBAR_PANE_MIN_WIDTH = 240;
   var HBAR_GUTTER_RESERVE = 200;
-  var PANE_HEIGHT = 240;
   var GRID_GAP = 16;
   function buildInlineSelect(doc, items, initialActiveId, onSelect) {
     const btn = doc.createElement("button");
@@ -31340,11 +31359,9 @@ ${words.slice(bestI).join(" ")}`;
     const isPointFigure = spec.chartType === "dotplot" || spec.chartType === "scatter";
     const isWaterfallFig = spec.chartType === "waterfall";
     const paneMinWidth = isPointFigure ? 160 : isWaterfallFig ? 320 : PANE_MIN_WIDTH;
-    const TALL_PANE_TYPES2 = /* @__PURE__ */ new Set(["dotplot", "bar", "stacked"]);
-    const paneHeight = isWaterfallFig ? 420 : TALL_PANE_TYPES2.has(spec.chartType) ? 320 : PANE_HEIGHT;
-    const isHorizontalBarFig = spec.chartType === "bar" && spec.orientation === "horizontal";
+    const isHorizontalBarFig = (spec.chartType === "bar" || spec.chartType === "stacked") && spec.orientation === "horizontal";
     const isCategoricalBarFig = spec.chartType === "bar" || spec.chartType === "stacked";
-    const figHeight = isHorizontalBarFig ? void 0 : paneHeight;
+    const figHeight = figurePaneHeight(spec);
     const drawGrid = (outerWidth) => {
       const baseCols = sm3.columns && sm3.columns > 0 ? sm3.columns : 0;
       const fitCols = Math.max(1, Math.floor((outerWidth + GRID_GAP) / (paneMinWidth + GRID_GAP)));
@@ -32493,6 +32510,7 @@ ${words.slice(bestI).join(" ")}`;
         const cornerTh = doc.createElement("th");
         cornerTh.rowSpan = tierCount;
         cornerTh.className = "tbl-table-stub-header";
+        cornerTh.classList.add("is-header-bottom");
         appendRichHtml(cornerTh, model.stubHeader, doc);
         tr3.appendChild(cornerTh);
       }
@@ -32501,6 +32519,7 @@ ${words.slice(bestI).join(" ")}`;
         th3.scope = "col";
         th3.colSpan = hCell.colSpan;
         th3.rowSpan = hCell.rowSpan;
+        if (tierIdx + hCell.rowSpan === tierCount) th3.classList.add("is-header-bottom");
         const leafForCell = hCell.leafKey != null ? leaves.find((l) => l.key === hCell.leafKey) : void 0;
         if (leafForCell?.isText) th3.classList.add("is-text");
         const spannerRules = spec?.spanner_rules !== false;
