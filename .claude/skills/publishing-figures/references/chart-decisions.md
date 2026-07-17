@@ -38,11 +38,22 @@ do not draft titles for them unless they ask for help. Units belong in `subtitle
 
 ## Colors
 
+**Always use palette names — never a raw `"#hex"`.** Every color in this archive is a palette
+token so published figures stay on-brand and consistent with each other; a hardcoded hex breaks
+that even when it looks right in one figure. The engine accepts hex, but that is not a licence to
+use it here.
+
 Default: omit `series_colors` entirely — the engine assigns the house palette in series order.
-When the user wants control, the named hues are `blue`, `amber`, `violet`, `green`, `red`,
-`rose`, `russet` (each with a `-light` variant; aliases `purple`→violet, `pink`→rose,
-`yellow`→amber, `brown`→russet; neutrals `black`, `grey`, `navy`; raw `"#hex"` passes through).
-Semantic conventions worth offering: red for deficits/costs, blue as the lead series.
+When you need control, use the named hues: `blue`, `amber`, `violet`, `green`, `red`, `rose`,
+`russet` (each with a `-light` variant; aliases `purple`→violet, `pink`→rose, `yellow`→amber,
+`brown`→russet; neutrals `black`, `grey`, `navy`). Semantic conventions worth offering: red for
+deficits/costs, blue as the lead series.
+
+If the user asks for a particular color, map it to the nearest palette name rather than writing
+its hex. If they ask for a color with no palette equivalent, **push back**: explain that figures
+use the fixed house palette for cross-publication consistency, and offer the closest token. Write
+a raw hex only if the user explicitly insists after that pushback — never reach for one yourself,
+and never leave a color the engine assigned as hex when a palette name is available.
 
 ## Annotations — offer these when the story needs them
 
