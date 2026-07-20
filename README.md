@@ -215,6 +215,21 @@ e.g. `ai-labor-market/augmented-occupations`. It carries **no date and no tree**
 
 Run order: validate → build → catalog → site → thumbs (`npm run all` does this).
 
+### Incremental builds
+
+CI builds only the charts whose content changed. Build state — the manifest
+(`.build/manifest.json`, a content hash per chart) and the content-addressed thumbnail cache
+(`.build/thumbs/<id>/<hash>.png`) — lives on the `gh-pages` branch under `.build/`, not in `main`.
+CI checks that branch out and points the build at it via the `GH_PAGES_DIR` environment variable;
+unchanged charts are copied from the prior build instead of re-rendered and re-screenshotted.
+
+- A local `npm run all` (with `GH_PAGES_DIR` unset) is always a full build.
+- Pass `--no-incremental` to `scripts/build-all.mjs` to force a full rebuild even when
+  `GH_PAGES_DIR` is set.
+- The cache is keyed by a `renderVersion` string. Bumping `THUMBS_EPOCH` or `FONTS_EPOCH` in
+  `scripts/incremental.mjs` — or an engine version change — invalidates every entry and forces a
+  full rebuild.
+
 ---
 
 ## Adding a chart

@@ -18,6 +18,7 @@
 import { cpSync, mkdirSync, rmSync, readdirSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { REPO_ROOT } from "./lib.mjs";
+import { readManifest, writeManifest } from "./incremental.mjs";
 
 const DIST = join(REPO_ROOT, "dist");
 const CATALOG = join(REPO_ROOT, "catalog", "index.json");
@@ -59,5 +60,35 @@ for (const entry of readdirSync(SITE_SRC, { withFileTypes: true })) {
   cpSync(join(SITE_SRC, entry.name), join(OUT, entry.name), { recursive: true });
 }
 console.log("  + landing page (from site/)");
+
+// 5. Build manifest (dist/.manifest.json) -> _site/.build/manifest.json
+const DIST_MANIFEST = join(DIST, ".manifest.json");
+const manifest = readManifest(DIST_MANIFEST);
+if (manifest) {
+  writeManifest(join(OUT, ".build", "manifest.json"), manifest);
+  console.log("  + .build/manifest.json");
+
+  // 6. Cache carry-forward: pre-populate _site/.build/thumbs with still-live prior thumbnails so
+  // the thumbs step only screenshots genuine misses (guarded on GH_PAGES_DIR being set).
+  const ghPagesDir = process.env.GH_PAGES_DIR;
+  if (ghPagesDir) {
+    let carried = 0;
+    for (const [id, entry] of Object.entries(manifest.charts ?? {})) {
+      const hash = entry?.hash;
+      if (!hash) continue;
+      const rel = join(".build", "thumbs", id, `${hash}.png`);
+      const src = join(ghPagesDir, rel);
+      const dest = join(OUT, rel);
+      if (existsSync(src) && !existsSync(dest)) {
+        mkdirSync(join(OUT, ".build", "thumbs", id), { recursive: true });
+        cpSync(src, dest);
+        carried++;
+      }
+    }
+    if (carried > 0) console.log(`  + carried forward ${carried} cached thumbnail(s) from GH_PAGES_DIR`);
+  }
+} else {
+  console.warn("  ! dist/.manifest.json not found — _site/.build/manifest.json not written");
+}
 
 console.log(`\nNext: \`npm run thumbs\` to generate card thumbnails, then serve _site/ (e.g. \`npx http-server _site\`).`);
