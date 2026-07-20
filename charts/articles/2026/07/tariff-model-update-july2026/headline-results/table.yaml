@@ -1,0 +1,36 @@
+title: "Headline results (July 2026 model)"
+data: "data.csv"
+stub: ["scenario"]
+header: ["group", "metric"]
+value: "value"
+stub_header: "Scenario"
+stub_wrap: false
+column_labels:
+  statutory: "Statutory"
+  pre_sub_etr: "Pre-substitution"
+  post_sub_etr: "Post-substitution"
+  pre_sub_price: "Pre-substitution"
+  post_sub_price: "Post-substitution"
+  hh_cost: "Average household cost ($)"
+  conventional: "Conventional"
+  dynamic: "Dynamic"
+header_labels:
+  "10-yr revenue ($B)": "10-year revenue ($B)"
+column_order:
+  - "statutory"
+  - "pre_sub_etr"
+  - "post_sub_etr"
+  - "pre_sub_price"
+  - "post_sub_price"
+  - "hh_cost"
+  - "conventional"
+  - "dynamic"
+format:
+  default: { decimals: 2 }
+  columns:
+    hh_cost: { decimals: 0, thousands: true }
+    conventional: { decimals: 0, thousands: true }
+    dynamic: { decimals: 0, thousands: true }
+sticky: { firstColumn: true }
+source: "The Budget Lab Tariff Model."
+notes: "The statutory ETR is the announced rate schedule, shown for comparison only. The pre-substitution ETR applies the calibrated η-parameters (statutory × (1 − η)) and drives prices, household cost, and revenue; the post-substitution ETR additionally reflects import substitution. Revenue holds the $166B refund adjustment fixed."

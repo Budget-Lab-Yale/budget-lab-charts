@@ -1,0 +1,58 @@
+chartType: "line"
+columns:
+  x: "date"
+  series: "series"
+  value: "etr"
+title: "The measured tariff-rate path has shifted only modestly since our April 2026 release"
+subtitle: "Overall import-weighted effective tariff rate in percent, April 2026 vs. July 2026 (current, incl. new Section 301)."
+source: "The Budget Lab Tariff Rate Tracker."
+note: "Import-weighted using 2024 Census import values. The April 2026 series is the rate as published on that date; the July 2026 series is the tracker build pinned to the vintage the posted model results consumed. Values after July 16, 2026 (shaded) are projected assuming no further policy changes. From the late-July 2026 Section 122 expiry the current series follows the tracker's new_301 scenario; the dashed counterfactual shows the path if the new Section 301 actions were not imposed."
+xAxisType: "temporal"
+y_axis_title: "Effective tariff rate (%)"
+series_order:
+  - "April 2026 release"
+  - "July 2026 (current, incl. new Sec. 301)"
+  - "Without new Sec. 301 (counterfactual)"
+series_colors:
+  "April 2026 release": "#0072B2"
+  "July 2026 (current, incl. new Sec. 301)": "#E69F00"
+  "Without new Sec. 301 (counterfactual)": "#E69F00"
+series_styles:
+  "Without new Sec. 301 (counterfactual)":
+    dashed: true
+series_labels:
+  "July 2026 (current, incl. new Sec. 301)": "July 2026 (current, incl. new §301)"
+  "Without new Sec. 301 (counterfactual)": "If new §301 actions not imposed"
+annotations:
+  xAxis:
+    - x: "2025-02-04"
+      label: "Fentanyl"
+      color: "#BBBBBB"
+    - x: "2025-04-09"
+      label: "April 2 Announcement"
+      color: "#BBBBBB"
+    - x: "2025-06-04"
+      label: "232 Doubled"
+      color: "#BBBBBB"
+    - x: "2025-08-07"
+      label: "Phase 2"
+      color: "#BBBBBB"
+    - x: "2026-01-15"
+      label: "Semiconductors"
+      color: "#BBBBBB"
+    - x: "2026-02-20"
+      label: "IEEPA Struck Down"
+      color: "#BBBBBB"
+    - x: "2026-07-23"
+      label: "S122 Expiry"
+      color: "#8856BF"
+      strokeWidth: 2
+  bands:
+    - start: "2026-07-16"
+      end: "2026-12-31"
+  points:
+    - x: "2026-10-08"
+      label: "Projected"
+      y: 20
+      color: "#6D6D6D"
+data: "data.csv"

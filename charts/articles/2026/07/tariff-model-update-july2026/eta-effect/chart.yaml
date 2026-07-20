@@ -1,0 +1,28 @@
+chartType: "bar"
+orientation: "horizontal"
+columns:
+  x: "category"
+  value: "value"
+  section: "panel"
+title: "The gap between statutory and effective tariff rates varies substantially by country and product"
+subtitle: "Gap between the statutory effective tariff rate and the eta-adjusted (realized) rate, in pp. Bars use each category's own import weights."
+source: "The Budget Lab Tariff Model."
+note: "Computed from the eta diagnostic grid (partner x GTAP trade values and statutory revenue), model results vintage 202607071520 (tracker calibration 2026-06-25-14). Eta applied as realized = statutory x (1 - eta). Amber bars: realized rate above statutory. 'Other FTA partners' includes South Korea. Product section omits sectors with under $1B of imports each; the average line uses all sectors. See docs/FIG2B_OUTLIERS.md."
+xAxisType: "categorical"
+x_axis_title: "Reduction in effective tariff rate (pp)"
+section_order:
+  - "By trading partner"
+  - "By product (GTAP sector)"
+category_colors:
+  "Apparel": "amber"
+  "Leather & footwear": "amber"
+  "Rubber & plastics": "amber"
+  "Other food": "amber"
+  "Textiles": "amber"
+  "Bovine meat": "amber"
+annotations:
+  xAxis:
+    - x: "1.453"
+      label: "Import-weighted average effect (1.5pp)"
+      labelDy: 12
+data: "data.csv"

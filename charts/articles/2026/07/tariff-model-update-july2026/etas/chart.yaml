@@ -1,0 +1,24 @@
+chartType: "bar"
+orientation: "horizontal"
+columns:
+  x: "category"
+  value: "value"
+  section: "panel"
+title: "Calibrated etas by trading partner and product"
+subtitle: "Higher eta = larger share of the statutory tariff avoided (exemption/preference take-up, de minimis, mismeasurement) - realized rate further below statutory. Negative = realized rate above statutory."
+source: "The Budget Lab Tariff Model."
+note: "Bars are simple averages across the other dimension. Applied as realized ETR = statutory ETR x (1 - eta). Amber bars: realized rate above statutory. The reference line is the model's import-weighted aggregate eta."
+xAxisType: "categorical"
+x_axis_title: "Average η"
+section_order:
+  - "By trading partner"
+  - "By product (GTAP sector)"
+category_colors:
+  "Other food": "amber"
+  "Dairy": "amber"
+annotations:
+  xAxis:
+    - x: "0.13"
+      label: "Import-weighted average η (0.13)"
+      labelDy: 12
+data: "data.csv"
