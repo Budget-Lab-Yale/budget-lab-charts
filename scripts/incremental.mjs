@@ -23,11 +23,12 @@ export function computeRenderVersion({ engineRef, thumbsEpoch, fontsEpoch }) {
   return `engine:${engineRef}|thumbs:${thumbsEpoch}|fonts:${fontsEpoch}`;
 }
 
-export function hashChart({ specBytes, dataBytes, renderVersion }) {
+export function hashChart({ specBytes, dataBytes, renderVersion, extra = "" }) {
   const h = createHash("sha256");
   h.update(renderVersion); h.update("\0");
   h.update(specBytes); h.update("\0");
-  h.update(dataBytes ?? "");
+  h.update(dataBytes ?? ""); h.update("\0");
+  h.update(extra);
   return h.digest("hex");
 }
 

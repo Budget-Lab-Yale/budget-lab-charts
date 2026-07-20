@@ -82,7 +82,7 @@ const renderVersion = computeRenderVersion({
 
 // Hash every chart from its raw spec + data.csv bytes.
 const currentHashes = {};
-for (const { id, specPath, dir } of charts) {
+for (const { id, specPath, dir, chartSlug, collection } of charts) {
   let specBytes;
   try {
     specBytes = readFileSync(specPath);
@@ -95,7 +95,10 @@ for (const { id, specPath, dir } of charts) {
   } catch {
     dataBytes = Buffer.alloc(0);
   }
-  currentHashes[id] = hashChart({ specBytes, dataBytes, renderVersion });
+  // Fold in the figure-number eyebrow (article.yaml, keyed by chart slug). It's passed at render
+  // time but lives outside chart.yaml/data.csv, so renumbering must invalidate the cached page.
+  const eyebrow = collection.figures?.[chartSlug];
+  currentHashes[id] = hashChart({ specBytes, dataBytes, renderVersion, extra: String(eyebrow ?? "") });
 }
 
 const prior = usePrior ? readManifest(join(ghPagesDir, ".build", "manifest.json")) : null;
@@ -145,6 +148,7 @@ function renderChart(id) {
     const child = spawn(executable, args, { ...options, stdio: "pipe" });
     let stdout = "";
     let stderr = "";
+    let settled = false;
     child.stdout?.on("data", (d) => { stdout += d; });
     child.stderr?.on("data", (d) => { stderr += d; });
     child.on("error", (err) => {
@@ -154,6 +158,8 @@ function renderChart(id) {
     child.on("close", (code) => finish(code ?? 1));
 
     function finish(status) {
+      if (settled) return;
+      settled = true;
       const passed = status === 0;
       const icon = passed ? "BUILT" : "FAIL";
       console.log(`[${icon}] ${id} -> dist/${id}/index.html`);

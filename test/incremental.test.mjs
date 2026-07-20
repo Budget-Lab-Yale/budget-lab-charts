@@ -11,6 +11,16 @@ test("hash is stable and input-sensitive", () => {
   assert.notEqual(a, hashChart({ specBytes: "spec", dataBytes: "1,3", renderVersion: rv }));
 });
 
+test("extra field (e.g. eyebrow) is folded into the hash", () => {
+  const rv = computeRenderVersion({ engineRef: "e1", thumbsEpoch: 1, fontsEpoch: 1 });
+  const base = { specBytes: "spec", dataBytes: "1,2", renderVersion: rv };
+  const a = hashChart({ ...base, extra: "Figure 1" });
+  const b = hashChart({ ...base, extra: "Figure 2" });
+  assert.notEqual(a, b);
+  // Omitted extra matches extra: "".
+  assert.equal(hashChart(base), hashChart({ ...base, extra: "" }));
+});
+
 test("renderVersion bump invalidates the hash", () => {
   const base = { specBytes: "s", dataBytes: "d" };
   const h1 = hashChart({ ...base, renderVersion: computeRenderVersion({ engineRef: "e1", thumbsEpoch: 1, fontsEpoch: 1 }) });
