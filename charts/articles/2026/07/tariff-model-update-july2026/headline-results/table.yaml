@@ -4,7 +4,7 @@ stub: ["scenario"]
 header: ["group", "metric"]
 value: "value"
 stub_header: "Scenario"
-stub_wrap: true
+stub_wrap: false
 column_labels:
   statutory: "Statutory"
   pre_sub_etr: "Pre-substitution"
