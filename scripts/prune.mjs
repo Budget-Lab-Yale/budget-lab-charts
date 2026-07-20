@@ -17,7 +17,8 @@ import { pathToFileURL } from "node:url";
 import { readManifest } from "./incremental.mjs";
 
 /** Top-level paths that are never candidates for deletion. `pr-preview` itself is protected —
- * only its `pr-<n>` children are ever pruned. */
+ * only its `pr-<n>` children are ever pruned. `.git` is the checkout's own repository metadata:
+ * deleting it detaches every subsequent `git` command onto the parent workspace repo. */
 const PROTECTED = new Set([
   "catalog",
   "embed",
@@ -27,6 +28,7 @@ const PROTECTED = new Set([
   ".nojekyll",
   ".build",
   "pr-preview",
+  ".git",
 ]);
 
 /**

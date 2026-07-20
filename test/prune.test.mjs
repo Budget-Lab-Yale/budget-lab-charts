@@ -18,6 +18,16 @@ test("keeps protected paths, prunes orphan chart + closed previews", () => {
                    "col-a/chart-1", "col-a/chart-2", "pr-preview/pr-99"]) assert.ok(r.keep.includes(p));
 });
 
+test("never prunes the checkout's own .git metadata dir", () => {
+  const r = classifyForPrune({
+    entries: [".git", "col-a/chart-1"].map(dir),
+    manifestIds: ["col-a/chart-1"],
+    openPrNumbers: [],
+  });
+  assert.ok(r.keep.includes(".git"));
+  assert.ok(!r.deleteChartDirs.includes(".git"));
+});
+
 test("unrecognized top-level file is kept, never pruned as a chart dir", () => {
   const r = classifyForPrune({
     entries: [{ name: "robots.txt", isDir: false }, { name: "col-a/chart-1", isDir: true }],
