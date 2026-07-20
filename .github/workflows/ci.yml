@@ -83,8 +83,8 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_site/.build
-          destination_dir: .build
+          publish_dir: ./_site/.build/thumbs
+          destination_dir: .build/thumbs
           publish_branch: gh-pages
           keep_files: true
       - name: Deploy / remove preview
@@ -135,15 +135,18 @@ jobs:
           publish_branch: gh-pages
           keep_files: true
       - name: Prune orphans
-        env:
-          GH_PAGES_DIR: ${{ github.workspace }}/.gh-pages
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          node scripts/prune.mjs --open-prs "$(gh pr list --state open --json number -q '[.[].number]|join(",")')"
+          git -C .gh-pages fetch origin gh-pages
+          git -C .gh-pages reset --hard origin/gh-pages
+          prs=$(gh pr list --state open --json number -q '[.[].number]|join(",")') || { echo "gh pr list failed; skipping prune"; exit 0; }
+          node scripts/prune.mjs --open-prs "$prs"
           if [ -n "$(git -C .gh-pages status --porcelain)" ]; then
             git -C .gh-pages config user.name "github-actions[bot]"
             git -C .gh-pages config user.email "github-actions[bot]@users.noreply.github.com"
             git -C .gh-pages add -A
-            git -C .gh-pages commit -m "Prune orphaned gh-pages content"
-            git -C .gh-pages push
+            git -C .gh-pages commit -m "Prune orphaned charts and closed-PR previews"
+            git -C .gh-pages push origin gh-pages
           fi
+        env:
+          GH_PAGES_DIR: ${{ github.workspace }}/.gh-pages
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
