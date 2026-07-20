@@ -58,8 +58,17 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
+      - name: Fetch prior gh-pages state
+        if: github.event.action != 'closed'
+        uses: actions/checkout@v5
+        with:
+          ref: gh-pages
+          path: .gh-pages
+        continue-on-error: true   # first ever run has no gh-pages
       - name: Build site
         if: github.event.action != 'closed'
+        env:
+          GH_PAGES_DIR: ${{ github.workspace }}/.gh-pages
         run: |
           git config --global url."https://github.com/".insteadOf ssh://git@github.com/
           git config --global url."https://github.com/".insteadOf git@github.com:
@@ -69,6 +78,15 @@ jobs:
           npm run catalog
           npm run site
           npm run thumbs
+      - name: Publish build cache to gh-pages
+        if: github.event.action != 'closed'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site/.build
+          destination_dir: .build
+          publish_branch: gh-pages
+          keep_files: true
       - name: Deploy / remove preview
         uses: rossjrw/pr-preview-action@v1
         with:
@@ -91,7 +109,15 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
+      - name: Fetch prior gh-pages state
+        uses: actions/checkout@v5
+        with:
+          ref: gh-pages
+          path: .gh-pages
+        continue-on-error: true   # first ever run has no gh-pages
       - name: Build site
+        env:
+          GH_PAGES_DIR: ${{ github.workspace }}/.gh-pages
         run: |
           git config --global url."https://github.com/".insteadOf ssh://git@github.com/
           git config --global url."https://github.com/".insteadOf git@github.com:
@@ -108,3 +134,16 @@ jobs:
           publish_dir: ./_site
           publish_branch: gh-pages
           keep_files: true
+      - name: Prune orphans
+        env:
+          GH_PAGES_DIR: ${{ github.workspace }}/.gh-pages
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node scripts/prune.mjs --open-prs "$(gh pr list --state open --json number -q '[.[].number]|join(",")')"
+          if [ -n "$(git -C .gh-pages status --porcelain)" ]; then
+            git -C .gh-pages config user.name "github-actions[bot]"
+            git -C .gh-pages config user.email "github-actions[bot]@users.noreply.github.com"
+            git -C .gh-pages add -A
+            git -C .gh-pages commit -m "Prune orphaned gh-pages content"
+            git -C .gh-pages push
+          fi
