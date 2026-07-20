@@ -43,4 +43,4 @@ format:
     growth: { type: percent, decimals: 2 }
     inequality: { type: number, decimals: 3 }
 
-source: "Karger, Buehler, Cox, Saint-Jacques, and Bjorkegren (2026), CBO (2025), and Budget Lab calculations."
+source: "Karger, Buehler, Cox, Saint-Jacques, and Bjorkegren (2026), CBO (2026), and Budget Lab calculations."
