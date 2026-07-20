@@ -145,7 +145,7 @@ jobs:
             git -C .gh-pages config user.email "github-actions[bot]@users.noreply.github.com"
             git -C .gh-pages add -A
             git -C .gh-pages commit -m "Prune orphaned charts and closed-PR previews"
-            git -C .gh-pages push origin gh-pages
+            git -C .gh-pages push origin HEAD:gh-pages
           fi
         env:
           GH_PAGES_DIR: ${{ github.workspace }}/.gh-pages
