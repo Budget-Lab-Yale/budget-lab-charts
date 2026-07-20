@@ -32,11 +32,12 @@ const PROTECTED = new Set([
 /**
  * Pure classifier over a flat list of gh-pages entries (built by `main()`'s 2-level walk).
  *
- * `entries` mixes: protected top-level names (kept as-is), whole-collection dirs that no longer
- * have any surviving chart (single segment, e.g. "col-dead"), individual `<collection>/<chart>`
- * dirs (two segments), and `pr-preview/pr-<n>` preview dirs.
+ * `entries` are `{ name, isDir }` objects mixing: protected top-level names (kept as-is),
+ * whole-collection dirs that no longer have any surviving chart (single segment, e.g. "col-dead"),
+ * individual `<collection>/<chart>` dirs (two segments), `pr-preview/pr-<n>` preview dirs, and
+ * unrecognized top-level plain files (kept — only directories are ever prunable chart dirs).
  *
- * @param {{ entries: string[], manifestIds: string[], openPrNumbers: number[] }} args
+ * @param {{ entries: {name: string, isDir: boolean}[], manifestIds: string[], openPrNumbers: number[] }} args
  * @returns {{ deleteChartDirs: string[], deletePreviewDirs: string[], keep: string[] }}
  */
 export function classifyForPrune({ entries, manifestIds, openPrNumbers }) {
@@ -47,38 +48,44 @@ export function classifyForPrune({ entries, manifestIds, openPrNumbers }) {
   const deletePreviewDirs = [];
   const keep = [];
 
-  for (const entry of entries) {
-    if (PROTECTED.has(entry)) {
-      keep.push(entry);
+  for (const { name, isDir } of entries) {
+    if (PROTECTED.has(name)) {
+      keep.push(name);
       continue;
     }
 
-    if (entry.startsWith("pr-preview/")) {
-      const m = entry.match(/^pr-preview\/pr-(\d+)$/);
+    if (name.startsWith("pr-preview/")) {
+      const m = name.match(/^pr-preview\/pr-(\d+)$/);
       if (m && !openSet.has(m[1])) {
-        deletePreviewDirs.push(entry);
+        deletePreviewDirs.push(name);
       } else {
-        keep.push(entry);
+        keep.push(name);
       }
       continue;
     }
 
-    const segments = entry.split("/");
+    // Only directories are ever prunable chart dirs; stray top-level files are always kept.
+    if (!isDir) {
+      keep.push(name);
+      continue;
+    }
+
+    const segments = name.split("/");
     if (segments.length >= 2) {
       // A specific <collection>/<chart> dir.
-      if (manifestSet.has(entry)) {
-        keep.push(entry);
+      if (manifestSet.has(name)) {
+        keep.push(name);
       } else {
-        deleteChartDirs.push(entry);
+        deleteChartDirs.push(name);
       }
     } else {
       // A whole collection dir presented undescended — delete only if none of its charts survive.
-      const prefix = `${entry}/`;
+      const prefix = `${name}/`;
       const hasSurvivor = manifestIds.some((id) => id.startsWith(prefix));
       if (hasSurvivor) {
-        keep.push(entry);
+        keep.push(name);
       } else {
-        deleteChartDirs.push(entry);
+        deleteChartDirs.push(name);
       }
     }
   }
@@ -86,14 +93,32 @@ export function classifyForPrune({ entries, manifestIds, openPrNumbers }) {
   return { deleteChartDirs, deletePreviewDirs, keep };
 }
 
-/** Parse `--open-prs "6,42,99"` from argv into an array of numbers (empty if absent/blank). */
-function parseOpenPrs(argv) {
-  const idx = argv.indexOf("--open-prs");
-  if (idx === -1 || idx + 1 >= argv.length) return [];
-  return argv[idx + 1]
+/**
+ * Parse a comma-separated PR-number string (from `--open-prs`) into an array of positive integers.
+ * Empty/whitespace/non-numeric tokens are dropped, so `""` yields `[]` (not `[0]`).
+ */
+export function parseOpenPrs(csv) {
+  return String(csv ?? "")
     .split(",")
-    .map((s) => Number(s.trim()))
+    .map((s) => s.trim())
+    .filter((s) => s !== "")
+    .map((s) => Number(s))
     .filter((n) => Number.isInteger(n));
+}
+
+/**
+ * Guard against mass-deleting a live site: when the manifest is missing/corrupt (null) or lists
+ * zero charts, treating it as the source of truth would route every collection dir to deletion.
+ * In that case prune must be skipped entirely.
+ */
+export function shouldSkipPrune(manifest) {
+  return manifest == null || Object.keys(manifest.charts ?? {}).length === 0;
+}
+
+/** Read the value following `flag` in `argv`, or "" if the flag is absent/valueless. */
+function argValue(argv, flag) {
+  const idx = argv.indexOf(flag);
+  return idx === -1 || idx + 1 >= argv.length ? "" : argv[idx + 1];
 }
 
 /** Walk `ghPagesDir` two levels deep, producing the flat `entries` list `classifyForPrune` expects. */
@@ -103,25 +128,25 @@ function buildEntries(ghPagesDir, manifestIds) {
   for (const top of readdirSync(ghPagesDir, { withFileTypes: true })) {
     const name = top.name;
     if (PROTECTED.has(name) || !top.isDirectory()) {
-      entries.push(name);
+      entries.push({ name, isDir: top.isDirectory() });
       continue;
     }
     // A collection dir descends to per-chart entries only if it still has a survivor; otherwise
     // it's left as one segment so classifyForPrune prunes the whole dir in one shot.
     const hasSurvivor = manifestIds.some((id) => id.startsWith(`${name}/`));
     if (!hasSurvivor) {
-      entries.push(name);
+      entries.push({ name, isDir: true });
       continue;
     }
     for (const child of readdirSync(join(ghPagesDir, name), { withFileTypes: true })) {
-      if (child.isDirectory()) entries.push(`${name}/${child.name}`);
+      if (child.isDirectory()) entries.push({ name: `${name}/${child.name}`, isDir: true });
     }
   }
 
   const prPreviewDir = join(ghPagesDir, "pr-preview");
   if (existsSync(prPreviewDir)) {
     for (const child of readdirSync(prPreviewDir, { withFileTypes: true })) {
-      if (child.isDirectory()) entries.push(`pr-preview/${child.name}`);
+      if (child.isDirectory()) entries.push({ name: `pr-preview/${child.name}`, isDir: true });
     }
   }
 
@@ -136,8 +161,14 @@ async function main() {
   }
 
   const manifest = readManifest(join(ghPagesDir, ".build", "manifest.json"));
-  const manifestIds = Object.keys(manifest?.charts ?? {});
-  const openPrNumbers = parseOpenPrs(process.argv.slice(2));
+  if (shouldSkipPrune(manifest)) {
+    console.log(
+      "prune: manifest missing, corrupt, or empty — skipping prune to avoid mass deletion of a live site.",
+    );
+    return;
+  }
+  const manifestIds = Object.keys(manifest.charts ?? {});
+  const openPrNumbers = parseOpenPrs(argValue(process.argv.slice(2), "--open-prs"));
 
   const entries = buildEntries(ghPagesDir, manifestIds);
   const { deleteChartDirs, deletePreviewDirs, keep } = classifyForPrune({
