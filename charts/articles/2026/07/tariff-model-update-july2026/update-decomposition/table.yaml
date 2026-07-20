@@ -1,0 +1,40 @@
+title: "Decomposing the change from April to July (without new Section 301)"
+data: "data.csv"
+stub: ["step"]
+header: ["group", "metric"]
+value: "value"
+stub_header: "Step"
+column_labels:
+  statutory: "Statutory"
+  pre_sub_etr: "Pre-substitution"
+  post_sub_etr: "Post-substitution"
+  pre_sub_price: "Pre-substitution"
+  post_sub_price: "Post-substitution"
+  hh_cost: "Average household cost ($)"
+  conventional: "Conventional"
+  dynamic: "Dynamic"
+header_labels:
+  "10-yr revenue ($B)": "10-year revenue ($B)"
+column_order:
+  - "statutory"
+  - "pre_sub_etr"
+  - "post_sub_etr"
+  - "pre_sub_price"
+  - "post_sub_price"
+  - "hh_cost"
+  - "conventional"
+  - "dynamic"
+row_order:
+  - "Published April 8"
+  - "Base-rate Fix"
+  - "Updated Tariff Rates"
+  - "Model Updates"
+format:
+  default: { decimals: 2 }
+  columns:
+    hh_cost: { decimals: 0, thousands: true }
+    conventional: { decimals: 0, thousands: true }
+    dynamic: { decimals: 0, thousands: true }
+sticky: { firstColumn: true }
+source: "The Budget Lab Tariff Model."
+notes: "The first row reports the results published on April 8, 2026, for the scenario where Section 122 tariffs are allowed to expire. The second row fixes the baseline MFN tariff rate; the third updates our estimates of tariff rates, reflecting improved estimation of baseline, Section 232, and Section 301 tariffs. The fourth row adds the model updates — namely, the inclusion of the new η-parameters — so the pre-substitution columns fall as the ηs now apply upstream (the statutory ETR column is unchanged, since the ηs change what is collected, not what is announced)."

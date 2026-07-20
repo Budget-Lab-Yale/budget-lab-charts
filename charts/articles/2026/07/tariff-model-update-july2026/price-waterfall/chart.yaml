@@ -1,0 +1,64 @@
+chartType: "waterfall"
+columns:
+  x: "step"
+  value: "value"
+  kind: "kind"
+  facet: "panel"
+title: "Re-estimating the April 2 price decomposition"
+subtitle: "As published (April 2026) vs. updated (July 2026): updated ETR measurement + a new eta step + a modeling step (model re-run on the eta-adjusted April-December 2025 basket)."
+source: "The Budget Lab."
+note: "Reproduces the April 2026 retrospective's decomposition of the April 2, 2025 estimate (short-run price formula, baseline 2.4%). Dashed reference lines: Cavallo et al. (2026) upper (1%); Minton, Ray, and Somale (2026) core PCE (0.8%); Dvorkin et al. (2025) lower (0.5%). A single 50% passthrough replaces the three published passthrough scenarios. The eta step does not exist in the original April 2026 decomposition."
+xAxisType: "categorical"
+y_axis_title: "Short-run price effect (%)"
+valueLabels:
+  show: true
+  decimals: 2
+x_labels:
+  "Initial estimate": "Initial April 2, 2025 estimate"
+  "Annual-average ETR": "April ETR to annual-average ETR"
+  "Updated ETR": "Updated ETR measurement"
+  "Apply ηs": "Apply ηs (compliance / mismeasurement)"
+category_colors:
+  "50% passthrough": "rose"
+small_multiples:
+  columns: 2
+  pane_order:
+    - "As published (April 2026)"
+    - "Updated (July 2026 data & methods)"
+annotations:
+  yAxis:
+    - y: 1.0
+      label: "Cavallo et al. upper (1%)"
+      color: "#B8302C"
+      labelPosition: "left"
+      labelDx: 60
+      facet: "As published (April 2026)"
+    - y: 1.0
+      color: "#B8302C"
+      facet: "Updated (July 2026 data & methods)"
+    - y: 0.8
+      label: "Minton et al. (Fed) core PCE (0.8%)"
+      color: "#E69F00"
+      labelPosition: "left"
+      labelDx: 60
+      facet: "As published (April 2026)"
+    - y: 0.8
+      color: "#E69F00"
+      facet: "Updated (July 2026 data & methods)"
+    - y: 0.5
+      label: "Dvorkin et al. lower (0.5%)"
+      color: "#FF8C7B"
+      labelPosition: "left"
+      labelDx: 60
+      facet: "As published (April 2026)"
+    - y: 0.5
+      color: "#FF8C7B"
+      facet: "Updated (July 2026 data & methods)"
+  points:
+    - x: "Apply ηs"
+      label: "(no step in original)"
+      y: 0.12
+      color: "#6D6D6D"
+      maxWidth: 90
+      facet: "As published (April 2026)"
+data: "data.csv"
