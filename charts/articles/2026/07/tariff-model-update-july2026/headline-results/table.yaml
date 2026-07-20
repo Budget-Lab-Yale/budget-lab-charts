@@ -15,7 +15,6 @@ column_labels:
   conventional: "Conventional"
   dynamic: "Dynamic"
 header_labels:
-  hh_cost_group: ""
   "10-yr revenue ($B)": "10-year revenue ($B)"
 column_order:
   - "statutory"
