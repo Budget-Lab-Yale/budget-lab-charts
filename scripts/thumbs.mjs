@@ -50,7 +50,6 @@ async function main() {
   );
 
   const ghPagesDir = process.env.GH_PAGES_DIR;
-  const newCacheDir = join(OUT, ".build", "thumbs");
   const priorCacheDir = ghPagesDir ? join(ghPagesDir, ".build", "thumbs") : null;
 
   console.log(`Generating ${charts.length} thumbnail(s)...\n`);
