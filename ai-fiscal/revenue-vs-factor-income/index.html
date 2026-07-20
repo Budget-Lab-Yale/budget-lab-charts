@@ -876,6 +876,13 @@ td.is-text {
   overflow-wrap: break-word;
 }
 
+/* column_wrap: force a data column's body cells to wrap within their (fixed) width, regardless of
+   whether the column is text- or number-typed. Mirrors the stub's .is-wrap. */
+td.is-wrap {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
 /* Stub (row label) cells: left-aligned. */
 th.tbl-table-stub {
   text-align: left;
@@ -31951,38 +31958,74 @@ ${words.slice(bestI).join(" ")}`;
   function hasMath(s) {
     return s.includes("\\(") || s.includes("\\[") || s.includes("$$");
   }
-  function nextOpener(s, from) {
-    let best = null;
-    for (const d of DELIMS) {
-      const idx = s.indexOf(d.open, from);
-      if (idx >= 0 && (best == null || idx < best.idx)) best = { idx, open: d.open, close: d.close };
-    }
-    return best;
+  function hasBreak(s) {
+    return s.includes("\\\\");
+  }
+  function openerAt(s, i) {
+    for (const d of DELIMS) if (s.startsWith(d.open, i)) return { open: d.open, close: d.close };
+    return null;
   }
   function unescapeText(s) {
     return s.replace(/\\\$/g, "$");
   }
   function parseRich(s, onUnsupported) {
-    if (!hasMath(s)) return [{ kind: "text", text: s, italic: false }];
+    if (!hasMath(s) && !hasBreak(s)) return [{ kind: "text", text: s, italic: false }];
     const runs = [];
     let i = 0;
+    let start = 0;
+    const flush = (end) => {
+      if (end > start) pushText(runs, unescapeText(s.slice(start, end)), false);
+    };
     while (i < s.length) {
-      const opener = nextOpener(s, i);
-      if (opener == null) {
-        pushText(runs, unescapeText(s.slice(i)), false);
-        break;
+      if (s[i] === "\\" && s[i + 1] === "\\") {
+        flush(i);
+        runs.push({ kind: "break" });
+        i += 2;
+        start = i;
+        continue;
       }
-      if (opener.idx > i) pushText(runs, unescapeText(s.slice(i, opener.idx)), false);
-      const contentStart = opener.idx + opener.open.length;
-      const closeIdx = s.indexOf(opener.close, contentStart);
-      if (closeIdx < 0) {
-        parseMath(s.slice(contentStart), runs, onUnsupported);
-        break;
+      const opener = openerAt(s, i);
+      if (opener != null) {
+        flush(i);
+        const contentStart = i + opener.open.length;
+        const closeIdx = s.indexOf(opener.close, contentStart);
+        if (closeIdx < 0) {
+          parseMath(s.slice(contentStart), runs, onUnsupported);
+          return runs;
+        }
+        parseMath(s.slice(contentStart, closeIdx), runs, onUnsupported);
+        i = closeIdx + opener.close.length;
+        start = i;
+        continue;
       }
-      parseMath(s.slice(contentStart, closeIdx), runs, onUnsupported);
-      i = closeIdx + opener.close.length;
+      i++;
     }
+    flush(i);
     return runs;
+  }
+  function splitBreaks(s) {
+    if (!hasBreak(s)) return [s];
+    const segs = [];
+    let i = 0;
+    let start = 0;
+    while (i < s.length) {
+      if (s[i] === "\\" && s[i + 1] === "\\") {
+        segs.push(s.slice(start, i));
+        i += 2;
+        start = i;
+        continue;
+      }
+      const opener = openerAt(s, i);
+      if (opener != null) {
+        const closeIdx = s.indexOf(opener.close, i + opener.open.length);
+        if (closeIdx < 0) break;
+        i = closeIdx + opener.close.length;
+        continue;
+      }
+      i++;
+    }
+    segs.push(s.slice(start));
+    return segs;
   }
   function pushText(runs, text, italic) {
     if (text === "") return;
@@ -32019,7 +32062,7 @@ ${words.slice(bestI).join(" ")}`;
   }
   function renderScript(raw, onUnsupported) {
     const sub = parseMath(raw, [], onUnsupported, true);
-    const text = sub.map((r) => r.kind === "text" || r.kind === "super" || r.kind === "sub" ? r.text : r.sub + r.sup).join("");
+    const text = sub.map((r) => r.kind === "subsup" ? r.sub + r.sup : r.kind === "break" ? "" : r.text).join("");
     const italic = /[a-zA-Z]/.test(text) && sub.some((r) => r.kind === "text" ? r.italic : false);
     return { text, italic };
   }
@@ -32130,24 +32173,30 @@ ${words.slice(bestI).join(" ")}`;
     return i;
   }
   function richWidth(s, fontPx, weight, measure) {
-    if (!hasMath(s)) return measure(s, fontPx, weight);
+    if (!hasMath(s) && !hasBreak(s)) return measure(s, fontPx, weight);
     const runs = parseRich(s);
     const sf3 = fontPx * SCRIPT_SCALE;
-    let w = 0;
+    let maxW = 0;
+    let line = 0;
     for (const run of runs) {
-      if (run.kind === "text") w += measure(run.text, fontPx, weight);
-      else if (run.kind === "super" || run.kind === "sub") w += measure(run.text, sf3, weight);
-      else w += Math.max(measure(run.sub, sf3, weight), measure(run.sup, sf3, weight));
+      if (run.kind === "break") {
+        maxW = Math.max(maxW, line);
+        line = 0;
+      } else if (run.kind === "text") line += measure(run.text, fontPx, weight);
+      else if (run.kind === "super" || run.kind === "sub") line += measure(run.text, sf3, weight);
+      else line += Math.max(measure(run.sub, sf3, weight), measure(run.sup, sf3, weight));
     }
-    return w;
+    return Math.max(maxW, line);
   }
   function richToPlain(s) {
-    if (!hasMath(s)) return s;
-    return parseRich(s).map((r) => r.kind === "subsup" ? r.sup + r.sub : r.text).join("");
+    if (!hasMath(s) && !hasBreak(s)) return s;
+    return parseRich(s).map((r) => r.kind === "break" ? " " : r.kind === "subsup" ? r.sup + r.sub : r.text).join("");
   }
   function appendRichHtml(parent, s, doc) {
     for (const run of parseRich(s)) {
-      if (run.kind === "text") {
+      if (run.kind === "break") {
+        parent.appendChild(doc.createElement("br"));
+      } else if (run.kind === "text") {
         if (run.italic) {
           const el3 = doc.createElement("i");
           el3.textContent = run.text;
@@ -32181,15 +32230,26 @@ ${words.slice(bestI).join(" ")}`;
     const runs = parseRich(s);
     const sf3 = opts.fontSize * SCRIPT_SCALE;
     const m = opts.measure;
-    let total = 0;
+    const lines = [[]];
     for (const run of runs) {
-      if (run.kind === "text") total += m(run.text, opts.fontSize, opts.weight);
-      else if (run.kind === "super" || run.kind === "sub") total += m(run.text, sf3, opts.weight);
-      else total += Math.max(m(run.sub, sf3, opts.weight), m(run.sup, sf3, opts.weight));
+      if (run.kind === "break") lines.push([]);
+      else lines[lines.length - 1].push(run);
     }
-    const startX = opts.anchor === "middle" ? opts.x - total / 2 : opts.anchor === "end" ? opts.x - total : opts.x;
+    const lineWidth = (line) => {
+      let w = 0;
+      for (const run of line) {
+        if (run.kind === "text") w += m(run.text, opts.fontSize, opts.weight);
+        else if (run.kind === "super" || run.kind === "sub") w += m(run.text, sf3, opts.weight);
+        else if (run.kind === "subsup") w += Math.max(m(run.sub, sf3, opts.weight), m(run.sup, sf3, opts.weight));
+      }
+      return w;
+    };
+    const lineStartX = (line) => {
+      const w = lineWidth(line);
+      return opts.anchor === "middle" ? opts.x - w / 2 : opts.anchor === "end" ? opts.x - w : opts.x;
+    };
     const t60 = doc.createElementNS(SVG_NS4, "text");
-    t60.setAttribute("x", String(startX));
+    t60.setAttribute("x", String(lineStartX(lines[0])));
     t60.setAttribute("y", String(opts.baselineY));
     t60.setAttribute("text-anchor", "start");
     t60.setAttribute("font-family", opts.fontFamily);
@@ -32199,7 +32259,7 @@ ${words.slice(bestI).join(" ")}`;
     if (opts.cls) t60.setAttribute("class", opts.cls);
     const supRise = opts.fontSize * 0.42;
     const subDrop = opts.fontSize * 0.16;
-    let cx3 = startX;
+    const lineHeight = opts.fontSize + 3;
     const put = (text, x, y, italic, script) => {
       const ts3 = doc.createElementNS(SVG_NS4, "tspan");
       ts3.setAttribute("x", String(x));
@@ -32209,24 +32269,28 @@ ${words.slice(bestI).join(" ")}`;
       ts3.textContent = text;
       t60.appendChild(ts3);
     };
-    for (const run of runs) {
-      if (run.kind === "text") {
-        put(run.text, cx3, opts.baselineY, run.italic, false);
-        cx3 += m(run.text, opts.fontSize, opts.weight);
-      } else if (run.kind === "super") {
-        put(run.text, cx3, opts.baselineY - supRise, run.italic, true);
-        cx3 += m(run.text, sf3, opts.weight);
-      } else if (run.kind === "sub") {
-        put(run.text, cx3, opts.baselineY + subDrop, run.italic, true);
-        cx3 += m(run.text, sf3, opts.weight);
-      } else {
-        const supW = m(run.sup, sf3, opts.weight);
-        const subW = m(run.sub, sf3, opts.weight);
-        put(run.sup, cx3, opts.baselineY - supRise, run.supItalic, true);
-        put(run.sub, cx3, opts.baselineY + subDrop, run.subItalic, true);
-        cx3 += Math.max(supW, subW);
+    lines.forEach((line, li3) => {
+      let cx3 = lineStartX(line);
+      const baseY = opts.baselineY + li3 * lineHeight;
+      for (const run of line) {
+        if (run.kind === "text") {
+          put(run.text, cx3, baseY, run.italic, false);
+          cx3 += m(run.text, opts.fontSize, opts.weight);
+        } else if (run.kind === "super") {
+          put(run.text, cx3, baseY - supRise, run.italic, true);
+          cx3 += m(run.text, sf3, opts.weight);
+        } else if (run.kind === "sub") {
+          put(run.text, cx3, baseY + subDrop, run.italic, true);
+          cx3 += m(run.text, sf3, opts.weight);
+        } else if (run.kind === "subsup") {
+          const supW = m(run.sup, sf3, opts.weight);
+          const subW = m(run.sub, sf3, opts.weight);
+          put(run.sup, cx3, baseY - supRise, run.supItalic, true);
+          put(run.sub, cx3, baseY + subDrop, run.subItalic, true);
+          cx3 += Math.max(supW, subW);
+        }
       }
-    }
+    });
     return t60;
   }
 
@@ -32259,6 +32323,11 @@ ${words.slice(bestI).join(" ")}`;
   var NOTE_WRAP_PAD = 16;
   var NOTE_WRAP_MAX_LINES = 4;
   function wrapToLines(s, maxWidth, maxLines, measure) {
+    const segments = splitBreaks(s);
+    if (segments.length === 1) return wrapSegment(s, maxWidth, maxLines, measure);
+    return segments.flatMap((seg) => wrapSegment(seg, maxWidth, maxLines, measure));
+  }
+  function wrapSegment(s, maxWidth, maxLines, measure) {
     if (maxLines <= 1 || measure(s) <= maxWidth) return [s];
     const words = s.split(/\s+/).filter(Boolean);
     const lines = [];
@@ -32283,6 +32352,7 @@ ${words.slice(bestI).join(" ")}`;
       ...spec.stub_width != null ? { stubWidth: spec.stub_width } : {},
       ...spec.stub_nowrap != null ? { stubNowrap: spec.stub_nowrap } : {},
       ...spec.column_width != null ? { columnWidth: spec.column_width } : {},
+      ...spec.column_wrap != null ? { columnWrap: spec.column_wrap } : {},
       ...spec.header_max_lines != null ? { headerMaxLines: spec.header_max_lines } : {},
       ...spec.stub_min_width != null ? { stubMinWidth: spec.stub_min_width } : {},
       ...spec.stub_wrap != null ? { stubWrap: spec.stub_wrap } : {}
@@ -32300,6 +32370,12 @@ ${words.slice(bestI).join(" ")}`;
       if (cw3 == null) return void 0;
       if (typeof cw3 === "number") return cw3;
       return cw3[leafValue];
+    };
+    const colWrapEnabled = (leafValue) => {
+      const cw3 = opts.columnWrap;
+      if (cw3 == null) return false;
+      if (typeof cw3 === "boolean") return cw3;
+      return cw3[leafValue] === true;
     };
     const colW = leaves.map((leaf, i) => {
       const override = colWidthOverride(leaf.lastValue);
@@ -32353,8 +32429,10 @@ ${words.slice(bestI).join(" ")}`;
     if (opts.stubWrap) {
       for (const b of model.body) {
         if (b.kind !== "row") continue;
-        for (const w of b.row.label.split(/\s+/).filter(Boolean)) {
-          widestWord = Math.max(widestWord, richWidth(w, bodyFontPx, bodyWeight, measureText2) + b.row.level * INDENT_STEP);
+        for (const seg of splitBreaks(b.row.label)) {
+          for (const w of seg.split(/\s+/).filter(Boolean)) {
+            widestWord = Math.max(widestWord, richWidth(w, bodyFontPx, bodyWeight, measureText2) + b.row.level * INDENT_STEP);
+          }
         }
       }
     }
@@ -32376,9 +32454,10 @@ ${words.slice(bestI).join(" ")}`;
     }
     const totalWidth = stubWidth + colW.reduce((a, b) => a + b, 0);
     const leafLines = leaves.map((leaf, i) => {
-      if (headerMaxLines == null || headerMaxLines <= 1) return null;
+      const softWrap = headerMaxLines != null && headerMaxLines > 1;
+      if (!softWrap && !hasBreak(leaf.label)) return null;
       const avail = Math.max(1, colW[i] - padX);
-      const lines = wrapToLines(leaf.label, avail, headerMaxLines, measureHeader);
+      const lines = wrapToLines(leaf.label, avail, softWrap ? headerMaxLines : 1, measureHeader);
       return lines.length > 1 ? lines : null;
     });
     const maxLeafLines = leafLines.reduce((m, l) => Math.max(m, l ? l.length : 1), 1);
@@ -32435,9 +32514,9 @@ ${words.slice(bestI).join(" ")}`;
       const measureBody = (s) => richWidth(s, bodyFontPx, bodyWeight, measureText2);
       let maxLines = 1;
       let stubLines;
-      if (opts.stubWrap) {
+      if (opts.stubWrap || hasBreak(entry.row.label)) {
         const avail = Math.max(1, stubWidth - padX - entry.row.level * INDENT_STEP);
-        const lines = wrapToLines(entry.row.label, avail, 99, measureBody);
+        const lines = wrapToLines(entry.row.label, avail, opts.stubWrap ? 99 : 1, measureBody);
         if (lines.length > 1) {
           stubLines = lines;
           maxLines = Math.max(maxLines, lines.length);
@@ -32445,8 +32524,10 @@ ${words.slice(bestI).join(" ")}`;
       }
       let cellLines;
       entry.row.cells.forEach((cell, i) => {
-        if (!cell.isText || cell.text === "") return;
-        const lines = wrapToLines(cell.text, Math.max(1, colW[i] - padX), 99, measureBody);
+        if (cell.text === "") return;
+        const softWrap = cell.isText || colWrapEnabled(leaves[i].lastValue);
+        if (!softWrap && !hasBreak(cell.text)) return;
+        const lines = wrapToLines(cell.text, Math.max(1, colW[i] - padX), softWrap ? 99 : 1, measureBody);
         if (lines.length > 1) {
           if (!cellLines) cellLines = leaves.map(() => void 0);
           cellLines[i] = lines;
@@ -32487,7 +32568,9 @@ ${words.slice(bestI).join(" ")}`;
     const headerMaxLines = spec?.header_max_lines;
     const stubNowrap = spec?.stub_nowrap === true;
     const stubWrap = spec?.stub_wrap === true && !stubNowrap;
-    const flexData = stubWrap || opts?.flexDataCols === true;
+    const flexData = opts?.flexDataCols === true;
+    const columnWrap = spec?.column_wrap;
+    const colWrapEnabled = (leafValue) => columnWrap === true || typeof columnWrap === "object" && columnWrap[leafValue] === true;
     const table = doc.createElement("table");
     table.className = "tbl-table";
     table.style.tableLayout = "fixed";
@@ -32616,6 +32699,7 @@ ${words.slice(bestI).join(" ")}`;
         row.cells.forEach((cell, i) => {
           const td3 = doc.createElement("td");
           td3.className = cell.isText ? "is-text" : "is-num";
+          if (colWrapEnabled(leaves[i].lastValue)) td3.classList.add("is-wrap");
           td3.setAttribute("data-col", leaves[i].key);
           if (cell.signClass != null) {
             td3.classList.add(`is-${cell.signClass}`);
@@ -32730,7 +32814,7 @@ ${words.slice(bestI).join(" ")}`;
       return t60;
     };
     const drawText = (x, y, str, o) => {
-      if (!hasMath(str)) return text(x, y, str, o);
+      if (!hasMath(str) && !hasBreak(str)) return text(x, y, str, o);
       const rich = renderRichSvgText(doc, str, {
         x,
         baselineY: y,
