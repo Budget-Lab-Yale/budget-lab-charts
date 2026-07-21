@@ -29443,8 +29443,11 @@ ${words.slice(bestI).join(" ")}`;
         for (const j11 of placed) {
           const horiz = Math.abs(labels[i].cx - labels[j11].cx) < (labels[i].w + labels[j11].w) / 2;
           if (horiz && Math.abs(y - out[j11]) < pad) {
-            y = out[j11] + pad;
-            moved = true;
+            const ny3 = out[j11] + pad;
+            if (ny3 - y > 1e-6) {
+              y = ny3;
+              moved = true;
+            }
           }
         }
       }
