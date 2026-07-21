@@ -1178,6 +1178,8 @@ var BudgetLabChart = (() => {
     const shape = c.shape != null && c.shape !== "" ? c.shape : null;
     const section = c.section != null && c.section !== "" ? c.section : null;
     const kind = c.kind != null && c.kind !== "" ? c.kind : null;
+    const x03 = c.x0 != null && c.x0 !== "" ? c.x0 : null;
+    const x13 = c.x1 != null && c.x1 !== "" ? c.x1 : null;
     let series;
     if (c.series != null && c.series !== "") {
       series = c.series;
@@ -1186,7 +1188,10 @@ var BudgetLabChart = (() => {
     } else {
       series = "series";
     }
-    return { x, value, series, facet, shape, section, kind };
+    return { x, value, series, facet, shape, section, kind, x0: x03, x1: x13 };
+  }
+  function isPreBinned(cols) {
+    return cols.x0 != null && cols.x1 != null;
   }
 
   // src/spec/title.ts
@@ -25539,13 +25544,26 @@ ${words.slice(bestI).join(" ")}`;
     const allJanuary = ticks.length > 0 && ticks.every((d) => d.getMonth() === 0);
     return allJanuary ? 22 : 38;
   };
-  function makeXAdapter(xType, xAxisPolicy) {
+  function makeXAdapter(xType, xAxisPolicy, histogramDomain) {
     if (xType === "numeric") {
       return {
         parseX: (v) => +v,
         xField: "_xn",
         validate: (r) => Number.isFinite(r._xn),
         buildXOpts(data, faceted = false) {
+          if (histogramDomain) {
+            return {
+              marginBottom: 22,
+              xPlotOpts: { type: "linear", label: null, axis: null, domain: histogramDomain },
+              axisMarks: tblXAxis(
+                { xTickFormat: (d) => `${+d}` },
+                faceted ? X_AXIS_LABEL_CLASS : void 0
+              ),
+              markerToX: (m) => +m.x,
+              tooltipXParse: (v) => +v,
+              tooltipXFormat: (v) => `${+v}`
+            };
+          }
           const xMax = d3_7_9_0_esm_min_exports.max(data, (d) => d._xn);
           const anchorAtZero = xAxisPolicy?.anchorAtZero === true;
           const xMin = anchorAtZero ? Math.min(0, d3_7_9_0_esm_min_exports.min(data, (d) => d._xn)) : d3_7_9_0_esm_min_exports.min(data, (d) => d._xn);
@@ -25573,10 +25591,19 @@ ${words.slice(bestI).join(" ")}`;
         xField: "_xd",
         validate: (r) => !!r._xd && !Number.isNaN(+r._xd),
         buildXOpts(data, faceted = false) {
-          const xs3 = data.map((r) => +r._xd);
-          const xDomain = [new Date(d3_7_9_0_esm_min_exports.min(xs3)), new Date(d3_7_9_0_esm_min_exports.max(xs3))];
+          let xDomain;
+          if (histogramDomain) {
+            xDomain = [new Date(histogramDomain[0]), new Date(histogramDomain[1])];
+          } else {
+            const xs3 = data.map((r) => +r._xd);
+            xDomain = [new Date(d3_7_9_0_esm_min_exports.min(xs3)), new Date(d3_7_9_0_esm_min_exports.max(xs3))];
+          }
           return {
             marginBottom: temporalMarginBottom(xDomain),
+            // axis:null/label:null so Plot draws NO native axis — the engine's tblTemporalXAxis marks
+            // are the axis. Without this, xPlotOpts replaces the whole x-scale (assemble-plot merges by
+            // assignment, not over the default) and Plot's native ticks render on top → doubled labels.
+            xPlotOpts: histogramDomain ? { type: "utc", domain: xDomain, axis: null, label: null } : void 0,
             axisMarks: tblTemporalXAxis(xDomain, 1, faceted ? X_AXIS_LABEL_CLASS : void 0),
             markerToX: (m) => parseDate(m.x),
             // Use the SAME local-midnight parse as the chart's line points (parseDate), not the
@@ -25645,6 +25672,135 @@ ${words.slice(bestI).join(" ")}`;
       };
     }
     throw new Error(`Unknown xAxisType: ${xType}`);
+  }
+
+  // src/engine/histogram-bin.ts
+  function autoBinCount(values) {
+    const n = values.length;
+    if (n < 2) return 1;
+    const sorted = [...values].sort((a, b) => a - b);
+    const q10 = (p) => {
+      const idx = (sorted.length - 1) * p;
+      const lo3 = Math.floor(idx), hi3 = Math.ceil(idx);
+      return sorted[lo3] + (sorted[hi3] - sorted[lo3]) * (idx - lo3);
+    };
+    const iqr = q10(0.75) - q10(0.25);
+    const min = sorted[0], max = sorted[sorted.length - 1];
+    if (iqr <= 0) return Math.max(1, Math.ceil(Math.log2(n) + 1));
+    const width = 2 * iqr * Math.pow(n, -1 / 3);
+    return Math.max(1, Math.ceil((max - min) / width));
+  }
+  function computeThresholds(values, spec) {
+    if (spec.thresholds && spec.thresholds.length >= 2) return spec.thresholds;
+    let [min, max] = spec.domain ?? [Math.min(...values), Math.max(...values)];
+    if (!Number.isFinite(min) || !Number.isFinite(max)) {
+      min = 0;
+      max = 1;
+    }
+    if (max <= min) return [min, min + 1];
+    const width = spec.binWidth != null && spec.binWidth > 0 ? spec.binWidth : (max - min) / (spec.bins && spec.bins > 0 ? spec.bins : autoBinCount(values));
+    const edges = [];
+    for (let e = min; e < max - 1e-9; e += width) edges.push(e);
+    edges.push(max);
+    return edges;
+  }
+  function binIndex(x, t60) {
+    if (x < t60[0] || x > t60[t60.length - 1]) return -1;
+    if (x === t60[t60.length - 1]) return t60.length - 2;
+    let lo3 = 0, hi3 = t60.length - 1;
+    while (lo3 < hi3 - 1) {
+      const mid = lo3 + hi3 >> 1;
+      if (x < t60[mid]) hi3 = mid;
+      else lo3 = mid;
+    }
+    return lo3;
+  }
+  var DAY_MS = 864e5;
+  function calendarEdges(startMs, endMs, interval) {
+    const floor = (ms3) => {
+      const d = new Date(ms3);
+      if (interval === "day") return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+      if (interval === "week") {
+        const day = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+        return day - new Date(day).getUTCDay() * DAY_MS;
+      }
+      if (interval === "month") return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1);
+      if (interval === "quarter") return Date.UTC(d.getUTCFullYear(), Math.floor(d.getUTCMonth() / 3) * 3, 1);
+      return Date.UTC(d.getUTCFullYear(), 0, 1);
+    };
+    const next = (ms3) => {
+      const d = new Date(ms3);
+      if (interval === "day") return ms3 + DAY_MS;
+      if (interval === "week") return ms3 + 7 * DAY_MS;
+      if (interval === "month") return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1);
+      if (interval === "quarter") return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 3, 1);
+      return Date.UTC(d.getUTCFullYear() + 1, 0, 1);
+    };
+    const edges = [];
+    let e = floor(startMs);
+    edges.push(e);
+    while (e <= endMs) {
+      e = next(e);
+      edges.push(e);
+    }
+    return edges;
+  }
+  function temporalThresholds(valuesMs, binWidth, bins, domain) {
+    const [min, max] = domain ?? [Math.min(...valuesMs), Math.max(...valuesMs)];
+    if (typeof binWidth === "string") {
+      if (["day", "week", "month", "quarter", "year"].includes(binWidth)) {
+        return calendarEdges(min, max, binWidth);
+      }
+      const days = Number(binWidth);
+      if (Number.isFinite(days) && days > 0) return computeThresholds(valuesMs, { binWidth: days * DAY_MS, domain: [min, max] });
+    }
+    if (typeof binWidth === "number" && binWidth > 0) return computeThresholds(valuesMs, { binWidth: binWidth * DAY_MS, domain: [min, max] });
+    return computeThresholds(valuesMs, { bins, domain: [min, max] });
+  }
+  function normalizeBinned(rows, mode) {
+    if (!mode || mode === "none") return rows;
+    const totalBySeries = /* @__PURE__ */ new Map();
+    for (const r of rows) totalBySeries.set(r.series, (totalBySeries.get(r.series) ?? 0) + r._y);
+    return rows.map((r) => {
+      const total = totalBySeries.get(r.series) || 1;
+      let y = r._y;
+      if (mode === "proportion") y = y / total;
+      else if (mode === "density") y = y / (total * (r._x1 - r._x0));
+      return { ...r, _y: y };
+    });
+  }
+  function binValues(rows, spec) {
+    const values = rows.map((r) => r.x).filter(Number.isFinite);
+    const t60 = computeThresholds(values, spec);
+    const nBins = t60.length - 1;
+    const seriesOrder = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (const r of rows) if (!seen.has(r.series)) {
+      seen.add(r.series);
+      seriesOrder.push(r.series);
+    }
+    if (!seriesOrder.length) seriesOrder.push("");
+    const facetOf = /* @__PURE__ */ new Map();
+    const acc = /* @__PURE__ */ new Map();
+    for (const s of seriesOrder) acc.set(s, new Array(nBins).fill(0));
+    for (const r of rows) {
+      if (!Number.isFinite(r.x)) continue;
+      const i = binIndex(r.x, t60);
+      if (i < 0) continue;
+      acc.get(r.series)[i] += r.weight ?? 1;
+      if (!facetOf.has(r.series)) facetOf.set(r.series, r._facet);
+    }
+    const out = [];
+    for (const s of seriesOrder) {
+      const counts = acc.get(s);
+      for (let i = 0; i < nBins; i++) {
+        const row = { series: s, _x0: t60[i], _x1: t60[i + 1], _y: counts[i] };
+        const f = facetOf.get(s);
+        if (f !== void 0) row._facet = f;
+        out.push(row);
+      }
+    }
+    return normalizeBinned(out, spec.normalize);
   }
 
   // src/engine/marks/projected.ts
@@ -26558,6 +26714,49 @@ ${words.slice(bestI).join(" ")}`;
     };
   }
 
+  // src/engine/marks/histogram.ts
+  var FILL_OPACITY = 0.5;
+  function buildHistogramMarks(data, spec, ctx) {
+    const seriesNames = ctx.seriesNames ?? [""];
+    const isMulti = seriesNames.length > 1;
+    const { colors } = ctx;
+    const barColor = resolveColor(spec.bar_color);
+    const highlightSet = spec.highlightSeries && spec.highlightSeries.length ? new Set(spec.highlightSeries) : null;
+    const fillFor = (s) => {
+      if (highlightSet && !highlightSet.has(s)) return TBL.color.annotationDim;
+      if (!isMulti) return barColor ?? colors.get(s) ?? TBL.color.blue;
+      return colors.get(s) ?? TBL.color.blue;
+    };
+    const overlay = [];
+    for (const s of seriesNames) {
+      const seriesData = data.filter((d) => d.series === s && d._y != null && d._x0 != null && d._x1 != null);
+      overlay.push(
+        plot_0_6_16_esm_min_exports.rectY(seriesData, {
+          x1: "_x0",
+          x2: "_x1",
+          y: "_y",
+          fill: fillFor(s),
+          // Function channel (not a bare constant) so Plot emits fill-opacity on each <rect> rather
+          // than hoisting it onto the parent <g> — the per-rect attribute the legend dim/pin model
+          // reads. (Same constant→group vs fn→per-rect Plot behavior documented in bar.ts.)
+          fillOpacity: () => FILL_OPACITY,
+          stroke: fillFor(s),
+          strokeOpacity: 1
+        })
+      );
+    }
+    const seriesOrder = [];
+    for (const s of seriesNames)
+      for (const d of data)
+        if (d.series === s && d._y != null && d._x0 != null && d._x1 != null) seriesOrder.push(s);
+    return {
+      underlay: [],
+      overlay,
+      tagging: [{ selector: 'g[aria-label="rect"] rect', seriesOrder }],
+      dashedNames: /* @__PURE__ */ new Set()
+    };
+  }
+
   // src/engine/marks/index.ts
   var REGISTRY = {
     line: buildLineMarks,
@@ -26567,7 +26766,8 @@ ${words.slice(bestI).join(" ")}`;
     // Both point types share one builder; it branches on x-scale (numeric vs categorical point).
     scatter: buildPointMarks,
     dotplot: buildPointMarks,
-    waterfall: buildWaterfallMarks
+    waterfall: buildWaterfallMarks,
+    histogram: buildHistogramMarks
   };
   function markBuilderFor(chartType) {
     const builder = REGISTRY[chartType];
@@ -27180,6 +27380,17 @@ ${words.slice(bestI).join(" ")}`;
     if (!facetField) {
       throw new Error("small_multiples requires a facet column (set columns.facet).");
     }
+    let binThresholds;
+    if (spec.chartType === "histogram" && mode !== "per-pane" && !isPreBinned(cols)) {
+      const isTemporal = spec.xAxisType === "temporal";
+      const values = rows.map((r) => isTemporal ? parseDate(r[cols.x] ?? "").getTime() : +(r[cols.x] ?? "")).filter((v) => Number.isFinite(v));
+      const bw3 = spec.histogram?.binWidth;
+      binThresholds = isTemporal ? temporalThresholds(values, bw3, spec.histogram?.bins, spec.histogram?.domain) : computeThresholds(values, {
+        bins: spec.histogram?.bins,
+        binWidth: typeof bw3 === "number" ? bw3 : void 0,
+        domain: spec.histogram?.domain
+      });
+    }
     const isHorizontalStacked = spec.chartType === "stacked" && spec.orientation === "horizontal";
     const isHorizontalBar = (spec.chartType === "bar" || spec.chartType === "stacked") && spec.orientation === "horizontal";
     const sharedCategories = isHorizontalBar ? orderedCategories(rows, cols.x, spec) : [];
@@ -27370,7 +27581,13 @@ ${words.slice(bestI).join(" ")}`;
       const [lo3, hi3] = renderPane(
         spec,
         paneRows,
-        { ...opts, height: effHeight, pane: true, paneFacetValue: value },
+        {
+          ...opts,
+          height: effHeight,
+          pane: true,
+          paneFacetValue: value,
+          ...binThresholds ? { binThresholds } : {}
+        },
         "probe"
       ).yDomain;
       if (lo3 < yLo) yLo = lo3;
@@ -27400,6 +27617,7 @@ ${words.slice(bestI).join(" ")}`;
           pane: true,
           paneFacetValue: value,
           yDomain: sharedYDomain,
+          ...binThresholds ? { binThresholds } : {},
           width: colWidths[col],
           ...forcedXLabelMode ? { xLabelMode: forcedXLabelMode } : {},
           ...forcedMarginBottom != null ? { marginBottom: forcedMarginBottom } : {},
@@ -27484,8 +27702,11 @@ ${words.slice(bestI).join(" ")}`;
   function renderPane(spec, rows, opts = {}, classNameSuffix, facetInfo) {
     const xType = spec.xAxisType;
     if (!xType) throw new Error("No xAxisType.");
-    const adapter = makeXAdapter(xType, spec.xAxisPolicy);
     const cols = resolveColumns(spec, rows);
+    if (spec.chartType === "histogram") {
+      return renderHistogramPane(spec, rows, opts, classNameSuffix, facetInfo, cols, xType);
+    }
+    const adapter = makeXAdapter(xType, spec.xAxisPolicy);
     const data = rows.map((r) => {
       const xRaw = r[cols.x] ?? "";
       const valRaw = r[cols.value];
@@ -27521,6 +27742,65 @@ ${words.slice(bestI).join(" ")}`;
       return row;
     }).filter((r) => adapter.validate(r)).filter((r) => !facetInfo || r._facet != null);
     if (!data.length) throw new Error("No data.");
+    return assemblePaneResult(spec, opts, classNameSuffix, facetInfo, adapter, cols, data);
+  }
+  function histogramDomainOf(binned) {
+    let lo3 = Infinity;
+    let hi3 = -Infinity;
+    for (const r of binned) {
+      if (r._x0 != null && r._x0 < lo3) lo3 = r._x0;
+      if (r._x1 != null && r._x1 > hi3) hi3 = r._x1;
+    }
+    return Number.isFinite(lo3) && Number.isFinite(hi3) ? [lo3, hi3] : [0, 1];
+  }
+  function renderHistogramPane(spec, rows, opts, classNameSuffix, facetInfo, cols, xType) {
+    const isTemporal = xType === "temporal";
+    let binned;
+    if (isPreBinned(cols)) {
+      const preRows = rows.map((r) => {
+        const valRaw = r[cols.value];
+        const row = {
+          series: cols.series ? String(r[cols.series] ?? "") : SINGLE_SERIES_KEY,
+          _x0: +r[cols.x0],
+          _x1: +r[cols.x1],
+          _y: valRaw === "" || valRaw == null ? 0 : +valRaw
+        };
+        if (cols.facet) row._facet = String(r[cols.facet] ?? "");
+        return row;
+      });
+      binned = normalizeBinned(preRows, spec.histogram?.normalize);
+    } else {
+      const weightCol = spec.histogram?.weight;
+      const inputs = rows.map((r) => {
+        const xRaw = r[cols.x] ?? "";
+        const x = isTemporal ? parseDate(xRaw).getTime() : +xRaw;
+        const wRaw = weightCol ? r[weightCol] : void 0;
+        const weight = weightCol != null ? wRaw === "" || wRaw == null ? 0 : Number(wRaw) : void 0;
+        const input = {
+          series: cols.series ? String(r[cols.series] ?? "") : SINGLE_SERIES_KEY,
+          x
+        };
+        if (weight !== void 0) input.weight = weight;
+        if (cols.facet) input._facet = String(r[cols.facet] ?? "");
+        return input;
+      }).filter((r) => Number.isFinite(r.x));
+      const values = inputs.map((r) => r.x);
+      const bw3 = spec.histogram?.binWidth;
+      const thresholds = opts.binThresholds ?? (isTemporal ? temporalThresholds(values, bw3, spec.histogram?.bins, spec.histogram?.domain) : computeThresholds(values, {
+        bins: spec.histogram?.bins,
+        binWidth: typeof bw3 === "number" ? bw3 : void 0,
+        domain: spec.histogram?.domain
+      }));
+      binned = binValues(inputs, {
+        thresholds,
+        normalize: spec.histogram?.normalize
+      });
+    }
+    if (!binned.length) throw new Error("No data.");
+    const adapter = makeXAdapter(xType, spec.xAxisPolicy, histogramDomainOf(binned));
+    return assemblePaneResult(spec, opts, classNameSuffix, facetInfo, adapter, cols, binned);
+  }
+  function assemblePaneResult(spec, opts, classNameSuffix, facetInfo, adapter, cols, data) {
     const seriesNames = spec.series_order && spec.series_order.length ? spec.series_order.filter((s) => data.some((r) => r.series === s)) : uniqueSeries(data);
     const seriesSet = new Set(seriesNames);
     const dataInScope = data.filter((r) => seriesSet.has(r.series));
@@ -27581,6 +27861,9 @@ ${words.slice(bestI).join(" ")}`;
       const resolvedMin = policy.min ?? Math.min(barExtent.min, ...markerYs);
       const resolvedMax = Math.max(policy.max ?? barExtent.max, ...markerYs);
       hardDomain = [resolvedMin, resolvedMax];
+    } else if (chartType === "histogram") {
+      includeZero = true;
+      hardDomain = policy.min != null && policy.max != null ? [policy.min, policy.max] : null;
     } else if (chartType === "waterfall") {
       includeZero = policy.min == null;
       const markerYs = ann.yAxis.map((m) => m.y).filter(Number.isFinite);
@@ -27746,7 +28029,7 @@ ${words.slice(bestI).join(" ")}`;
         return { ...base, markerShape: "point", markerSymbol: "circle" };
       });
     }
-    const markerShape = chartType === "bar" || chartType === "stacked" ? "rect" : "line";
+    const markerShape = chartType === "bar" || chartType === "stacked" || chartType === "histogram" ? "rect" : "line";
     const withSymbols = markerShape === "line" && spec.points === true;
     const baseItems = seriesNames.length > 1 || hasDashOverrides ? seriesNames.map((name, i) => ({
       series: name,
@@ -28086,6 +28369,75 @@ ${words.slice(bestI).join(" ")}`;
         applyHighlight();
       }
     };
+  }
+
+  // src/engine/histogram-label.ts
+  var MONTHS = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+  ];
+  function formatNumericEdge(v, decimals) {
+    const n = +v;
+    if (!Number.isFinite(n)) return String(v);
+    return n.toLocaleString(
+      void 0,
+      decimals != null ? { minimumFractionDigits: decimals, maximumFractionDigits: decimals } : { maximumFractionDigits: 2 }
+    );
+  }
+  function formatSinglePeriod(startMs, interval) {
+    const d = new Date(startMs);
+    const y = d.getUTCFullYear();
+    const m = d.getUTCMonth();
+    const day = d.getUTCDate();
+    switch (interval) {
+      case "year":
+        return String(y);
+      case "quarter":
+        return `Q${Math.floor(m / 3) + 1} ${y}`;
+      case "month":
+        return `${MONTHS[m]} ${y}`;
+      case "week":
+        return `Week of ${MONTHS[m]} ${day}, ${y}`;
+      case "day":
+        return `${MONTHS[m]} ${day}, ${y}`;
+    }
+  }
+  function formatBinLabel(x03, x13, opts) {
+    if (opts.xType === "temporal") {
+      if (opts.interval) return formatSinglePeriod(x03, opts.interval);
+      const start = new Date(x03);
+      const end = new Date(x13 - 1);
+      const sY2 = start.getUTCFullYear(), sM2 = start.getUTCMonth();
+      const eY2 = end.getUTCFullYear(), eM2 = end.getUTCMonth();
+      if (sY2 === eY2 && sM2 === eM2) return `${MONTHS[sM2]} ${sY2}`;
+      if (sY2 === eY2) return `${MONTHS[sM2]} \u2013 ${MONTHS[eM2]} ${sY2}`;
+      return `${MONTHS[sM2]} ${sY2} \u2013 ${MONTHS[eM2]} ${eY2}`;
+    }
+    const position = opts.unitPosition ?? "suffix";
+    const unit = opts.unit ?? "";
+    let lo3 = formatNumericEdge(x03, opts.decimals);
+    let hi3 = formatNumericEdge(x13, opts.decimals);
+    if (unit) {
+      if (position === "prefix") {
+        lo3 = `${unit}${lo3}`;
+        hi3 = `${unit}${hi3}`;
+      } else if (unit.startsWith(" ")) hi3 = `${hi3}${unit}`;
+      else {
+        lo3 = `${lo3}${unit}`;
+        hi3 = `${hi3}${unit}`;
+      }
+    }
+    return `${lo3} \u2013 ${hi3}`;
   }
 
   // src/engine/crosshair.ts
@@ -28596,6 +28948,234 @@ ${words.slice(bestI).join(" ")}`;
     hit.addEventListener("pointermove", update);
     hit.addEventListener("pointerleave", hide);
     hit.addEventListener("pointerdown", update);
+  }
+  function buildHistogramBins(rows) {
+    const byKey = /* @__PURE__ */ new Map();
+    for (const r of rows) {
+      if (r._x0 == null || r._x1 == null) continue;
+      const key = `${r._x0}:${r._x1}`;
+      let bin = byKey.get(key);
+      if (!bin) {
+        bin = { x0: r._x0, x1: r._x1, bySeries: /* @__PURE__ */ new Map() };
+        byKey.set(key, bin);
+      }
+      if (r._y != null && Number.isFinite(r._y)) bin.bySeries.set(r.series, r._y);
+    }
+    return [...byKey.values()].sort((a, b) => a.x0 - b.x0);
+  }
+  function resolveHistogramBinIndex(spans, svgX) {
+    if (!spans.length) return null;
+    for (let i = 0; i < spans.length; i++) {
+      if (svgX >= spans[i].min && svgX <= spans[i].max) return i;
+    }
+    let best = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < spans.length; i++) {
+      const mid = (spans[i].min + spans[i].max) / 2;
+      const d = Math.abs(svgX - mid);
+      if (d < bestDist) {
+        bestDist = d;
+        best = i;
+      }
+    }
+    return best;
+  }
+  function buildHistogramTooltipHtml(bin, opts) {
+    const { colors, seriesLabels, seriesOrder, renderedFills } = opts;
+    const yFormat = opts.yFormat ?? ((v) => String(v));
+    const header = formatBinLabel(bin.x0, bin.x1, opts.label ?? { xType: "numeric", interval: null });
+    let html = `<div class="tbl-tooltip-head">${escapeHtml(header)}</div>`;
+    const ordered = seriesOrder && seriesOrder.length ? seriesOrder.filter((s) => bin.bySeries.has(s)) : [...bin.bySeries.keys()];
+    for (const series of ordered) {
+      const v = bin.bySeries.get(series);
+      if (v == null || Number.isNaN(v)) continue;
+      const dot = renderedFills?.get(series) || colors?.get(series) || "currentColor";
+      const display = seriesLabels && seriesLabels[series] || series;
+      html += `<div class="tbl-tooltip-row"><span class="tbl-tooltip-swatch is-square" style="background: ${dot}"></span><span><span class="tbl-tooltip-label">${escapeHtml(display)}:</span> <span class="tbl-tooltip-value">${escapeHtml(yFormat(v))}</span></span></div>`;
+    }
+    return html;
+  }
+  function buildHistogramGeom(svgEl3, rows) {
+    const bins = buildHistogramBins(rows);
+    if (!bins.length) return null;
+    const vb3 = svgEl3.viewBox?.baseVal;
+    const W10 = vb3?.width || +(svgEl3.getAttribute("width") ?? "") || svgEl3.clientWidth;
+    const H11 = vb3?.height || +(svgEl3.getAttribute("height") ?? "") || svgEl3.clientHeight;
+    const ml3 = +(svgEl3.dataset.marginLeft ?? "") || 0;
+    const mr3 = +(svgEl3.dataset.marginRight ?? "") || 8;
+    const mt3 = +(svgEl3.dataset.marginTop ?? "") || 18;
+    const mb3 = +(svgEl3.dataset.marginBottom ?? "") || 28;
+    const rects = Array.from(svgEl3.querySelectorAll('g[aria-label="rect"] rect'));
+    let pxMinAll = Infinity;
+    let pxMaxAll = -Infinity;
+    for (const r of rects) {
+      const rx3 = parseFloat(r.getAttribute("x") ?? "0");
+      const rw3 = parseFloat(r.getAttribute("width") ?? "0");
+      if (rx3 < pxMinAll) pxMinAll = rx3;
+      if (rx3 + rw3 > pxMaxAll) pxMaxAll = rx3 + rw3;
+    }
+    const dataXmin = bins[0].x0;
+    const dataXmax = bins[bins.length - 1].x1;
+    const span = dataXmax - dataXmin;
+    const haveGeom = Number.isFinite(pxMinAll) && Number.isFinite(pxMaxAll) && pxMaxAll > pxMinAll && span > 0;
+    const xToPx = haveGeom ? (x) => pxMinAll + (x - dataXmin) / span * (pxMaxAll - pxMinAll) : (x) => ml3 + (x - dataXmin) / (span || 1) * (W10 - ml3 - mr3);
+    const spans = bins.map((b) => ({ min: xToPx(b.x0), max: xToPx(b.x1) }));
+    const renderedFills = (() => {
+      const m = /* @__PURE__ */ new Map();
+      for (const r of rects) {
+        const s = r.getAttribute("data-series") ?? "";
+        if (m.has(s)) continue;
+        const f = renderedRectFill(r, svgEl3);
+        if (f) m.set(s, f);
+      }
+      return m;
+    })();
+    return { bins, W: W10, H: H11, ml: ml3, mr: mr3, mt: mt3, mb: mb3, xToPx, spans, renderedFills };
+  }
+  function attachHistogramHover(svgEl3, opts) {
+    if (!svgEl3 || !opts.rows?.length) return;
+    const geom = buildHistogramGeom(svgEl3, opts.rows);
+    if (!geom) return;
+    const { bins, W: W10, H: H11, mt: mt3, mb: mb3, spans, renderedFills } = geom;
+    const emitOnly = opts.emitOnly ?? false;
+    const yFormat = opts.yFormat ?? ((v) => `${(+v).toLocaleString(void 0, { maximumFractionDigits: 2 })}`);
+    const NS2 = "http://www.w3.org/2000/svg";
+    svgEl3.querySelectorAll(".tbl-hist-hover-hit, .tbl-hist-hover-hl").forEach((el3) => el3.remove());
+    const hl3 = emitOnly ? null : svgEl3.ownerDocument.createElementNS(NS2, "rect");
+    if (hl3) {
+      hl3.classList.add("tbl-hist-hover-hl");
+      hl3.setAttribute("fill", TBL.color.annotationDim);
+      hl3.setAttribute("opacity", "0");
+      hl3.style.pointerEvents = "none";
+      svgEl3.appendChild(hl3);
+    }
+    const hit = svgEl3.ownerDocument.createElementNS(NS2, "rect");
+    hit.classList.add("tbl-hist-hover-hit");
+    hit.setAttribute("x", "0");
+    hit.setAttribute("y", "0");
+    hit.setAttribute("width", String(W10));
+    hit.setAttribute("height", String(H11));
+    hit.setAttribute("fill", "transparent");
+    hit.style.cursor = "default";
+    svgEl3.appendChild(hit);
+    const tip = emitOnly ? null : getSharedTooltip(svgEl3.ownerDocument);
+    function showHighlight(min, max) {
+      if (!hl3) return;
+      hl3.setAttribute("x", String(min));
+      hl3.setAttribute("y", String(mt3));
+      hl3.setAttribute("width", String(Math.max(0, max - min)));
+      hl3.setAttribute("height", String(H11 - mt3 - mb3));
+      hl3.setAttribute("opacity", "0.12");
+    }
+    function update(evt) {
+      const rect = svgEl3.getBoundingClientRect();
+      if (!rect.width) return;
+      const scaleX = W10 / rect.width;
+      const svgX = (evt.clientX - rect.left) * scaleX;
+      const idx = resolveHistogramBinIndex(spans, svgX);
+      if (idx == null) {
+        hide();
+        return;
+      }
+      const bin = bins[idx];
+      opts.onResolve?.((bin.x0 + bin.x1) / 2);
+      if (emitOnly) return;
+      showHighlight(spans[idx].min, spans[idx].max);
+      tip.innerHTML = buildHistogramTooltipHtml(bin, {
+        colors: opts.colors,
+        seriesLabels: opts.seriesLabels,
+        seriesOrder: opts.seriesOrder,
+        yFormat,
+        label: opts.label,
+        renderedFills
+      });
+      const offset = 14;
+      const win = svgEl3.ownerDocument.defaultView;
+      const vw3 = win.innerWidth;
+      const vh3 = win.innerHeight;
+      tip.style.opacity = "1";
+      let left = evt.clientX + offset;
+      let top = evt.clientY + offset;
+      if (left + tip.offsetWidth + 4 > vw3) left = evt.clientX - tip.offsetWidth - offset;
+      if (top + tip.offsetHeight + 4 > vh3) top = evt.clientY - tip.offsetHeight - offset;
+      if (left < 4) left = 4;
+      if (top < 4) top = 4;
+      tip.style.left = `${left}px`;
+      tip.style.top = `${top}px`;
+    }
+    function hide() {
+      if (hl3) hl3.setAttribute("opacity", "0");
+      if (tip) tip.style.opacity = "0";
+      opts.onResolve?.(null);
+    }
+    hit.style.pointerEvents = "all";
+    hit.addEventListener("pointermove", update);
+    hit.addEventListener("pointerleave", hide);
+    hit.addEventListener("pointerdown", update);
+  }
+  function attachSecondaryHistogramCursor(svgEl3, opts) {
+    const noop = () => {
+    };
+    if (!svgEl3 || !opts.rows?.length) return noop;
+    const geom = buildHistogramGeom(svgEl3, opts.rows);
+    if (!geom) return noop;
+    const { bins, H: H11, mt: mt3, mb: mb3, xToPx, spans, renderedFills } = geom;
+    const plotH = H11 - mt3 - mb3;
+    const yFormat = opts.yFormat ?? ((v) => `${(+v).toLocaleString(void 0, { maximumFractionDigits: 2 })}`);
+    const rectsByBin = /* @__PURE__ */ new Map();
+    for (const r of Array.from(svgEl3.querySelectorAll('g[aria-label="rect"] rect'))) {
+      const rx3 = parseFloat(r.getAttribute("x") ?? "0");
+      const rw3 = parseFloat(r.getAttribute("width") ?? "0");
+      const cx3 = rx3 + rw3 / 2;
+      const idx = resolveHistogramBinIndex(spans, cx3);
+      if (idx == null) continue;
+      if (!rectsByBin.has(idx)) rectsByBin.set(idx, []);
+      rectsByBin.get(idx).push({
+        series: r.getAttribute("data-series") ?? "",
+        cx: cx3,
+        y: parseFloat(r.getAttribute("y") ?? "0"),
+        fill: renderedRectFill(r, svgEl3)
+      });
+    }
+    const order = opts.seriesOrder && opts.seriesOrder.length ? opts.seriesOrder : null;
+    const colorFor = (s) => renderedFills.get(s) || opts.colors?.get(s) || COORD_LABEL_DARK;
+    const doc = svgEl3.ownerDocument;
+    const g = makeCoordGroup(svgEl3);
+    const axisRows = makeAxisRows(svgEl3, mt3 + plotH);
+    return (key, active = false) => {
+      while (g.firstChild) g.removeChild(g.firstChild);
+      if (key == null) {
+        g.setAttribute("opacity", "0");
+        return;
+      }
+      const idx = resolveHistogramBinIndex(spans, xToPx(key));
+      if (idx == null) {
+        g.setAttribute("opacity", "0");
+        return;
+      }
+      const bin = bins[idx];
+      addCoordRegion(g, doc, spans[idx].min, spans[idx].max - spans[idx].min, mt3, plotH);
+      const weight = active ? 700 : 600;
+      const rects = rectsByBin.get(idx) ?? [];
+      const orderedRects = order ? order.map((s) => rects.find((r) => r.series === s)).filter(Boolean) : rects;
+      const valid = orderedRects.map((rect) => ({ rect, v: bin.bySeries.get(rect.series) })).filter((x) => x.v != null && Number.isFinite(x.v));
+      const ys3 = staggerBarLabels(
+        valid.map((x) => ({ cx: x.rect.cx, w: coordPillWidth(yFormat(x.v)), value: x.v, y: x.rect.y - 9 })),
+        COORD_PILL_H
+      );
+      valid.forEach(
+        (x, i) => addCoordPill(g, doc, x.rect.cx, ys3[i], "middle", yFormat(x.v), x.rect.fill ?? colorFor(x.rect.series), weight)
+      );
+      if (active) {
+        const rowYs = axisRows.get();
+        if (rowYs.length) {
+          const cx3 = (spans[idx].min + spans[idx].max) / 2;
+          const text = formatBinLabel(bin.x0, bin.x1, opts.label ?? { xType: "numeric", interval: null });
+          addCoordAxisLabel(g, doc, cx3, [{ text, cy: rowYs[0] }]);
+        }
+      }
+      g.setAttribute("opacity", "1");
+    };
   }
   function readLinearYScale(svgEl3) {
     const scaleFn = svgEl3.scale;
@@ -30172,6 +30752,20 @@ ${words.slice(bestI).join(" ")}`;
   }
 
   // src/engine/render-live.ts
+  var CALENDAR_INTERVALS = ["day", "week", "month", "quarter", "year"];
+  function histogramBinLabelOpts(spec) {
+    const xType = spec.xAxisType === "temporal" ? "temporal" : "numeric";
+    const bw3 = spec.histogram?.binWidth;
+    const interval = xType === "temporal" && typeof bw3 === "string" && CALENDAR_INTERVALS.includes(bw3) ? bw3 : null;
+    const cfg = spec.histogram?.bin_label;
+    return {
+      xType,
+      interval,
+      ...cfg?.unit != null ? { unit: cfg.unit } : {},
+      ...cfg?.unit_position != null ? { unitPosition: cfg.unit_position } : {},
+      ...cfg?.decimals != null ? { decimals: cfg.decimals } : {}
+    };
+  }
   var MIN_CHART_WIDTH = 390;
   var FIXED_CHART_HEIGHT = 400;
   function computeChartHeight(spec, rows) {
@@ -30780,6 +31374,15 @@ ${words.slice(bestI).join(" ")}`;
             ...waterfallCursor ? { waterfall: waterfallCursor } : {}
           });
         }
+      } else if (spec.chartType === "histogram") {
+        attachHistogramHover(svg, {
+          rows: dataInScope.map((r) => ({ _x0: r._x0, _x1: r._x1, series: r.series, _y: r._y })),
+          colors,
+          seriesLabels,
+          seriesOrder,
+          yFormat: (v) => formatValue(v, units, spec.tooltip_decimals),
+          label: histogramBinLabelOpts(spec)
+        });
       } else {
         attachCrosshair(svg, {
           rows: dataInScope.map((r) => ({ time: r.time, series: r.series, value: r._y })),
@@ -31261,6 +31864,30 @@ ${words.slice(bestI).join(" ")}`;
             ...ctx.coordAccentLabel ? { accentLabel: { font: FACETED_CAT_LABEL_PX } } : {}
           } : {},
           ...wfCursor ? { waterfall: wfCursor } : {}
+        });
+      }
+      return void 0;
+    }
+    if (ctx.spec.chartType === "histogram") {
+      const histCoord = ctx.onResolve != null && (ctx.spec.small_multiples?.mode ?? "shared") !== "per-pane";
+      const histRows = ctx.dataInScope.map((r) => ({ _x0: r._x0, _x1: r._x1, series: r.series, _y: r._y }));
+      attachHistogramHover(svg, {
+        rows: histRows,
+        colors: ctx.colors,
+        seriesLabels: ctx.seriesLabels,
+        seriesOrder: ctx.seriesOrder,
+        yFormat: (v) => formatValue(v, ctx.units, ctx.spec.tooltip_decimals),
+        label: histogramBinLabelOpts(ctx.spec),
+        ...histCoord ? { emitOnly: true, onResolve: (x) => ctx.onResolve(x) } : {}
+      });
+      if (histCoord) {
+        return attachSecondaryHistogramCursor(svg, {
+          rows: histRows,
+          colors: ctx.colors,
+          seriesLabels: ctx.seriesLabels,
+          seriesOrder: ctx.seriesOrder,
+          yFormat: (v) => formatValue(v, ctx.units, ctx.spec.tooltip_decimals),
+          label: histogramBinLabelOpts(ctx.spec)
         });
       }
       return void 0;
