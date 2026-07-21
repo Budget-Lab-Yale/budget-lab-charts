@@ -1,0 +1,95 @@
+{
+  "renderVersion": "engine:git+ssh://git@github.com/Budget-Lab-Yale/budget-lab-chart-engine.git#658c565dc0d23cb215cf77ea824a7f121b3a7b7b|thumbs:1|fonts:1",
+  "charts": {
+    "ai-fiscal/atr-by-decile": {
+      "hash": "649650b8a3ac4e64268770ef8806cf7174e67c2900976f49c5be279e0aefea45"
+    },
+    "ai-fiscal/debt-to-gdp": {
+      "hash": "0f85a4618f2026731676493a776c18c946203b6fbe14cc5bbf7c57843c2a924a"
+    },
+    "ai-fiscal/gdp-growth-history": {
+      "hash": "c811e16f1c7e16a52735b05ab851a99615ef68abecb92547dc0ed773a0247c29"
+    },
+    "ai-fiscal/inequality-gini": {
+      "hash": "f0e12e2aea138882a43d4a4e8b930d998447656876252500f38a6c5ef5c3cb5b"
+    },
+    "ai-fiscal/key-parameters": {
+      "hash": "0945e9271e69dc8ac3f020d7d1e54e736308b6abcdc0cbb1e4b765871234caa9"
+    },
+    "ai-fiscal/key-parameters-symbols": {
+      "hash": "f9b5a6ace0bfd03df20813ef36a5caa6700229200f69cb616b48b40d208faa8d"
+    },
+    "ai-fiscal/labor-share-history": {
+      "hash": "a0cf61f63beddca86459f91c7c3ea8bc88717699c92df211e78cf30a587cae72"
+    },
+    "ai-fiscal/revenue-by-income-type": {
+      "hash": "c3f8bddb08fcefe07addbb37ea63e01fdbdbe9cf9929ea6169e4214fe029b63b"
+    },
+    "ai-fiscal/revenue-by-instrument": {
+      "hash": "3389af70f4891aa3629e8eecdeff97cb828dd4cf3baf117edf61503432b503b3"
+    },
+    "ai-fiscal/revenue-fixed-vs-reallocated": {
+      "hash": "6a98bd19de8caf4bc746423180fc1450a7f1212d1ed76130b9e4bf14bf8189db"
+    },
+    "ai-fiscal/revenue-headline": {
+      "hash": "4b6b58394eabd03ea7c57109160840fc9724a2f656e49afd7782a1ff5f5eda36"
+    },
+    "ai-fiscal/revenue-vs-factor-income": {
+      "hash": "42ef883f6022412a6c37e71b251a8b60ba39c31a40075affb328126454075a5c"
+    },
+    "ai-fiscal/revenue-vs-pretax-income": {
+      "hash": "369745a2f9aa28f189806b9bc3032f89f7fb81540fbb8755b8a71e2c88bfd59f"
+    },
+    "atus-childcare/childcare-by-activity": {
+      "hash": "95ee80ee52f0e8e2a10fe659e530b34fff1987368da0c4319a3168caee404e36"
+    },
+    "atus-childcare/childcare-by-cohort-all-adults": {
+      "hash": "e23aef70051733dcb6593e2590b9a63499a221e37fa3f11172481fd39a7d8827"
+    },
+    "atus-childcare/childcare-by-cohort-parents": {
+      "hash": "d5a8c6115ae5292d6669573efe961634336ad1d5117a1b85726e56dff75385ba"
+    },
+    "atus-childcare/childcare-by-household-type": {
+      "hash": "662bc314010b651ed2c288e8e8cc506526d7990d59c0479514eb66c56b780edc"
+    },
+    "atus-childcare/childcare-by-household-type-and-child-age": {
+      "hash": "d5399122d048c8af2306796c9101a86216206627484305950806715e15467ad2"
+    },
+    "atus-childcare/childcare-by-sex-and-child-age": {
+      "hash": "3f414806993d4a1a5d3584e84c3e4176957ba3a36c4c5bfa992cc3493ca081a9"
+    },
+    "atus-childcare/leisure-by-cohort": {
+      "hash": "342640a07a8e1fcc33ce8f1dae5f2fbfd393290587e24aa3df8e4009fc9f1a9a"
+    },
+    "atus-childcare/leisure-by-household-type": {
+      "hash": "a9316b19c3f6dffeafa9a18a78fefdd2fd50e0b4804bd7addfb7a8d74683e3c7"
+    },
+    "atus-childcare/work-by-cohort-parents": {
+      "hash": "9f2562e73db39d50ace410b47bcc07a1aaf7c89fe47a327a9f4d713faa9e9d14"
+    },
+    "atus-childcare/work-by-household-type": {
+      "hash": "9dd5979bef902ce6335d44cd883470b19235d1256cd49f5852ff9c95789b3da9"
+    },
+    "atus-childcare/work-by-youngest-child-age": {
+      "hash": "e94c40b70f9d7899daa2e79fbc98be3e65ec9a05e9984bab1734c2a5b0bdaf5c"
+    },
+    "tariff-model-update-july2026/eta-effect": {
+      "hash": "8e25d832f5afb07768318d870c2ff14f269d9414965778cc50458a6e215c8951"
+    },
+    "tariff-model-update-july2026/etas": {
+      "hash": "47d3ee1bc1ebfed71c7b1894cc41eec1de0ff2e280a824e555a281fda4ddacfc"
+    },
+    "tariff-model-update-july2026/etr-vintages": {
+      "hash": "95a065e6f10e9d256c2544c53552c0f5590e29d8f34928bc313b06e0c5ec7eb6"
+    },
+    "tariff-model-update-july2026/headline-results": {
+      "hash": "972b7f84a19fc6b7a1b4e9d9f010a38330532ba2687ecc266bdac6cd4ca201be"
+    },
+    "tariff-model-update-july2026/price-waterfall": {
+      "hash": "a48aad1ff108944bf74c01bc6af5c82886120f2991349b1506d375f5d909b527"
+    },
+    "tariff-model-update-july2026/update-decomposition": {
+      "hash": "a76f2d66c6ad5b85baf7f139d75a24ca1ac140c3164c4e6f557c6398665e46dc"
+    }
+  }
+}
