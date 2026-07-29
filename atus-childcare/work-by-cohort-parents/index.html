@@ -1172,7 +1172,7 @@ var BudgetLabChart = (() => {
   var SINGLE_SERIES_KEY = "";
   function resolveColumns(spec, rows) {
     const c = spec.columns ?? {};
-    const x = c.x ?? "time";
+    const x = c.category ?? c.x ?? "time";
     const value = c.value ?? "value";
     const facet = c.facet ?? null;
     const shape = c.shape != null && c.shape !== "" ? c.shape : null;
@@ -1192,6 +1192,9 @@ var BudgetLabChart = (() => {
   }
   function isPreBinned(cols) {
     return cols.x0 != null && cols.x1 != null;
+  }
+  function categoryOrderFor(spec) {
+    return spec.category_order ?? spec.x_order;
   }
 
   // src/spec/title.ts
@@ -24762,6 +24765,9 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
       strokeWidth: 1,
       defined: (d) => Number.isFinite(d._y),
       ...facetChannels,
+      // Truncated value axis (see assemblePaneResult's clip gate): an out-of-range point would
+      // otherwise land outside the frame, or off the canvas entirely.
+      ...ctx.clipMarks ? { clip: true } : {},
       ...extra
     });
     const overlay = [];
@@ -24903,13 +24909,16 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
   }
   var HEADROOM_DEFAULT = 1.05;
   var HEADROOM_NET_TEXT = 1.08;
+  function floorDegenerateExtent(ext) {
+    return ext.min === 0 && ext.max === 0 ? { min: 0, max: 1 } : ext;
+  }
   function computeBarYExtent(data, spec, chartType) {
     const nums = data.map((r) => r._y).filter((v) => Number.isFinite(v));
     if (!nums.length) return { min: 0, max: 1 };
     if (chartType === "bar") {
       const dataMax = Math.max(0, ...nums);
       const dataMin = Math.min(0, ...nums);
-      return { min: dataMin, max: dataMax * HEADROOM_DEFAULT };
+      return floorDegenerateExtent({ min: dataMin, max: dataMax * HEADROOM_DEFAULT });
     }
     if (spec.barStack?.normalize === true) {
       return { min: 0, max: 100 };
@@ -24932,10 +24941,20 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
     const netDisplay = spec.barStack?.netDisplay ?? "auto";
     const netIsText = !hasNegatives && (netDisplay === "text" || netDisplay === "auto");
     const headroom = netIsText ? HEADROOM_NET_TEXT : HEADROOM_DEFAULT;
-    return {
+    return floorDegenerateExtent({
       min: Math.min(0, negMin),
       max: posMax * headroom
-    };
+    });
+  }
+  var DUMBBELL_PAD_FRACTION = 0.05;
+  function computeDumbbellValueExtent(values) {
+    const nums = values.filter((v) => typeof v === "number" && Number.isFinite(v));
+    if (!nums.length) return { min: 0, max: 1 };
+    const lo3 = Math.min(...nums);
+    const hi3 = Math.max(...nums);
+    const span = hi3 - lo3;
+    const pad = span > 0 ? span * DUMBBELL_PAD_FRACTION : Math.abs(hi3) * DUMBBELL_PAD_FRACTION || 1;
+    return { min: lo3 - pad, max: hi3 + pad };
   }
   function kindOf(row) {
     const k = (row._kind ?? "").trim();
@@ -24978,6 +24997,66 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
       min: lo3 < 0 ? lo3 * HEADROOM_NET_TEXT : lo3,
       max: hi3 > 0 ? hi3 * HEADROOM_NET_TEXT : hi3
     };
+  }
+  function stackedExtent(data, keyOf) {
+    const posSum = /* @__PURE__ */ new Map();
+    const negSum = /* @__PURE__ */ new Map();
+    for (const r of data) {
+      if (!Number.isFinite(r._y)) continue;
+      const key = keyOf(r);
+      const y = r._y;
+      const into = y >= 0 ? posSum : negSum;
+      into.set(key, (into.get(key) ?? 0) + y);
+    }
+    if (!posSum.size && !negSum.size) return null;
+    return {
+      min: negSum.size ? Math.min(0, ...negSum.values()) : 0,
+      max: posSum.size ? Math.max(0, ...posSum.values()) : 0
+    };
+  }
+  function computeDrawnValueExtent(data, spec, chartType) {
+    const finite = (v) => Number.isFinite(v);
+    if (chartType === "line" || chartType === "scatter" || chartType === "dotplot") {
+      const vals = [];
+      for (const r of data) {
+        if (finite(r._y)) vals.push(r._y);
+        if (finite(r._lo)) vals.push(r._lo);
+        if (finite(r._hi)) vals.push(r._hi);
+      }
+      if (!vals.length) return null;
+      return { min: Math.min(...vals), max: Math.max(...vals) };
+    }
+    if (chartType === "histogram") {
+      const vals = data.map((r) => r._y).filter(finite);
+      if (!vals.length) return null;
+      return { min: Math.min(0, ...vals), max: Math.max(0, ...vals) };
+    }
+    if (chartType === "bar") {
+      const vals = data.map((r) => r._y).filter(finite);
+      if (!vals.length) return null;
+      return { min: Math.min(0, ...vals), max: Math.max(0, ...vals) };
+    }
+    if (chartType === "stacked") {
+      if (spec.barStack?.normalize === true) return { min: 0, max: 100 };
+      return stackedExtent(data, (r) => r._xc ?? "");
+    }
+    if (chartType === "area") {
+      return stackedExtent(data, (r) => r.time || String(r._xn ?? r._xc ?? ""));
+    }
+    if (chartType === "dumbbell") {
+      const vals = data.map((r) => r._y).filter(finite);
+      if (!vals.length) return null;
+      return { min: Math.min(...vals), max: Math.max(...vals) };
+    }
+    if (chartType === "waterfall") {
+      const vals = [0];
+      for (const s of computeWaterfallSteps(data)) {
+        if (s.kind === "skip") continue;
+        vals.push(s.base, s.top);
+      }
+      return { min: Math.min(...vals), max: Math.max(...vals) };
+    }
+    return null;
   }
   function waterfallValueDecimals(data, explicit) {
     if (explicit != null) return explicit;
@@ -25370,6 +25449,46 @@ ${words.slice(bestI).join(" ")}`;
   var X_TICK_LABEL_TOP_CLASS = "tbl-x-tick-label-top";
   var ANNOTATION_LINE_CLASS = "tbl-annotation-line";
   var X_ANNOTATION_LINE_CLASS = "tbl-annotation-vline";
+  function segmentsMinusGaps(top, bottom, gaps) {
+    let segs = [[top, bottom]];
+    for (const [gt2, gb3] of gaps) {
+      const next = [];
+      for (const [st3, sb3] of segs) {
+        if (gb3 <= st3 || gt2 >= sb3) {
+          next.push([st3, sb3]);
+          continue;
+        }
+        if (gt2 > st3) next.push([st3, gt2]);
+        if (gb3 < sb3) next.push([gb3, sb3]);
+      }
+      segs = next;
+    }
+    return segs.filter(([a, b]) => b - a > 0.5);
+  }
+  function absElY(el3) {
+    let y = 0;
+    let n = el3;
+    while (n && n.tagName.toLowerCase() !== "svg") {
+      const m = /translate\(\s*-?[\d.]+[ ,]+(-?[\d.]+)/.exec(n.getAttribute("transform") ?? "");
+      if (m) y += Number(m[1]);
+      n = n.parentElement;
+    }
+    const own = Number(el3.getAttribute("y"));
+    return Number.isFinite(own) ? y + own : y;
+  }
+  function sectionGapRanges(svg) {
+    const ys3 = Array.from(svg.querySelectorAll(`g.${CAT_LABEL_CLASS} text`)).map(absElY).filter((y) => Number.isFinite(y)).sort((a, b) => a - b);
+    if (ys3.length < 2) return [];
+    const spacings = [];
+    for (let i = 1; i < ys3.length; i++) spacings.push(ys3[i] - ys3[i - 1]);
+    const normal = Math.min(...spacings);
+    const gaps = [];
+    for (let i = 1; i < ys3.length; i++) {
+      const s = ys3[i] - ys3[i - 1];
+      if (s > normal * 1.6) gaps.push([ys3[i - 1] + normal / 2, ys3[i] - normal / 2]);
+    }
+    return gaps;
+  }
   function stretchLinesToFullWidth(group, leftLocalX, rightLocalX) {
     const lines = group.querySelectorAll("line");
     for (const line of Array.from(lines)) {
@@ -25443,14 +25562,24 @@ ${words.slice(bestI).join(" ")}`;
     keepLeftmostColumn(Y_TICK_LABEL_CLASS);
     keepBottomRow(X_AXIS_LABEL_CLASS);
   }
-  function stretchLinesToFullHeight(group, topLocalY, bottomLocalY) {
-    const lines = group.querySelectorAll("line");
-    for (const line of Array.from(lines)) {
-      line.setAttribute("y1", String(topLocalY));
-      line.setAttribute("y2", String(bottomLocalY));
+  function stretchLinesToFullHeight(group, topLocalY, bottomLocalY, gapsLocal = []) {
+    const segs = segmentsMinusGaps(topLocalY, bottomLocalY, gapsLocal);
+    for (const line of Array.from(group.querySelectorAll("line"))) {
+      if (!segs.length) {
+        line.remove();
+        continue;
+      }
+      line.setAttribute("y1", String(segs[0][0]));
+      line.setAttribute("y2", String(segs[0][1]));
+      for (let k = 1; k < segs.length; k++) {
+        const clone = line.cloneNode(true);
+        clone.setAttribute("y1", String(segs[k][0]));
+        clone.setAttribute("y2", String(segs[k][1]));
+        line.parentNode?.insertBefore(clone, line.nextSibling);
+      }
     }
   }
-  function collapseFacetChromeY(svg, { height, marginTop, marginBottom }) {
+  function collapseFacetChromeY(svg, { height, marginTop, marginBottom, fyDomain }) {
     const collapseDuplicateGroups = (className) => {
       const groups = Array.from(svg.querySelectorAll(`g.${className}`));
       if (groups.length <= 1) return groups;
@@ -25497,6 +25626,8 @@ ${words.slice(bestI).join(" ")}`;
         kept.setAttribute("transform", `translate(${tx3},${ty3 + dy3})`);
       }
     }
+    const isSectioned = !!fyDomain?.some((v) => isSectionSpacer(v));
+    const gaps = isSectioned ? sectionGapRanges(svg) : [];
     const GRIDLINE_TOP_EXTEND = 8;
     for (const cls of [GRIDLINE_CLASS, ZERO_BASELINE_CLASS]) {
       const kept = collapseDuplicateGroups(cls);
@@ -25504,7 +25635,8 @@ ${words.slice(bestI).join(" ")}`;
       if (!group) continue;
       const ty3 = readTranslateY(group);
       const top = cls === GRIDLINE_CLASS ? topAbs - GRIDLINE_TOP_EXTEND : topAbs;
-      stretchLinesToFullHeight(group, top - ty3, bottomAbs - ty3);
+      const gapsLocal = gaps.map(([a, b]) => [a - ty3, b - ty3]);
+      stretchLinesToFullHeight(group, top - ty3, bottomAbs - ty3, gapsLocal);
     }
     const annoClasses = /* @__PURE__ */ new Set();
     for (const g of Array.from(
@@ -25803,6 +25935,131 @@ ${words.slice(bestI).join(" ")}`;
     return normalizeBinned(out, spec.normalize);
   }
 
+  // src/engine/shade.ts
+  function posOf(row, xField) {
+    return xField === "_xd" ? row._xd?.getTime() ?? NaN : row._xn;
+  }
+  function boundToNumber(b) {
+    if (b == null) return null;
+    if (b instanceof Date) return b.getTime();
+    const n = typeof b === "number" ? b : Number(b);
+    return Number.isFinite(n) ? n : null;
+  }
+  function interpolate(a, b, pos, xField) {
+    const pa3 = posOf(a, xField);
+    const pb3 = posOf(b, xField);
+    const span = pb3 - pa3;
+    const t60 = span === 0 ? 0 : (pos - pa3) / span;
+    const y = a._y + t60 * (b._y - a._y);
+    const out = { ...a, _y: y };
+    if (xField === "_xd") out._xd = new Date(pos);
+    else out._xn = pos;
+    return out;
+  }
+  function zeroCrossing(a, b, xField) {
+    const pa3 = posOf(a, xField);
+    const pb3 = posOf(b, xField);
+    const ya3 = a._y;
+    const yb3 = b._y;
+    return pa3 + (0 - ya3) / (yb3 - ya3) * (pb3 - pa3);
+  }
+  function cropContinuous(points, xField, lo3, hi3) {
+    const inside = points.filter((p) => {
+      const x = posOf(p, xField);
+      return (lo3 == null || x >= lo3) && (hi3 == null || x <= hi3);
+    });
+    const straddle = (bound) => {
+      for (let i = 0; i < points.length - 1; i++) {
+        const a = points[i];
+        const b = points[i + 1];
+        if (posOf(a, xField) < bound && bound < posOf(b, xField)) return [a, b];
+      }
+      return null;
+    };
+    const out = [...inside];
+    if (lo3 != null) {
+      const pair = straddle(lo3);
+      if (pair) out.unshift(interpolate(pair[0], pair[1], lo3, xField));
+    }
+    if (hi3 != null) {
+      const pair = straddle(hi3);
+      if (pair) out.push(interpolate(pair[0], pair[1], hi3, xField));
+    }
+    return out.filter((p, i) => i === 0 || posOf(p, xField) !== posOf(out[i - 1], xField));
+  }
+  function cropCategorical(points, lo3, hi3) {
+    const indexOf = (cat) => points.findIndex((p) => p._xc === cat);
+    let start = 0;
+    let end = points.length - 1;
+    if (lo3 != null) {
+      start = indexOf(lo3);
+      if (start < 0) return [];
+    }
+    if (hi3 != null) {
+      end = indexOf(hi3);
+      if (end < 0) return [];
+    }
+    return start > end ? [] : points.slice(start, end + 1);
+  }
+  function splitBySide(cropped, xField, side) {
+    const continuous = xField !== "_xc";
+    const wanted = (r) => side === "positive" ? r._y > 0 : r._y < 0;
+    const eligible = (r) => wanted(r) || r._y === 0;
+    const runs = [];
+    let i = 0;
+    while (i < cropped.length) {
+      if (!eligible(cropped[i])) {
+        i++;
+        continue;
+      }
+      const start = i;
+      while (i < cropped.length && eligible(cropped[i])) i++;
+      const run = cropped.slice(start, i);
+      if (!run.some(wanted)) continue;
+      if (continuous) {
+        const before = cropped[start - 1];
+        if (before && !eligible(before) && run[0]._y !== 0) {
+          run.unshift(interpolateToZero(before, run[0], xField));
+        }
+        const after = cropped[i];
+        const last = run[run.length - 1];
+        if (after && !eligible(after) && last._y !== 0) {
+          run.push(interpolateToZero(last, after, xField));
+        }
+      }
+      runs.push(run);
+    }
+    return runs;
+  }
+  function interpolateToZero(a, b, xField) {
+    const point = interpolate(a, b, zeroCrossing(a, b, xField), xField);
+    point._y = 0;
+    return point;
+  }
+  function buildShadeRuns(points, xField, opts) {
+    const finite = points.filter((p) => Number.isFinite(p._y));
+    if (!finite.length) return [];
+    let cropped;
+    if (xField === "_xc") {
+      cropped = cropCategorical(
+        finite,
+        typeof opts.from === "string" ? opts.from : null,
+        typeof opts.to === "string" ? opts.to : null
+      );
+    } else {
+      const ordered = [...finite].sort((a, b) => posOf(a, xField) - posOf(b, xField));
+      const lo3 = boundToNumber(opts.from);
+      const hi3 = boundToNumber(opts.to);
+      if (lo3 != null && hi3 != null && lo3 > hi3) return [];
+      cropped = cropContinuous(ordered, xField, lo3, hi3);
+    }
+    if (!cropped.length) return [];
+    const runs = opts.side === "both" ? [cropped] : splitBySide(cropped, xField, opts.side);
+    return runs.map((rows, i) => ({
+      rows: rows.map((r) => ({ ...r, _seg: `shade-${i}` }))
+    }));
+  }
+
   // src/engine/marks/projected.ts
   function splitProjectedRuns(rows) {
     const bySeries = /* @__PURE__ */ new Map();
@@ -25852,12 +26109,49 @@ ${words.slice(bestI).join(" ")}`;
   }
 
   // src/engine/marks/line.ts
+  var SHADE_CLASS = "tbl-shade";
+  var SHADE_FILL_OPACITY = 0.18;
   function buildLineMarks(data, spec, ctx) {
     const { xField, colors, fxField, fyField } = ctx;
     const facetChannels = fxField && fyField ? { fx: fxField, fy: fyField } : {};
     const solidStroke = TBL.strokeWidth.solid;
     const dashedStroke = TBL.strokeWidth.dashed;
+    const clipOpt = ctx.clipMarks ? { clip: true } : {};
     const underlay = [];
+    const shadeSeriesOrder = [];
+    if (spec.shading?.length && ctx.yDomain) {
+      const [domainLo, domainHi] = ctx.yDomain;
+      const baseline = Math.min(Math.max(0, domainLo), domainHi);
+      const parseBound = (v) => v == null ? null : ctx.parseXValue?.(v) ?? null;
+      for (const region of spec.shading) {
+        const targets = region.series != null ? [region.series] : ctx.seriesNames ?? Array.from(new Set(data.map((r) => r.series)));
+        for (const seriesKey of targets) {
+          const seriesPoints = data.filter((r) => r.series === seriesKey);
+          if (!seriesPoints.length) continue;
+          const runs = buildShadeRuns(seriesPoints, xField, {
+            side: region.side ?? "both",
+            from: parseBound(region.from),
+            to: parseBound(region.to)
+          });
+          if (!runs.length) continue;
+          const fill = region.color && (resolveColor(region.color) || region.color) || colors.get(seriesKey) || TBL.color.blue;
+          underlay.push(
+            plot_0_6_16_esm_min_exports.areaY(runs.flatMap((r) => r.rows), {
+              x: xField,
+              y1: baseline,
+              y2: "_y",
+              z: "_seg",
+              fill,
+              fillOpacity: region.fillOpacity ?? SHADE_FILL_OPACITY,
+              className: SHADE_CLASS,
+              ...facetChannels,
+              ...clipOpt
+            })
+          );
+          for (let i = 0; i < runs.length; i++) shadeSeriesOrder.push(seriesKey);
+        }
+      }
+    }
     for (const band of spec.confidence_bands ?? []) {
       const bandColor = colors.get(band.series) || TBL.color.blue;
       underlay.push(
@@ -25865,7 +26159,15 @@ ${words.slice(bestI).join(" ")}`;
           data.filter(
             (r) => r.series === band.series && Number.isFinite(r._lo) && Number.isFinite(r._hi)
           ),
-          { x: xField, y1: "_lo", y2: "_hi", fill: bandColor, fillOpacity: 0.18, ...facetChannels }
+          {
+            x: xField,
+            y1: "_lo",
+            y2: "_hi",
+            fill: bandColor,
+            fillOpacity: 0.18,
+            ...facetChannels,
+            ...clipOpt
+          }
         )
       );
     }
@@ -25886,7 +26188,8 @@ ${words.slice(bestI).join(" ")}`;
           strokeWidth: dashedStroke,
           strokeDasharray: TBL.dashArray,
           defined: (r) => Number.isFinite(r._y),
-          ...facetChannels
+          ...facetChannels,
+          ...clipOpt
         })
       );
     }
@@ -25910,7 +26213,8 @@ ${words.slice(bestI).join(" ")}`;
             strokeWidth: solidStroke,
             ...projDashed ? { strokeDasharray: TBL.dashArray } : {},
             defined: (r) => Number.isFinite(r._y),
-            ...facetChannels
+            ...facetChannels,
+            ...clipOpt
           })
         );
       }
@@ -25923,7 +26227,8 @@ ${words.slice(bestI).join(" ")}`;
             stroke: "series",
             strokeWidth: solidStroke,
             defined: (r) => Number.isFinite(r._y),
-            ...facetChannels
+            ...facetChannels,
+            ...clipOpt
           })
         );
       }
@@ -25936,7 +26241,8 @@ ${words.slice(bestI).join(" ")}`;
           stroke: "series",
           strokeWidth: solidStroke,
           defined: (r) => Number.isFinite(r._y),
-          ...facetChannels
+          ...facetChannels,
+          ...clipOpt
         })
       );
     }
@@ -25953,7 +26259,8 @@ ${words.slice(bestI).join(" ")}`;
           r: ctx.pane ? 3.3 : 3.6,
           stroke: "#ffffff",
           strokeWidth: 1,
-          ...facetChannels
+          ...facetChannels,
+          ...clipOpt
         })
       );
     }
@@ -25980,6 +26287,9 @@ ${words.slice(bestI).join(" ")}`;
     const categorical = xField === "_xc";
     const xScaleOpts = categorical ? { type: "point", padding: 0.08 } : void 0;
     const tagging = [{ selector: 'g[aria-label="line"] path', seriesOrder }];
+    if (shadeSeriesOrder.length) {
+      tagging.push({ selector: `g.${SHADE_CLASS} path`, seriesOrder: shadeSeriesOrder });
+    }
     let symbolScaleOpts;
     if (pointData.length) {
       const symbolSeries = ctx.seriesNames ?? seriesOrder;
@@ -26021,7 +26331,11 @@ ${words.slice(bestI).join(" ")}`;
         stroke: "#FFFFFF",
         strokeWidth: 0.75,
         defined: (r) => Number.isFinite(r._y),
-        ...facetChannels
+        ...facetChannels,
+        // Truncated value axis (see assemblePaneResult's clip gate): a stack top above a hard `max`
+        // would otherwise paint over the title and legend. The veil below spans yDomain, so it is
+        // already inside the frame and needs no clip.
+        ...ctx.clipMarks ? { clip: true } : {}
       })
     ];
     const veil = [];
@@ -26245,11 +26559,9 @@ ${words.slice(bestI).join(" ")}`;
           tagging: [{ selector: 'g[aria-label="bar"] rect', seriesOrder }, ...catLabelTagging],
           dashedNames: /* @__PURE__ */ new Set(),
           yScaleOpts: { type: "band", domain: bandDomain, paddingInner: 0.2, paddingOuter: HBAND_PADDING_OUTER, align: 0, axis: null },
-          xAxisMarks: ctx.hideCategoryLabels ? [] : [
-            ...tblBandYAxis(categories, gutter, catFont),
-            ...sectionHeaders.flatMap((h) => tblSectionTopHeader(h, gutter, topHeaderLift, catFont)),
-            ...topSectionHeader ? tblSectionTopHeader(topSectionHeader, gutter, topHeaderLift, catFont) : []
-          ],
+          // This is the NON-sectioned single-series horizontal path (sectioned routes to fy above),
+          // so there are no section headers to place here — just the plain category labels.
+          xAxisMarks: ctx.hideCategoryLabels ? [] : tblBandYAxis(categories, gutter, catFont),
           marginLeft: gutter,
           marginTop: hMarginTop,
           marginBottom: hMarginBottom
@@ -26667,7 +26979,10 @@ ${words.slice(bestI).join(" ")}`;
           y2: "y",
           stroke: connColor,
           strokeWidth: 1,
-          strokeDasharray: "1 3"
+          strokeDasharray: "1 3",
+          // A connector sits at its step's cumulative level, so it goes off-frame with the bar it
+          // leaves; clip it alongside the bars (the value labels stay unclipped by design).
+          ...clipOpt
         })
       );
     }
@@ -26741,7 +27056,10 @@ ${words.slice(bestI).join(" ")}`;
           // reads. (Same constant→group vs fn→per-rect Plot behavior documented in bar.ts.)
           fillOpacity: () => FILL_OPACITY,
           stroke: fillFor(s),
-          strokeOpacity: 1
+          strokeOpacity: 1,
+          // Truncated value axis (see assemblePaneResult's clip gate): bars grow from 0, so a hard
+          // `min` above zero would push them below the frame into the x-axis labels.
+          ...ctx.clipMarks ? { clip: true } : {}
         })
       );
     }
@@ -26757,6 +27075,227 @@ ${words.slice(bestI).join(" ")}`;
     };
   }
 
+  // src/engine/marks/dumbbell.ts
+  var PAGE_BG = tokens.structural.background;
+  var INK = tokens.structural.text_heading;
+  var DEFAULT_CONNECTOR = TBL.color.annotationDim;
+  var DEFAULT_DOT_R = 5;
+  var DOT_KEYLINE = "#ffffff";
+  var CONNECTOR_CLASS = "tbl-dumbbell-connector";
+  var GAP_LABEL_CLASS = "tbl-dumbbell-gap";
+  function fmtValue(v, f) {
+    const decimals = f?.decimals ?? 1;
+    return `${f?.prefix ?? ""}${v.toFixed(decimals)}${f?.suffix ?? ""}`;
+  }
+  function buildDumbbellMarks(data, spec, ctx) {
+    const { xField, colors, fxField, fyField } = ctx;
+    const catField = xField;
+    const seriesNames = ctx.seriesNames ?? [];
+    const horizontal = spec.orientation !== "vertical";
+    const catFont = horizontal ? FACETED_CAT_LABEL_PX : TBL.size.axis;
+    const r = spec.dot_radius ?? DEFAULT_DOT_R;
+    const facetChannels = fxField && fyField ? { fx: fxField, fy: fyField } : {};
+    const categories = [];
+    {
+      const seen = /* @__PURE__ */ new Set();
+      for (const row of data) {
+        const c = row[catField];
+        if (typeof c === "string" && c !== "" && !seen.has(c)) {
+          seen.add(c);
+          categories.push(c);
+        }
+      }
+    }
+    const sectioned = horizontal && data.some((r10) => r10._section != null);
+    let bandDomain = categories;
+    const sectionHeaders = [];
+    let topSectionHeader = null;
+    if (sectioned) {
+      const sectionOf = /* @__PURE__ */ new Map();
+      for (const row of data) {
+        const cat = row[catField];
+        if (cat && row._section != null && !sectionOf.has(cat)) sectionOf.set(cat, row._section);
+      }
+      const seenSec = /* @__PURE__ */ new Set();
+      const encountered = [];
+      for (const cat of categories) {
+        const s = sectionOf.get(cat) ?? "";
+        if (!seenSec.has(s)) {
+          seenSec.add(s);
+          encountered.push(s);
+        }
+      }
+      const order = spec.section_order?.length ? spec.section_order.filter((s) => seenSec.has(s)) : encountered;
+      const labels = spec.section_labels ?? {};
+      const domain = [];
+      for (const s of order) {
+        const cats = categories.filter((cat) => (sectionOf.get(cat) ?? "") === s);
+        if (!cats.length) continue;
+        if (domain.length === 0) {
+          topSectionHeader = { category: cats[0], label: labels[s] ?? s };
+        } else {
+          for (let i = 0; i < SECTION_SPACER_SLOTS; i++) domain.push(sectionSpacerSlot(s, i));
+          sectionHeaders.push({ category: cats[0], label: labels[s] ?? s });
+        }
+        for (const cat of cats) domain.push(cat);
+      }
+      bandDomain = domain;
+    }
+    const markerOf = (s) => spec.series_marker?.[s] ?? "filled";
+    const seriesColor = (s) => colors.get(s) || TBL.color.blue;
+    const fillFor = (s) => {
+      const m = markerOf(s);
+      return m === "hollow" ? PAGE_BG : m === "ink" ? INK : seriesColor(s);
+    };
+    const strokeFor = (s) => markerOf(s) === "hollow" ? seriesColor(s) : DOT_KEYLINE;
+    const strokeWidthFor = (s) => markerOf(s) === "hollow" ? 1.5 : 1;
+    const conn = categories.map((cat) => {
+      const vals = data.filter(
+        (d) => d[catField] === cat && Number.isFinite(d._y)
+      ).map((d) => d._y);
+      return { cat, lo: vals.length ? Math.min(...vals) : 0, hi: vals.length ? Math.max(...vals) : 0, n: vals.length };
+    }).filter((c) => c.n >= 2 && c.lo !== c.hi);
+    const connCfg = spec.connector ?? {};
+    const connColor = connCfg.color ? resolveColor(connCfg.color) ?? DEFAULT_CONNECTOR : DEFAULT_CONNECTOR;
+    const connWidth = connCfg.width ?? 1.5;
+    const connDash = connCfg.style === "dashed" ? "5 3" : connCfg.style === "dotted" ? "1 3" : void 0;
+    const SINGLE_SLOT = "_v";
+    const bandBind = (field) => sectioned ? { fy: field, y: () => SINGLE_SLOT } : horizontal ? { y: field } : { x: field };
+    const catChannels = sectioned ? {} : facetChannels;
+    const clipOpt = ctx.clipMarks ? { clip: true } : {};
+    const connOpts = {
+      stroke: connColor,
+      strokeWidth: connWidth,
+      className: CONNECTOR_CLASS,
+      ...connDash ? { strokeDasharray: connDash } : {},
+      ...catChannels,
+      ...clipOpt
+    };
+    const underlay = [];
+    if (conn.length) {
+      underlay.push(
+        horizontal ? plot_0_6_16_esm_min_exports.ruleY(conn, { ...bandBind("cat"), x1: "lo", x2: "hi", ...connOpts }) : plot_0_6_16_esm_min_exports.ruleX(conn, { x: "cat", y1: "lo", y2: "hi", ...connOpts })
+      );
+    }
+    const seriesRank = new Map(seriesNames.map((s, i) => [s, i]));
+    const catRank = new Map(categories.map((c, i) => [c, i]));
+    const dotData = data.filter((d) => Number.isFinite(d._y)).slice().sort((a, b) => {
+      const sr2 = (seriesRank.get(a.series) ?? 0) - (seriesRank.get(b.series) ?? 0);
+      if (sr2 !== 0) return sr2;
+      const ac3 = a[catField] ?? "";
+      const bc3 = b[catField] ?? "";
+      return (catRank.get(ac3) ?? 0) - (catRank.get(bc3) ?? 0);
+    });
+    const dotOpts = {
+      ...bandBind(catField),
+      ...horizontal ? { x: "_y" } : { y: "_y" },
+      fill: (d) => fillFor(d.series),
+      stroke: (d) => strokeFor(d.series),
+      strokeWidth: (d) => strokeWidthFor(d.series),
+      r,
+      ...catChannels,
+      ...clipOpt
+    };
+    const overlay = [plot_0_6_16_esm_min_exports.dot(dotData, dotOpts)];
+    const gap = spec.gap_annotation;
+    if (gap) {
+      const seriesA = gap === true ? seriesNames[0] : gap.series_a;
+      const seriesB = gap === true ? seriesNames[1] : gap.series_b;
+      const gapFmt = (gap === true ? void 0 : gap.format) ?? spec.value_format;
+      if (seriesA && seriesB) {
+        const valueAt = (cat, s) => {
+          const row = data.find(
+            (d) => d[catField] === cat && d.series === s
+          );
+          return Number.isFinite(row?._y) ? row._y : void 0;
+        };
+        const gapRows = categories.map((cat) => {
+          const a = valueAt(cat, seriesA);
+          const b = valueAt(cat, seriesB);
+          if (a == null || b == null || a === b) return null;
+          return { cat, mid: (a + b) / 2, text: `\u0394${fmtValue(Math.abs(a - b), gapFmt)}` };
+        }).filter((g) => g != null);
+        if (gapRows.length) {
+          const common = {
+            text: (d) => d.text,
+            fill: TBL.color.muted,
+            fontSize: TBL.size.annotation - 0.5,
+            fontWeight: 600,
+            className: GAP_LABEL_CLASS,
+            ...catChannels
+          };
+          overlay.push(
+            horizontal ? plot_0_6_16_esm_min_exports.text(gapRows, { ...bandBind("cat"), ...common, x: "mid", textAnchor: "middle", dy: -(r + 5) }) : plot_0_6_16_esm_min_exports.text(gapRows, { ...common, x: "cat", y: "mid", textAnchor: "start", dx: r + 5 })
+          );
+        }
+      }
+    }
+    const seriesColors = /* @__PURE__ */ new Map();
+    for (const s of seriesNames) seriesColors.set(s, markerOf(s) === "ink" ? INK : seriesColor(s));
+    const dotTagging = {
+      selector: 'g[aria-label="dot"] circle',
+      seriesOrder: dotData.map((d) => d.series),
+      categoryOrder: dotData.map((d) => d[catField] ?? "")
+    };
+    if (horizontal) {
+      const gutter = ctx.hideCategoryLabels ? SHARED_LABELLESS_MARGIN_LEFT : ctx.categoryGutter ?? horizontalLeftGutter(categories, { fontSize: catFont });
+      if (sectioned) {
+        const SECTION_HEADER_GAP2 = 10;
+        const topHeaderLift = SECTION_HEADER_GAP2 + catFont + 5;
+        const hMarginTop = Math.max(SECTION_HEADER_GAP2 + 12, topSectionHeader ? topHeaderLift + SECTION_HEADER_GAP2 : 0);
+        const tagOrder = categories.flatMap(
+          (cat) => dotData.filter((d) => d[catField] === cat)
+        );
+        return {
+          underlay,
+          overlay,
+          tagging: [
+            { selector: 'g[aria-label="dot"] circle', seriesOrder: tagOrder.map((d) => d.series), categoryOrder: tagOrder.map((d) => d[catField] ?? "") },
+            ...ctx.hideCategoryLabels ? [] : [{ selector: `g.${CAT_LABEL_CLASS} text`, seriesOrder: [], categoryOrder: categories }]
+          ],
+          dashedNames: /* @__PURE__ */ new Set(),
+          yScaleOpts: { type: "band", domain: [SINGLE_SLOT], padding: 0, axis: null },
+          fyScaleOpts: { domain: bandDomain, paddingInner: 0.2, paddingOuter: 0.02, align: 0, axis: null },
+          xAxisMarks: ctx.hideCategoryLabels ? [] : [
+            ...tblFacetGroupYAxis(categories, gutter, catFont),
+            ...sectionHeaders.flatMap((h) => tblSectionTopHeader(h, gutter, topHeaderLift, catFont)),
+            ...topSectionHeader ? tblSectionTopHeader(topSectionHeader, gutter, topHeaderLift, catFont) : []
+          ],
+          marginLeft: gutter,
+          marginTop: hMarginTop,
+          marginBottom: 26,
+          seriesColors
+        };
+      }
+      return {
+        underlay,
+        overlay,
+        tagging: [
+          dotTagging,
+          ...ctx.hideCategoryLabels ? [] : [{ selector: `g.${CAT_LABEL_CLASS} text`, seriesOrder: [], categoryOrder: categories }]
+        ],
+        dashedNames: /* @__PURE__ */ new Set(),
+        yScaleOpts: { type: "band", domain: bandDomain, padding: 0.4, axis: null },
+        xAxisMarks: ctx.hideCategoryLabels ? [] : tblBandYAxis(categories, gutter, catFont),
+        marginLeft: gutter,
+        seriesColors
+      };
+    }
+    return {
+      underlay,
+      overlay,
+      tagging: [
+        dotTagging,
+        { selector: `g.${CAT_LABEL_CLASS} text`, seriesOrder: [], categoryOrder: categories }
+      ],
+      dashedNames: /* @__PURE__ */ new Set(),
+      // Category band on `x`; adapter labels the categories (xAxisMarks left undefined). Slightly
+      // larger outer pad so end dots don't kiss the frame.
+      xScaleOpts: { paddingInner: 0.2, paddingOuter: 0.3 },
+      seriesColors
+    };
+  }
+
   // src/engine/marks/index.ts
   var REGISTRY = {
     line: buildLineMarks,
@@ -26767,7 +27306,8 @@ ${words.slice(bestI).join(" ")}`;
     scatter: buildPointMarks,
     dotplot: buildPointMarks,
     waterfall: buildWaterfallMarks,
-    histogram: buildHistogramMarks
+    histogram: buildHistogramMarks,
+    dumbbell: buildDumbbellMarks
   };
   function markBuilderFor(chartType) {
     const builder = REGISTRY[chartType];
@@ -27238,7 +27778,9 @@ ${words.slice(bestI).join(" ")}`;
       collapseFacetChromeY(svg, {
         height: svgHeight,
         marginTop: plotOpts.marginTop ?? 18,
-        marginBottom: plotOpts.marginBottom ?? 24
+        marginBottom: plotOpts.marginBottom ?? 24,
+        // The fy band domain (categories + section spacers) drives the section-gap gridline break.
+        ...Array.isArray(layers.fyScaleOpts?.domain) ? { fyDomain: layers.fyScaleOpts.domain } : {}
       });
     } else if (gridFaceted) {
       collapseFacetGridChrome(svg);
@@ -27300,9 +27842,9 @@ ${words.slice(bestI).join(" ")}`;
   }
   function figurePaneHeight(spec) {
     const horizontal = spec.orientation === "horizontal";
-    if (horizontal && (spec.chartType === "bar" || spec.chartType === "stacked")) return void 0;
+    if (horizontal && (spec.chartType === "bar" || spec.chartType === "stacked" || spec.chartType === "dumbbell")) return void 0;
     if (spec.chartType === "waterfall") return 420;
-    if (spec.chartType === "dotplot" || spec.chartType === "bar" || spec.chartType === "stacked") return 320;
+    if (spec.chartType === "dotplot" || spec.chartType === "bar" || spec.chartType === "stacked" || spec.chartType === "dumbbell") return 320;
     return 240;
   }
   function countSections(rows, xField, sectionField, spec, categories) {
@@ -27329,8 +27871,8 @@ ${words.slice(bestI).join(" ")}`;
         seen.push(v);
       }
     }
-    if (spec.x_order && spec.x_order.length) {
-      const order = spec.x_order;
+    const order = categoryOrderFor(spec);
+    if (order && order.length) {
       const rank = new Map(order.map((c, i) => [c, i]));
       seen.sort((a, b) => (rank.get(a) ?? order.length) - (rank.get(b) ?? order.length));
     }
@@ -27393,6 +27935,7 @@ ${words.slice(bestI).join(" ")}`;
     }
     const isHorizontalStacked = spec.chartType === "stacked" && spec.orientation === "horizontal";
     const isHorizontalBar = (spec.chartType === "bar" || spec.chartType === "stacked") && spec.orientation === "horizontal";
+    const isHorizontalDumbbell = spec.chartType === "dumbbell" && spec.orientation === "horizontal";
     const sharedCategories = isHorizontalBar ? orderedCategories(rows, cols.x, spec) : [];
     const hGutter = isHorizontalBar ? horizontalLeftGutter(sharedCategories, { fontSize: FACETED_CAT_LABEL_PX }) : TBL_MARGIN_LEFT;
     let autoHeight;
@@ -27445,9 +27988,14 @@ ${words.slice(bestI).join(" ")}`;
     const perPaneHeights = isHorizontalBar && opts.height == null ? paneValues.map((v) => {
       const slots = Math.max(1, catsByFacet?.get(v)?.size ?? 1) + nSpacers;
       return Math.round(slots * effSlotPx + chromeExtra);
-    }) : void 0;
+    }) : isHorizontalDumbbell && opts.height == null ? (
+      // Each stacked pane grows with its OWN category count (facets can be ragged — e.g. a
+      // 5-quintile pane above a 3-row top-decile pane), sized by the shared horizontal-bar
+      // height helper (grouped=false → one row per category).
+      paneValues.map((v) => horizontalBarChartHeight(spec, rows.filter((r) => r[facetField] === v)))
+    ) : void 0;
     const variableWidths = sm3.pane_widths != null && sm3.pane_widths !== "equal";
-    const requestedColumns = opts.columns && opts.columns > 0 ? opts.columns : sm3.columns && sm3.columns > 0 ? sm3.columns : variableWidths ? paneValues.length : defaultColumns(paneValues.length);
+    const requestedColumns = isHorizontalDumbbell ? 1 : opts.columns && opts.columns > 0 ? opts.columns : sm3.columns && sm3.columns > 0 ? sm3.columns : variableWidths ? paneValues.length : defaultColumns(paneValues.length);
     const columns = Math.max(1, Math.min(requestedColumns, paneValues.length));
     const gridRows = Math.ceil(paneValues.length / columns);
     const titles = sm3.pane_titles ?? {};
@@ -27808,9 +28356,10 @@ ${words.slice(bestI).join(" ")}`;
     if (opts.accentColor && seriesNames.length === 1) {
       colors.set(seriesNames[0], opts.accentColor);
     }
-    if (spec.xAxisType === "categorical" && spec.x_order && spec.x_order.length) {
-      const rank = new Map(spec.x_order.map((c, i) => [c, i]));
-      const last = spec.x_order.length;
+    const catOrder = categoryOrderFor(spec);
+    if (spec.xAxisType === "categorical" && catOrder && catOrder.length) {
+      const rank = new Map(catOrder.map((c, i) => [c, i]));
+      const last = catOrder.length;
       dataInScope.sort((a, b) => (rank.get(a._xc ?? "") ?? last) - (rank.get(b._xc ?? "") ?? last));
     }
     const ann = filterAnnotationsByFacet(resolveAnnotations(spec), opts.paneFacetValue);
@@ -27860,6 +28409,16 @@ ${words.slice(bestI).join(" ")}`;
       const barExtent = computeBarYExtent(dataInScope, spec, chartType);
       const resolvedMin = policy.min ?? Math.min(barExtent.min, ...markerYs);
       const resolvedMax = Math.max(policy.max ?? barExtent.max, ...markerYs);
+      hardDomain = [resolvedMin, resolvedMax];
+    } else if (chartType === "dumbbell") {
+      const markerYs = [
+        ...ann.yAxis.map((m) => m.y),
+        ...spec.orientation === "horizontal" ? ann.xAxis.map((m) => Number(m.x)) : []
+      ].filter(Number.isFinite);
+      includeZero = false;
+      const dbExtent = computeDumbbellValueExtent(dataInScope.map((d) => d._y));
+      const resolvedMin = policy.min ?? Math.min(dbExtent.min, ...markerYs);
+      const resolvedMax = Math.max(policy.max ?? dbExtent.max, ...markerYs);
       hardDomain = [resolvedMin, resolvedMax];
     } else if (chartType === "histogram") {
       includeZero = true;
@@ -27926,6 +28485,9 @@ ${words.slice(bestI).join(" ")}`;
       new Set(dataInScope.map((r) => r._shape).filter((s) => s != null && s !== ""))
     ) : void 0;
     const shapeIsSeries = hasShape && cols.shape === cols.series;
+    const drawnExtent = computeDrawnValueExtent(dataInScope, spec, chartType);
+    const domainEps = Math.abs(yDomain[1] - yDomain[0]) * 1e-9;
+    const clipMarks = drawnExtent != null && (drawnExtent.min < yDomain[0] - domainEps || drawnExtent.max > yDomain[1] + domainEps);
     const layers = markBuilderFor(spec.chartType)(dataInScope, spec, {
       xField: adapter.xField,
       colors,
@@ -27935,8 +28497,9 @@ ${words.slice(bestI).join(" ")}`;
       // Final resolved y-domain (post auto/hard/bar-extent/shared-mode override) — the area
       // builder's projected-range veil needs it to span the full plot height.
       yDomain,
-      // Truncated bar axis (y-domain excludes 0): clip bars so they don't overflow below the plot.
-      ...(chartType === "bar" || chartType === "stacked") && yDomain[0] > 0 ? { clipMarks: true } : {},
+      // Lets a builder resolve author-supplied x strings (line `shading` from/to) on this chart's axis.
+      parseXValue: adapter.parseX,
+      ...clipMarks ? { clipMarks: true } : {},
       ...hasShape ? { shapeField: "_shape", shapeNames, shapeIsSeries } : {},
       // Shared-mode small multiples: pass the facet field names so the mark builder binds
       // fx/fy on its marks (they face into the grid). Absent → single frame.
@@ -28028,6 +28591,18 @@ ${words.slice(bestI).join(" ")}`;
         }
         return { ...base, markerShape: "point", markerSymbol: "circle" };
       });
+    }
+    if (chartType === "dumbbell") {
+      if (seriesNames.length <= 1) return null;
+      return seriesNames.map((name) => ({
+        series: name,
+        label: labelFor(name),
+        color: legendColorFor(name),
+        dashed: false,
+        markerShape: "point",
+        markerSymbol: "circle",
+        ...(spec.series_marker?.[name] ?? "filled") === "hollow" ? { hollow: true } : {}
+      }));
     }
     const markerShape = chartType === "bar" || chartType === "stacked" || chartType === "histogram" ? "rect" : "line";
     const withSymbols = markerShape === "line" && spec.points === true;
@@ -28130,7 +28705,7 @@ ${words.slice(bestI).join(" ")}`;
     svg.appendChild(path);
     return svg;
   }
-  function buildPointSwatch(doc, color, symbol) {
+  function buildPointSwatch(doc, color, symbol, hollow = false) {
     const svg = doc.createElementNS(SVG_NS, "svg");
     svg.setAttribute("width", "18");
     svg.setAttribute("height", "16");
@@ -28138,9 +28713,9 @@ ${words.slice(bestI).join(" ")}`;
     const path = doc.createElementNS(SVG_NS, "path");
     path.setAttribute("d", symbolPathD(symbol, 100));
     path.setAttribute("transform", "translate(9,7)");
-    path.setAttribute("fill", color);
-    path.setAttribute("stroke", "#ffffff");
-    path.setAttribute("stroke-width", "1");
+    path.setAttribute("fill", hollow ? "#ffffff" : color);
+    path.setAttribute("stroke", hollow ? color : "#ffffff");
+    path.setAttribute("stroke-width", hollow ? "1.5" : "1");
     svg.appendChild(path);
     return svg;
   }
@@ -28250,7 +28825,7 @@ ${words.slice(bestI).join(" ")}`;
       else pinnedShape.add(shape);
       applyHighlight();
     };
-    for (const { series, label: displayLabel, color, dashed = false, markerShape, markerSymbol, nonInteractive } of safeItems) {
+    for (const { series, label: displayLabel, color, dashed = false, markerShape, markerSymbol, hollow = false, nonInteractive } of safeItems) {
       const btn = nonInteractive ? doc.createElement("span") : doc.createElement("button");
       if (!nonInteractive) {
         btn.type = "button";
@@ -28266,7 +28841,7 @@ ${words.slice(bestI).join(" ")}`;
         if (color) swatch.style.background = color;
       } else if (markerShape === "point") {
         swatch.classList.add("is-point");
-        swatch.appendChild(buildPointSwatch(doc, color || SHAPE_LEGEND_COLOR, markerSymbol || "circle"));
+        swatch.appendChild(buildPointSwatch(doc, color || SHAPE_LEGEND_COLOR, markerSymbol || "circle", hollow));
       } else if (markerShape === "chip") {
         swatch.classList.add("is-point");
         swatch.appendChild(buildColorChip(doc, color || SHAPE_LEGEND_COLOR));
@@ -28649,7 +29224,7 @@ ${words.slice(bestI).join(" ")}`;
     return best.category;
   }
   function buildBandTooltipHtml(category, rows, opts) {
-    const { isStacked, showTotalDot, colors, seriesLabels, seriesOrder, yFormat, categoryLabels, swatchShape, renderedFills } = opts;
+    const { isStacked, showTotalDot, colors, seriesLabels, seriesOrder, yFormat, categoryLabels, swatchShape, swatchMarkers, renderedFills } = opts;
     const fmt = yFormat ?? ((v) => String(v));
     const catRows = rows.filter((r) => r._xc === category);
     const valBySeries = /* @__PURE__ */ new Map();
@@ -28665,8 +29240,17 @@ ${words.slice(bestI).join(" ")}`;
       total += v;
       const dot = renderedFills?.get(series) || colors?.get(series) || "currentColor";
       const display = seriesLabels && seriesLabels[series] || series;
-      const swCls = swatchShape === "rect" ? "tbl-tooltip-swatch is-square" : "tbl-tooltip-swatch";
-      html += `<div class="tbl-tooltip-row"><span class="${swCls}" style="background: ${dot}"></span><span><span class="tbl-tooltip-label">${escapeHtml(display)}:</span> <span class="tbl-tooltip-value">${escapeHtml(fmt(v))}</span></span></div>`;
+      let swatch;
+      if (swatchShape === "dot") {
+        const marker = swatchMarkers?.get(series) ?? "filled";
+        const base = "display:inline-block;width:11px;height:11px;border-radius:50%;box-sizing:border-box";
+        const style = marker === "hollow" ? `${base};background:#ffffff;border:2px solid ${dot}` : `${base};background:${dot}`;
+        swatch = `<span class="tbl-tooltip-swatch" style="${style}"></span>`;
+      } else {
+        const swCls = swatchShape === "rect" ? "tbl-tooltip-swatch is-square" : "tbl-tooltip-swatch";
+        swatch = `<span class="${swCls}" style="background: ${dot}"></span>`;
+      }
+      html += `<div class="tbl-tooltip-row">${swatch}<span><span class="tbl-tooltip-label">${escapeHtml(display)}:</span> <span class="tbl-tooltip-value">${escapeHtml(fmt(v))}</span></span></div>`;
     }
     if (isStacked && orderedSeries.length > 1 && showTotalDot !== void 0) {
       if (showTotalDot) {
@@ -29177,19 +29761,22 @@ ${words.slice(bestI).join(" ")}`;
       g.setAttribute("opacity", "1");
     };
   }
-  function readLinearYScale(svgEl3) {
+  function readLinearScale(svgEl3, axis) {
     const scaleFn = svgEl3.scale;
     if (typeof scaleFn !== "function") return null;
     try {
-      const y = scaleFn.call(svgEl3, "y");
-      const d = y?.domain;
-      const r = y?.range;
+      const s = scaleFn.call(svgEl3, axis);
+      const d = s?.domain;
+      const r = s?.range;
       if (!d || !r || d.length < 2 || r.length < 2 || d[1] === d[0]) return null;
       const d03 = d[0], d13 = d[1], r03 = r[0], r13 = r[1];
       return (v) => r03 + (v - d03) / (d13 - d03) * (r13 - r03);
     } catch {
       return null;
     }
+  }
+  function readLinearYScale(svgEl3) {
+    return readLinearScale(svgEl3, "y");
   }
   var COORD_NS = "http://www.w3.org/2000/svg";
   var COORD_LABEL_DARK = "#1A1A2E";
@@ -29259,6 +29846,32 @@ ${words.slice(bestI).join(" ")}`;
     if (placed[0] < lo3) {
       const s = lo3 - placed[0];
       for (let i = 0; i < n; i++) placed[i] += s;
+    }
+    const out = new Array(n);
+    order.forEach((origIdx, k) => {
+      out[origIdx] = placed[k];
+    });
+    return out;
+  }
+  function spreadPillCentersX(items, lo3, hi3) {
+    const n = items.length;
+    if (n === 0) return [];
+    if (n === 1) return [Math.max(lo3 + items[0].w / 2, Math.min(items[0].x, hi3 - items[0].w / 2))];
+    const GAP = 4;
+    const order = items.map((_, i) => i).sort((a, b) => items[a].x - items[b].x);
+    const placed = order.map((i) => items[i].x);
+    for (let k = 1; k < n; k++) {
+      const prev = order[k - 1], cur = order[k];
+      const minC = placed[k - 1] + items[prev].w / 2 + items[cur].w / 2 + GAP;
+      if (placed[k] < minC) placed[k] = minC;
+    }
+    const lastHalf = items[order[n - 1]].w / 2;
+    const over = placed[n - 1] + lastHalf - hi3;
+    if (over > 0) for (let k = 0; k < n; k++) placed[k] -= over;
+    const firstHalf = items[order[0]].w / 2;
+    if (placed[0] - firstHalf < lo3) {
+      const s = lo3 - (placed[0] - firstHalf);
+      for (let k = 0; k < n; k++) placed[k] += s;
     }
     const out = new Array(n);
     order.forEach((origIdx, k) => {
@@ -29808,30 +30421,36 @@ ${words.slice(bestI).join(" ")}`;
     }
     return out;
   }
-  function readCategoryCentersFromMarks(svgEl3) {
+  function readCategoryCentersFromMarks(svgEl3, axis = "x") {
     const svgRect = svgEl3.getBoundingClientRect();
     if (!svgRect.width) return [];
     const vb3 = svgEl3.viewBox?.baseVal;
     const Wd3 = vb3?.width || +(svgEl3.getAttribute("width") ?? "") || svgRect.width;
-    const sx3 = Wd3 / svgRect.width;
+    const Hd3 = vb3?.height || +(svgEl3.getAttribute("height") ?? "") || svgRect.height;
+    const scale = axis === "y" ? Hd3 / svgRect.height : Wd3 / svgRect.width;
     const byCat = /* @__PURE__ */ new Map();
     for (const el3 of Array.from(svgEl3.querySelectorAll("[data-category]"))) {
       const cat = el3.getAttribute("data-category");
       if (!cat) continue;
       const r = el3.getBoundingClientRect();
-      if (!r.width) continue;
-      const cx3 = ((r.left + r.right) / 2 - svgRect.left) * sx3;
-      (byCat.get(cat) ?? byCat.set(cat, []).get(cat)).push(cx3);
+      if (!r.width && !r.height) continue;
+      const c = axis === "y" ? ((r.top + r.bottom) / 2 - svgRect.top) * scale : ((r.left + r.right) / 2 - svgRect.left) * scale;
+      (byCat.get(cat) ?? byCat.set(cat, []).get(cat)).push(c);
     }
-    return Array.from(byCat, ([category, xs3]) => ({
+    return Array.from(byCat, ([category, cs3]) => ({
       category,
-      cx: xs3.reduce((a, b) => a + b, 0) / xs3.length
+      cx: cs3.reduce((a, b) => a + b, 0) / cs3.length
     })).sort((a, b) => a.cx - b.cx);
   }
   function uniformBand(centers, idx, lo3, hi3) {
     const n = centers.length;
     if (n < 2) return { min: lo3, max: hi3 };
-    const step = (centers[n - 1].cx - centers[0].cx) / (n - 1);
+    let step = Infinity;
+    for (let i = 1; i < n; i++) {
+      const gap = centers[i].cx - centers[i - 1].cx;
+      if (gap > 0 && gap < step) step = gap;
+    }
+    if (!Number.isFinite(step)) step = (centers[n - 1].cx - centers[0].cx) / (n - 1) || hi3 - lo3;
     let min = centers[idx].cx - step / 2;
     let max = centers[idx].cx + step / 2;
     if (min < lo3) {
@@ -29869,14 +30488,21 @@ ${words.slice(bestI).join(" ")}`;
     const mb3 = +(svgEl3.dataset.marginBottom ?? "") || 28;
     const plotBottom = mt3 + (H11 - mt3 - mb3);
     const bandHighlight = opts.bandHighlight ?? false;
+    const horizontal = opts.orientation === "horizontal";
+    const plotRight = W10 - mr3;
     const NS2 = "http://www.w3.org/2000/svg";
     svgEl3.querySelectorAll(".tbl-catline-hit, .tbl-catline-guide, .tbl-catline-hl").forEach((el3) => el3.remove());
     const hl3 = emitOnly || !bandHighlight ? null : svgEl3.ownerDocument.createElementNS(NS2, "rect");
     if (hl3) {
       hl3.classList.add("tbl-catline-hl");
       hl3.setAttribute("fill", TBL.color.annotationDim);
-      hl3.setAttribute("y", String(mt3));
-      hl3.setAttribute("height", String(plotBottom - mt3));
+      if (horizontal) {
+        hl3.setAttribute("x", String(ml3));
+        hl3.setAttribute("width", String(Math.max(0, plotRight - ml3)));
+      } else {
+        hl3.setAttribute("y", String(mt3));
+        hl3.setAttribute("height", String(plotBottom - mt3));
+      }
       hl3.setAttribute("opacity", "0");
       hl3.style.pointerEvents = "none";
       svgEl3.appendChild(hl3);
@@ -29906,10 +30532,11 @@ ${words.slice(bestI).join(" ")}`;
     function update(evt) {
       const rect = svgEl3.getBoundingClientRect();
       if (!rect.width) return;
-      if (!centers) centers = opts.centersFromMarks ? readCategoryCentersFromMarks(svgEl3) : readCategoryCentersFromAxis(svgEl3, plotBottom);
+      if (!centers)
+        centers = opts.centersFromMarks ? readCategoryCentersFromMarks(svgEl3, horizontal ? "y" : "x") : readCategoryCentersFromAxis(svgEl3, plotBottom);
       if (!centers.length) return;
-      const svgX = (evt.clientX - rect.left) * (W10 / rect.width);
-      const category = nearestCategory(centers, svgX);
+      const svgCoord = horizontal ? (evt.clientY - rect.top) * (H11 / rect.height) : (evt.clientX - rect.left) * (W10 / rect.width);
+      const category = nearestCategory(centers, svgCoord);
       if (!category) {
         hide();
         return;
@@ -29919,9 +30546,14 @@ ${words.slice(bestI).join(" ")}`;
       const idx = centers.findIndex((c) => c.category === category);
       const cx3 = centers[idx].cx;
       if (bandHighlight && hl3) {
-        const b = uniformBand(centers, idx, ml3, W10 - mr3);
-        hl3.setAttribute("x", String(b.min));
-        hl3.setAttribute("width", String(Math.max(0, b.max - b.min)));
+        const b = horizontal ? uniformBand(centers, idx, mt3, plotBottom) : uniformBand(centers, idx, ml3, plotRight);
+        if (horizontal) {
+          hl3.setAttribute("y", String(b.min));
+          hl3.setAttribute("height", String(Math.max(0, b.max - b.min)));
+        } else {
+          hl3.setAttribute("x", String(b.min));
+          hl3.setAttribute("width", String(Math.max(0, b.max - b.min)));
+        }
         hl3.setAttribute("opacity", "0.12");
       } else if (guide) {
         guide.setAttribute("x1", String(cx3));
@@ -29932,7 +30564,10 @@ ${words.slice(bestI).join(" ")}`;
         colors: opts.colors,
         seriesLabels: opts.seriesLabels,
         seriesOrder: opts.seriesOrder,
-        yFormat
+        yFormat,
+        ...opts.swatchShape ? { swatchShape: opts.swatchShape } : {},
+        ...opts.swatchMarkers ? { swatchMarkers: opts.swatchMarkers } : {},
+        ...opts.renderedFills ? { renderedFills: opts.renderedFills } : {}
       });
       const offset = 14;
       const win = svgEl3.ownerDocument.defaultView;
@@ -29968,6 +30603,8 @@ ${words.slice(bestI).join(" ")}`;
     const mt3 = +(svgEl3.dataset.marginTop ?? "") || 18;
     const mb3 = +(svgEl3.dataset.marginBottom ?? "") || 28;
     const plotH = H11 - mt3 - mb3;
+    const horizontal = opts.orientation === "horizontal";
+    const plotW = W10 - ml3 - mr3;
     const valByCat = /* @__PURE__ */ new Map();
     for (const r of opts.rows) {
       if (!r._xc || r._y == null || !Number.isFinite(r._y)) continue;
@@ -29989,7 +30626,8 @@ ${words.slice(bestI).join(" ")}`;
         g.setAttribute("opacity", "0");
         return;
       }
-      if (!centers) centers = opts.centersFromMarks ? readCategoryCentersFromMarks(svgEl3) : readCategoryCentersFromAxis(svgEl3, mt3 + plotH);
+      if (!centers)
+        centers = opts.centersFromMarks ? readCategoryCentersFromMarks(svgEl3, horizontal ? "y" : "x") : readCategoryCentersFromAxis(svgEl3, mt3 + plotH);
       const c = centers.find((x) => x.category === category);
       const vals = valByCat.get(category);
       if (!c || !vals) {
@@ -29997,6 +30635,40 @@ ${words.slice(bestI).join(" ")}`;
         return;
       }
       const cx3 = c.cx;
+      if (opts.markerless) {
+        if (active) {
+          g.setAttribute("opacity", "0");
+          return;
+        }
+        const idx = centers.findIndex((x) => x.category === category);
+        if (horizontal) {
+          const b = uniformBand(centers, idx, mt3, mt3 + plotH);
+          addCoordRegion(g, doc, ml3, plotW, b.min, b.max - b.min);
+        } else {
+          const b = uniformBand(centers, idx, ml3, W10 - mr3);
+          addCoordRegion(g, doc, b.min, b.max - b.min, mt3, plotH);
+        }
+        g.setAttribute("opacity", "1");
+        return;
+      }
+      if (horizontal) {
+        const idx = centers.findIndex((x) => x.category === category);
+        const b = uniformBand(centers, idx, mt3, mt3 + plotH);
+        addCoordRegion(g, doc, ml3, plotW, b.min, b.max - b.min);
+        const toPx = readLinearScale(svgEl3, "x");
+        const cy3 = c.cx;
+        if (toPx) {
+          const weight2 = active ? 700 : 600;
+          const colorFor = (s) => opts.colors?.get(s) || "#666666";
+          const pts = orderFor(category).map((s) => ({ s, v: vals.get(s), x: toPx(vals.get(s)) }));
+          if (!opts.markerless) for (const p of pts) addCoordDot(g, doc, p.x, cy3, colorFor(p.s), opts.symbols?.get(p.s));
+          const centersX = spreadPillCentersX(pts.map((p) => ({ x: p.x, w: coordPillWidth(yFormat(p.v)) })), ml3, ml3 + plotW);
+          const pillY = Math.max(mt3 + 9, b.min - 2);
+          pts.forEach((p, i) => addCoordPill(g, doc, centersX[i], pillY, "middle", yFormat(p.v), colorFor(p.s), weight2));
+        }
+        g.setAttribute("opacity", "1");
+        return;
+      }
       if (opts.bandHighlight) {
         const idx = centers.findIndex((x) => x.category === category);
         const b = uniformBand(centers, idx, ml3, W10 - mr3);
@@ -30013,7 +30685,7 @@ ${words.slice(bestI).join(" ")}`;
       if (toPy) {
         const colorFor = (s) => opts.colors?.get(s) || "#666666";
         const pts = orderFor(category).map((s) => ({ s, v: vals.get(s), y: toPy(vals.get(s)), dx: opts.dodge?.get(s) ?? 0 }));
-        for (const p of pts) addCoordDot(g, doc, cx3 + p.dx, p.y, colorFor(p.s), opts.symbols?.get(p.s));
+        if (!opts.markerless) for (const p of pts) addCoordDot(g, doc, cx3 + p.dx, p.y, colorFor(p.s), opts.symbols?.get(p.s));
         if (opts.dodge) {
           const minY = Math.min(...pts.map((p) => p.y));
           const maxY = Math.max(...pts.map((p) => p.y));
@@ -30772,7 +31444,8 @@ ${words.slice(bestI).join(" ")}`;
   var MIN_CHART_WIDTH = 390;
   var FIXED_CHART_HEIGHT = 400;
   function computeChartHeight(spec, rows) {
-    if (spec.orientation !== "horizontal" || spec.chartType !== "bar" && spec.chartType !== "stacked") {
+    const growsWithRows = spec.orientation === "horizontal" && (spec.chartType === "bar" || spec.chartType === "stacked" || spec.chartType === "dumbbell");
+    if (!growsWithRows) {
       return spec.chartType === "waterfall" ? 460 : FIXED_CHART_HEIGHT;
     }
     return horizontalBarChartHeight(spec, rows);
@@ -30822,6 +31495,8 @@ ${words.slice(bestI).join(" ")}`;
       hit.setAttribute("data-series", series);
       hit.setAttribute("d", d);
       hit.setAttribute("fill", "none");
+      const clipRef = path.closest("[clip-path]")?.getAttribute("clip-path");
+      if (clipRef) hit.setAttribute("clip-path", clipRef);
       hit.setAttribute("stroke", "#000");
       hit.setAttribute("stroke-opacity", "0");
       hit.setAttribute("stroke-width", "14");
@@ -31291,6 +31966,22 @@ ${words.slice(bestI).join(" ")}`;
           yFormat: (v) => formatValue(v, units, spec.tooltip_decimals),
           dodge: seriesOrder.length > 1 ? pointDodgeOffsets(seriesOrder, false) : void 0
         });
+      } else if (spec.chartType === "dumbbell") {
+        const dbMarkers = new Map(seriesOrder.map((s) => [s, spec.series_marker?.[s] ?? "filled"]));
+        const dbFills = new Map(seriesOrder.map((s) => [s, dbMarkers.get(s) === "ink" ? TBL.color.heading : colors.get(s) || TBL.color.blue]));
+        attachCategoricalLineCrosshair(svg, {
+          rows: dataInScope.map((r) => ({ _xc: r._xc, series: r.series, _y: r._y })),
+          colors,
+          seriesLabels,
+          seriesOrder,
+          yFormat: (v) => formatValue(v, units, spec.tooltip_decimals),
+          bandHighlight: true,
+          centersFromMarks: true,
+          orientation: spec.orientation === "horizontal" ? "horizontal" : "vertical",
+          swatchShape: "dot",
+          swatchMarkers: dbMarkers,
+          renderedFills: dbFills
+        });
       } else if (spec.xAxisType === "categorical" && spec.chartType === "line") {
         attachCategoricalLineCrosshair(svg, {
           rows: dataInScope.map((r) => ({ _xc: r._xc, series: r.series, _y: r._y })),
@@ -31694,6 +32385,35 @@ ${words.slice(bestI).join(" ")}`;
     };
   }
   function wireFigureSvg(svg, handle, ctx) {
+    if (ctx.spec.chartType === "dumbbell") {
+      const dbUseCoord = ctx.onResolve != null;
+      const orientation = ctx.spec.orientation === "horizontal" ? "horizontal" : "vertical";
+      const dbRows = ctx.dataInScope.map((r) => ({ _xc: r._xc, series: r.series, _y: r._y }));
+      const dbMarkers = new Map(ctx.seriesOrder.map((s) => [s, ctx.spec.series_marker?.[s] ?? "filled"]));
+      const dbFills = new Map(ctx.seriesOrder.map((s) => [s, dbMarkers.get(s) === "ink" ? TBL.color.heading : ctx.colors.get(s) || TBL.color.blue]));
+      const dbOpts = {
+        rows: dbRows,
+        colors: ctx.colors,
+        seriesLabels: ctx.seriesLabels,
+        seriesOrder: ctx.seriesOrder,
+        yFormat: (v) => formatValue(v, ctx.units, ctx.spec.tooltip_decimals),
+        bandHighlight: true,
+        centersFromMarks: true,
+        orientation,
+        swatchShape: "dot",
+        swatchMarkers: dbMarkers,
+        renderedFills: dbFills,
+        markerless: true
+      };
+      attachCategoricalLineCrosshair(svg, {
+        ...dbOpts,
+        ...dbUseCoord ? { onResolve: (cat) => ctx.onResolve(cat) } : {}
+      });
+      if (dbUseCoord) {
+        return attachSecondaryCategoricalLineCursor(svg, dbOpts);
+      }
+      return void 0;
+    }
     if (ctx.spec.chartType === "dotplot") {
       const dotUseCoord = ctx.onResolve != null;
       const symbols = new Map(ctx.seriesOrder.map((s, i) => [s, markerSymbolForIndex(i)]));
