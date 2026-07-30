@@ -1,6 +1,7 @@
 chartType: bar
 title: "The debt-to-GDP ratio falls more when AI adoption is faster"
 subtitle: "Federal debt, percent of GDP, FY 2030"
+value_suffix: "%"
 xAxisType: categorical
 orientation: vertical
 
