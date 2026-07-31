@@ -24913,6 +24913,28 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
   }
 
   // src/engine/scales.ts
+  function domainBounds(domain) {
+    return domain[0] <= domain[1] ? [domain[0], domain[1]] : [domain[1], domain[0]];
+  }
+  function isReversedDomain(domain) {
+    return domain[0] > domain[1];
+  }
+  function resolveHardDomain({
+    min,
+    max,
+    auto,
+    fold
+  }) {
+    const reversed = min != null && max != null && min > max;
+    const pinnedLo = reversed ? max : min;
+    const pinnedHi = reversed ? min : max;
+    const folds = (fold ?? []).filter(Number.isFinite);
+    const lo3 = pinnedLo ?? (auto ? Math.min(auto.min, ...folds) : null);
+    const hiBase = pinnedHi ?? auto?.max;
+    if (lo3 == null || hiBase == null) return null;
+    const hi3 = Math.max(hiBase, ...folds);
+    return reversed ? [hi3, lo3] : [lo3, hi3];
+  }
   function computeYAxis(yValues, { includeZero = false, tickCount = 5, domain = null } = {}) {
     if (domain) {
       const scale2 = d3_7_9_0_esm_min_exports.scaleLinear().domain(domain).nice(tickCount);
@@ -26140,7 +26162,7 @@ ${words.slice(bestI).join(" ")}`;
     const underlay = [];
     const shadeSeriesOrder = [];
     if (spec.shading?.length && ctx.yDomain) {
-      const [domainLo, domainHi] = ctx.yDomain;
+      const [domainLo, domainHi] = domainBounds(ctx.yDomain);
       const clampToDomain = (v) => Math.min(Math.max(v, domainLo), domainHi);
       const parseBound = (v) => v == null ? null : ctx.parseXValue?.(v) ?? null;
       for (const region of spec.shading) {
@@ -26777,8 +26799,21 @@ ${words.slice(bestI).join(" ")}`;
         fontSize: TBL_VALUE_LABEL.fontSize,
         fontWeight: TBL_VALUE_LABEL.fontWeight
       };
+      const reversed = ctx.yDomain ? isReversedDomain(ctx.yDomain) : false;
       overlay.push(
-        horizontal ? plot_0_6_16_esm_min_exports.text(netRows, { ...common, y: "_xc", x: "posTop", textAnchor: "start", dx: TBL_VALUE_LABEL.gap }) : plot_0_6_16_esm_min_exports.text(netRows, { ...common, x: "_xc", y: "posTop", textAnchor: "middle", dy: -TBL_VALUE_LABEL.gap })
+        horizontal ? plot_0_6_16_esm_min_exports.text(netRows, {
+          ...common,
+          y: "_xc",
+          x: "posTop",
+          textAnchor: reversed ? "end" : "start",
+          dx: reversed ? -TBL_VALUE_LABEL.gap : TBL_VALUE_LABEL.gap
+        }) : plot_0_6_16_esm_min_exports.text(netRows, {
+          ...common,
+          x: "_xc",
+          y: "posTop",
+          textAnchor: "middle",
+          dy: reversed ? TBL_VALUE_LABEL.gapBelow : -TBL_VALUE_LABEL.gap
+        })
       );
     } else if (netMode === "dot") {
       const netDotR = pane ? NET_DOT_PANE_R : NET_DOT_R;
@@ -26998,6 +27033,7 @@ ${words.slice(bestI).join(" ")}`;
         waterfallValueDecimals(data, spec.valueLabels?.decimals)
       );
       const labelSize = ctx.pane ? 10.5 : TBL_VALUE_LABEL.fontSize;
+      const reversed = ctx.yDomain ? isReversedDomain(ctx.yDomain) : false;
       const pushLabels = (rising) => {
         const rows = barSteps.filter((s) => s.rise === rising).map((s) => ({ _xc: s.cat, level: s.level, fill: fillFor(s) }));
         if (!rows.length) return;
@@ -27007,7 +27043,7 @@ ${words.slice(bestI).join(" ")}`;
             y: "level",
             text: (d) => fmt(d.level),
             textAnchor: "middle",
-            dy: rising ? -TBL_VALUE_LABEL.gap : TBL_VALUE_LABEL.gapBelow,
+            dy: rising !== reversed ? -TBL_VALUE_LABEL.gap : TBL_VALUE_LABEL.gapBelow,
             fontSize: labelSize,
             fontWeight: TBL_VALUE_LABEL.fontWeight,
             fill: (d) => d.fill
@@ -27391,7 +27427,7 @@ ${words.slice(bestI).join(" ")}`;
         rowsOcc[row].push(iv3);
       };
       const innerHForRows = height != null ? height - TBL_MARGIN_TOP - xOpts.marginBottom : null;
-      if (innerHForRows != null && innerHForRows > 0 && yDomain[1] > yDomain[0]) {
+      if (innerHForRows != null && innerHForRows > 0 && yDomain[1] !== yDomain[0]) {
         for (const m of yAxisAnn) {
           if (!m.label) continue;
           const py3 = TBL_MARGIN_TOP + (yDomain[1] - m.y) / (yDomain[1] - yDomain[0]) * innerHForRows;
@@ -27535,7 +27571,8 @@ ${words.slice(bestI).join(" ")}`;
         })
       );
       marks.push(...layers.xAxisMarks ?? xOpts.axisMarks);
-      if (yDomain[0] <= 0 && yDomain[1] >= 0) {
+      const [zeroLo, zeroHi] = domainBounds(yDomain);
+      if (zeroLo <= 0 && zeroHi >= 0) {
         marks.push(
           plot_0_6_16_esm_min_exports.ruleY([0], {
             stroke: TBL.color.axisStroke,
@@ -28405,36 +28442,37 @@ ${words.slice(bestI).join(" ")}`;
     const chartType = spec.chartType;
     let hardDomain;
     let includeZero;
+    const valueAxisMarkers = () => [
+      ...ann.yAxis.map((m) => m.y),
+      ...spec.orientation === "horizontal" ? ann.xAxis.map((m) => Number(m.x)) : []
+    ].filter(Number.isFinite);
     if (chartType === "bar" || chartType === "stacked") {
-      const markerYs = [
-        ...ann.yAxis.map((m) => m.y),
-        ...spec.orientation === "horizontal" ? ann.xAxis.map((m) => Number(m.x)) : []
-      ].filter(Number.isFinite);
       includeZero = policy.min == null;
-      const barExtent = computeBarYExtent(dataInScope, spec, chartType);
-      const resolvedMin = policy.min ?? Math.min(barExtent.min, ...markerYs);
-      const resolvedMax = Math.max(policy.max ?? barExtent.max, ...markerYs);
-      hardDomain = [resolvedMin, resolvedMax];
+      hardDomain = resolveHardDomain({
+        min: policy.min,
+        max: policy.max,
+        auto: computeBarYExtent(dataInScope, spec, chartType),
+        fold: valueAxisMarkers()
+      });
     } else if (chartType === "dumbbell") {
-      const markerYs = [
-        ...ann.yAxis.map((m) => m.y),
-        ...spec.orientation === "horizontal" ? ann.xAxis.map((m) => Number(m.x)) : []
-      ].filter(Number.isFinite);
       includeZero = false;
-      const dbExtent = computeDumbbellValueExtent(dataInScope.map((d) => d._y));
-      const resolvedMin = policy.min ?? Math.min(dbExtent.min, ...markerYs);
-      const resolvedMax = Math.max(policy.max ?? dbExtent.max, ...markerYs);
-      hardDomain = [resolvedMin, resolvedMax];
+      hardDomain = resolveHardDomain({
+        min: policy.min,
+        max: policy.max,
+        auto: computeDumbbellValueExtent(dataInScope.map((d) => d._y)),
+        fold: valueAxisMarkers()
+      });
     } else if (chartType === "histogram") {
       includeZero = true;
-      hardDomain = policy.min != null && policy.max != null ? [policy.min, policy.max] : null;
+      hardDomain = resolveHardDomain({ min: policy.min, max: policy.max });
     } else if (chartType === "waterfall") {
       includeZero = policy.min == null;
-      const markerYs = ann.yAxis.map((m) => m.y).filter(Number.isFinite);
-      const wfExtent = computeWaterfallYExtent(dataInScope);
-      const resolvedMin = policy.min ?? Math.min(wfExtent.min, ...markerYs);
-      const resolvedMax = Math.max(policy.max ?? wfExtent.max, ...markerYs);
-      hardDomain = [resolvedMin, resolvedMax];
+      hardDomain = resolveHardDomain({
+        min: policy.min,
+        max: policy.max,
+        auto: computeWaterfallYExtent(dataInScope),
+        fold: ann.yAxis.map((m) => m.y).filter(Number.isFinite)
+      });
     } else if (chartType === "area") {
       includeZero = true;
       const markerYs = [
@@ -28450,20 +28488,30 @@ ${words.slice(bestI).join(" ")}`;
         if (r._y < minVal) minVal = r._y;
       }
       const stackMax = totalByX.size ? Math.max(...totalByX.values()) : 0;
-      const resolvedMin = policy.min ?? Math.min(0, minVal, ...markerYs);
-      const resolvedMax = Math.max(policy.max ?? stackMax, ...markerYs);
-      hardDomain = [resolvedMin, resolvedMax];
+      hardDomain = resolveHardDomain({
+        min: policy.min,
+        max: policy.max,
+        auto: { min: Math.min(0, minVal), max: stackMax },
+        fold: markerYs
+      });
     } else {
       includeZero = policy.includeZero === true;
+      const reversed = policy.min != null && policy.max != null && policy.min > policy.max;
       let yMax = policy.max;
       if (policy.autoWiden && yMax != null) {
-        const dataMax = Math.max(...yForAxis.filter(Number.isFinite));
-        if (dataMax > yMax) {
-          const step = policy.autoWiden.step || 1;
-          yMax = Math.ceil(dataMax / step) * step;
+        const step = policy.autoWiden.step || 1;
+        const finite = yForAxis.filter(Number.isFinite);
+        if (finite.length) {
+          if (reversed) {
+            const dataMin = Math.min(...finite);
+            if (dataMin < yMax) yMax = Math.floor(dataMin / step) * step;
+          } else {
+            const dataMax = Math.max(...finite);
+            if (dataMax > yMax) yMax = Math.ceil(dataMax / step) * step;
+          }
         }
       }
-      hardDomain = policy.min != null && yMax != null ? [policy.min, yMax] : null;
+      hardDomain = resolveHardDomain({ min: policy.min, max: yMax });
     }
     const { domain: yDomain, ticks: yTicks } = computeYAxis(yForAxis, {
       includeZero,
@@ -28491,8 +28539,9 @@ ${words.slice(bestI).join(" ")}`;
     ) : void 0;
     const shapeIsSeries = hasShape && cols.shape === cols.series;
     const drawnExtent = computeDrawnValueExtent(dataInScope, spec, chartType);
-    const domainEps = Math.abs(yDomain[1] - yDomain[0]) * 1e-9;
-    const clipMarks = drawnExtent != null && (drawnExtent.min < yDomain[0] - domainEps || drawnExtent.max > yDomain[1] + domainEps);
+    const [clipLo, clipHi] = domainBounds(yDomain);
+    const domainEps = Math.abs(clipHi - clipLo) * 1e-9;
+    const clipMarks = drawnExtent != null && (drawnExtent.min < clipLo - domainEps || drawnExtent.max > clipHi + domainEps);
     const layers = markBuilderFor(spec.chartType)(dataInScope, spec, {
       xField: adapter.xField,
       colors,
