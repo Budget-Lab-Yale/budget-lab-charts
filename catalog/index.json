@@ -418,5 +418,61 @@
     "path": "charts/articles/2026/07/tariff-model-update-july2026/update-decomposition/table.yaml",
     "dataPath": "charts/articles/2026/07/tariff-model-update-july2026/update-decomposition/data.csv",
     "tags": []
+  },
+  {
+    "id": "ui-recipiency/appendix-figure-1-job-losers-share",
+    "kind": "oneoff",
+    "collection": "ui-recipiency",
+    "collectionTitle": "The labor market appears stable, but low UI claims data should be interpreted carefully",
+    "title": "The share of CPS unemployed who lost their jobs has remained relatively stable",
+    "eyebrow": "APPENDIX FIGURE 1",
+    "date": "2026-07-31",
+    "created": "",
+    "cadence": "",
+    "path": "charts/articles/2026/08/ui-recipiency/appendix-figure-1-job-losers-share/chart.yaml",
+    "dataPath": "charts/articles/2026/08/ui-recipiency/appendix-figure-1-job-losers-share/data.csv",
+    "tags": []
+  },
+  {
+    "id": "ui-recipiency/figure-1-insured-vs-total-unemployment",
+    "kind": "oneoff",
+    "collection": "ui-recipiency",
+    "collectionTitle": "The labor market appears stable, but low UI claims data should be interpreted carefully",
+    "title": "UI benefits are received by only a minority of the unemployed",
+    "eyebrow": "FIGURE 1",
+    "date": "2026-07-31",
+    "created": "",
+    "cadence": "",
+    "path": "charts/articles/2026/08/ui-recipiency/figure-1-insured-vs-total-unemployment/chart.yaml",
+    "dataPath": "charts/articles/2026/08/ui-recipiency/figure-1-insured-vs-total-unemployment/data.csv",
+    "tags": []
+  },
+  {
+    "id": "ui-recipiency/figure-2-long-term-unemployment-share",
+    "kind": "oneoff",
+    "collection": "ui-recipiency",
+    "collectionTitle": "The labor market appears stable, but low UI claims data should be interpreted carefully",
+    "title": "The long-term share of unemployment has steadily risen since 2023",
+    "eyebrow": "FIGURE 2",
+    "date": "2026-07-31",
+    "created": "",
+    "cadence": "",
+    "path": "charts/articles/2026/08/ui-recipiency/figure-2-long-term-unemployment-share/chart.yaml",
+    "dataPath": "charts/articles/2026/08/ui-recipiency/figure-2-long-term-unemployment-share/data.csv",
+    "tags": []
+  },
+  {
+    "id": "ui-recipiency/figure-3-indexed-claims-vs-unemployment",
+    "kind": "oneoff",
+    "collection": "ui-recipiency",
+    "collectionTitle": "The labor market appears stable, but low UI claims data should be interpreted carefully",
+    "title": "Adjusting for the rise in long-term unemployment share, UI and CPS data track each other more closely",
+    "eyebrow": "FIGURE 3",
+    "date": "2026-07-31",
+    "created": "",
+    "cadence": "",
+    "path": "charts/articles/2026/08/ui-recipiency/figure-3-indexed-claims-vs-unemployment/chart.yaml",
+    "dataPath": "charts/articles/2026/08/ui-recipiency/figure-3-indexed-claims-vs-unemployment/data.csv",
+    "tags": []
   }
 ]

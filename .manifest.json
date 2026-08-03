@@ -90,6 +90,18 @@
     },
     "tariff-model-update-july2026/update-decomposition": {
       "hash": "acbd3636159d849ee3f130e537eef7a1801005620a3debfca67ebc7cc36b42cb"
+    },
+    "ui-recipiency/appendix-figure-1-job-losers-share": {
+      "hash": "50eb819f23f182d63de57186274a62c24485d1f1fd094d40a9ae94f6fde4a1d7"
+    },
+    "ui-recipiency/figure-1-insured-vs-total-unemployment": {
+      "hash": "b27648dd3de7d9bb5a320c4793e10d73cae24ad0005bf45daabe5061b5272f21"
+    },
+    "ui-recipiency/figure-2-long-term-unemployment-share": {
+      "hash": "d8865518cfa3c8870496337bf5207eafc837f3b63a21d2a6902d3d53a762e3ae"
+    },
+    "ui-recipiency/figure-3-indexed-claims-vs-unemployment": {
+      "hash": "626566b7368fc9ac6f999b7b3eaa6103d924715e7490b7f672b1ec224d524a3a"
     }
   }
 }
