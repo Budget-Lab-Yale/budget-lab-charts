@@ -1,0 +1,18 @@
+chartType: line
+title: "UI benefits are received by only a minority of the unemployed"
+source: "BLS, DOL, and authors' calculations. Data are seasonally adjusted."
+xAxisType: temporal
+columns:
+  x: date
+  value: value
+  series: series
+series_order:
+  - Unemployment rate
+  - Insured unemployment rate
+series_colors:
+  Unemployment rate: amber
+  Insured unemployment rate: blue
+y_axis_title: Percent
+yAxisPolicy:
+  includeZero: true
+data: data.csv

@@ -1,0 +1,11 @@
+chartType: line
+title: "The share of CPS unemployed who lost their jobs has remained relatively stable"
+value_suffix: "%"
+source: "BLS via FRED. Data are seasonally adjusted."
+xAxisType: temporal
+columns:
+  x: date
+yAxisPolicy:
+  min: 40
+  max: 64
+data: data.csv
