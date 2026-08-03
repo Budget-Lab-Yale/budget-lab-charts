@@ -1,0 +1,15 @@
+chartType: line
+title: "The long-term share of unemployment has steadily risen since 2023"
+source: "DOL and BLS via FRED. Unemployment data are seasonally adjusted."
+xAxisType: temporal
+columns:
+  x: date
+  value: value
+  facet: panel
+small_multiples:
+  columns: 2
+  mode: per-pane
+  pane_order:
+    - "Share unemployed 27 weeks & over"
+    - "Exhaustion rate"
+data: data.csv

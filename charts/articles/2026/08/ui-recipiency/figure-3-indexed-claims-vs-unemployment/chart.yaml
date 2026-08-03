@@ -1,0 +1,18 @@
+chartType: line
+title: "Adjusting for the rise in long-term unemployment share, UI and CPS data track each other more closely"
+source: "BLS, DOL, and author’s calculations. Data are seasonally adjusted and aggregated to the monthly frequency. The Adjusted insured unemployment is insured unemployment divided by the CPS-derived share of total unemployed whose spell has lasted 26 weeks or less. Each series is indexed to its January 2023 level."
+xAxisType: temporal
+columns:
+  x: date
+  value: value
+  series: series
+series_order:
+  - Insured unemployment
+  - Adjusted insured unemployment
+  - Surveyed unemployment
+series_colors:
+  Insured unemployment: blue
+  Adjusted insured unemployment: blue-light
+  Surveyed unemployment: amber
+y_axis_title: Index (Jan 2023 = 100)
+data: data.csv
