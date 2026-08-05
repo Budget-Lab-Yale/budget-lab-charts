@@ -424,6 +424,13 @@ body {
   background: var(--tbl-bg-subtle);
   box-shadow: inset 0 -1px 0 var(--legend-color, var(--tbl-navy));
 }
+/* Driven from the CHART side: hovering a rug block marks its annotation row, so the reciprocity is
+   visible in the legend and not only in the plot. Matches the :hover treatment, since it is the
+   same state arrived at from the other direction. */
+.tbl-legend-item.is-hovered {
+  background: var(--tbl-bg-subtle);
+  color: var(--tbl-text-heading);
+}
 .tbl-legend-swatch {
   width: 18px;
   height: 3px;
@@ -447,6 +454,11 @@ body {
   width: 14px;
   height: 12px;
   border-radius: 1px;
+}
+/* Annotation-derived fill swatch: an inset hairline so a near-white tint (an annotations.bands
+   fill is 10% opaque) still reads as a swatch rather than a gap. */
+.tbl-legend-swatch.is-rect.is-outlined {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
 }
 .tbl-legend-swatch.is-dot {
   width: 14px;
@@ -24715,6 +24727,13 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
     strokeWidth: { solid: 2, dashed: 2, pane: 2 },
     dashArray: "5 3"
   };
+  var SWATCH_WIDTH = 14;
+  var SWATCH_MIN_BAND = 3;
+  var SWATCH_MAX_WIDTH = 30;
+  function swatchWidthFor(bands) {
+    return Math.min(Math.max(SWATCH_WIDTH, bands * SWATCH_MIN_BAND), SWATCH_MAX_WIDTH);
+  }
+  var SWATCH_OUTLINE = "rgba(0, 0, 0, 0.18)";
   var MARKER_SYMBOLS = [
     "circle",
     "square",
@@ -24837,6 +24856,16 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
     };
   }
   var VALUE_FORMAT_DEFAULT_DECIMALS = 2;
+  function xMarkerLabel(m) {
+    if (!m.label) return "";
+    const xNum = Number(m.x);
+    const fmt = m.value_format != null && Number.isFinite(xNum) ? m.value_format : void 0;
+    return substituteValueToken(m.label, xNum, fmt, () => m.x);
+  }
+  function yMarkerLabel(m, fallbackFormat) {
+    if (!m.label) return "";
+    return substituteValueToken(m.label, m.y, m.value_format, fallbackFormat);
+  }
   function substituteValueToken(label, value, fmt, fallbackFormat) {
     if (!label.includes("{value}")) return label;
     const formatted = fmt ? `${fmt.prefix ?? ""}${value.toFixed(fmt.decimals ?? VALUE_FORMAT_DEFAULT_DECIMALS)}${fmt.suffix ?? ""}` : fallbackFormat(value);
@@ -24876,6 +24905,9 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
   function resolveColor(value) {
     if (!value) return value;
     return TBL_COLORS[value] ?? value;
+  }
+  function resolveColorOr(value, fallback) {
+    return resolveColor(value) || fallback;
   }
   var MONO_TIERS = ["700", "600", "500", "400", "300", "200", "100"];
   function monoScale(base, n) {
@@ -25210,13 +25242,13 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
       })
     ];
   }
-  function tblXAxis({ xTickFormat } = {}, className) {
+  function tblXAxis({ xTickFormat } = {}, className, labelDy = 0) {
     return [
       plot_0_6_16_esm_min_exports.axisX({
         anchor: "bottom",
         textAnchor: "middle",
         tickSize: 0,
-        dy: 4,
+        dy: 4 + labelDy,
         fontSize: TBL.size.axis,
         fill: TBL.color.axis,
         fontWeight: 500,
@@ -25257,7 +25289,7 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
     }
     return ticks;
   }
-  function tblTemporalXAxis(xDomain, densityMultiplier = 1, className) {
+  function tblTemporalXAxis(xDomain, densityMultiplier = 1, className, labelDy = 0) {
     const ticks = temporalXTicks(xDomain, densityMultiplier);
     const yearTicks = ticks.filter((d) => d.getMonth() === 0);
     const allJanuary = ticks.length > 0 && yearTicks.length === ticks.length;
@@ -25268,7 +25300,7 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
           x: (d) => d,
           text: (d) => d3_7_9_0_esm_min_exports.timeFormat("%Y")(d),
           frameAnchor: "bottom",
-          dy: 12,
+          dy: 12 + labelDy,
           textAnchor: "middle",
           dx: 0,
           fill: TBL.color.axis,
@@ -25284,7 +25316,7 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
         x: (d) => d,
         text: (d) => d3_7_9_0_esm_min_exports.timeFormat("%b")(d),
         frameAnchor: "bottom",
-        dy: 12,
+        dy: 12 + labelDy,
         textAnchor: "middle",
         dx: 0,
         fill: TBL.color.axis,
@@ -25297,7 +25329,7 @@ ${m}`)).style("margin-left", u ? `${+u}px` : null).style("width", l === void 0 ?
         x: (d) => d,
         text: (d) => d3_7_9_0_esm_min_exports.timeFormat("%Y")(d),
         frameAnchor: "bottom",
-        dy: 24,
+        dy: 24 + labelDy,
         textAnchor: "middle",
         dx: 0,
         fill: TBL.color.axis,
@@ -25491,6 +25523,7 @@ ${words.slice(bestI).join(" ")}`;
   var X_TICK_LABEL_TOP_CLASS = "tbl-x-tick-label-top";
   var ANNOTATION_LINE_CLASS = "tbl-annotation-line";
   var X_ANNOTATION_LINE_CLASS = "tbl-annotation-vline";
+  var X_BAND_CLASS = "tbl-annotation-band";
   function segmentsMinusGaps(top, bottom, gaps) {
     let segs = [[top, bottom]];
     for (const [gt2, gb3] of gaps) {
@@ -25724,14 +25757,15 @@ ${words.slice(bestI).join(" ")}`;
         parseX: (v) => +v,
         xField: "_xn",
         validate: (r) => Number.isFinite(r._xn),
-        buildXOpts(data, faceted = false) {
+        buildXOpts(data, { faceted = false, bottomGutter = 0 } = {}) {
           if (histogramDomain) {
             return {
-              marginBottom: 22,
+              marginBottom: 22 + bottomGutter,
               xPlotOpts: { type: "linear", label: null, axis: null, domain: histogramDomain },
               axisMarks: tblXAxis(
                 { xTickFormat: (d) => `${+d}` },
-                faceted ? X_AXIS_LABEL_CLASS : void 0
+                faceted ? X_AXIS_LABEL_CLASS : void 0,
+                bottomGutter
               ),
               markerToX: (m) => +m.x,
               tooltipXParse: (v) => +v,
@@ -25742,13 +25776,14 @@ ${words.slice(bestI).join(" ")}`;
           const anchorAtZero = xAxisPolicy?.anchorAtZero === true;
           const xMin = anchorAtZero ? Math.min(0, d3_7_9_0_esm_min_exports.min(data, (d) => d._xn)) : d3_7_9_0_esm_min_exports.min(data, (d) => d._xn);
           return {
-            marginBottom: 22,
+            marginBottom: 22 + bottomGutter,
             xPlotOpts: { label: null, axis: null, domain: [xMin, xMax] },
             // Plain numeric tick labels with NO thousands separator — years (1960, 2030) and
             // index axes read better ungrouped than "1,960".
             axisMarks: tblXAxis(
               { xTickFormat: (d) => `${+d}` },
-              faceted ? X_AXIS_LABEL_CLASS : void 0
+              faceted ? X_AXIS_LABEL_CLASS : void 0,
+              bottomGutter
             ),
             markerToX: (m) => +m.x,
             tooltipXParse: (v) => +v,
@@ -25764,7 +25799,7 @@ ${words.slice(bestI).join(" ")}`;
         parseX: (v) => parseDate(v),
         xField: "_xd",
         validate: (r) => !!r._xd && !Number.isNaN(+r._xd),
-        buildXOpts(data, faceted = false) {
+        buildXOpts(data, { faceted = false, bottomGutter = 0 } = {}) {
           let xDomain;
           if (histogramDomain) {
             xDomain = [new Date(histogramDomain[0]), new Date(histogramDomain[1])];
@@ -25773,12 +25808,12 @@ ${words.slice(bestI).join(" ")}`;
             xDomain = [new Date(d3_7_9_0_esm_min_exports.min(xs3)), new Date(d3_7_9_0_esm_min_exports.max(xs3))];
           }
           return {
-            marginBottom: temporalMarginBottom(xDomain),
+            marginBottom: temporalMarginBottom(xDomain) + bottomGutter,
             // axis:null/label:null so Plot draws NO native axis — the engine's tblTemporalXAxis marks
             // are the axis. Without this, xPlotOpts replaces the whole x-scale (assemble-plot merges by
             // assignment, not over the default) and Plot's native ticks render on top → doubled labels.
             xPlotOpts: histogramDomain ? { type: "utc", domain: xDomain, axis: null, label: null } : void 0,
-            axisMarks: tblTemporalXAxis(xDomain, 1, faceted ? X_AXIS_LABEL_CLASS : void 0),
+            axisMarks: tblTemporalXAxis(xDomain, 1, faceted ? X_AXIS_LABEL_CLASS : void 0, bottomGutter),
             markerToX: (m) => parseDate(m.x),
             // Use the SAME local-midnight parse as the chart's line points (parseDate), not the
             // crosshair's `new Date(string)` auto-detect — that parses YYYY-MM-DD as UTC and then
@@ -25795,12 +25830,12 @@ ${words.slice(bestI).join(" ")}`;
         parseX: (v) => parseQuarter(v),
         xField: "_xd",
         validate: (r) => !!r._xd && !Number.isNaN(+r._xd),
-        buildXOpts(data, faceted = false) {
+        buildXOpts(data, { faceted = false, bottomGutter = 0 } = {}) {
           const xs3 = data.map((r) => +r._xd);
           const xDomain = [new Date(d3_7_9_0_esm_min_exports.min(xs3)), new Date(d3_7_9_0_esm_min_exports.max(xs3))];
           return {
-            marginBottom: temporalMarginBottom(xDomain),
-            axisMarks: tblTemporalXAxis(xDomain, 1, faceted ? X_AXIS_LABEL_CLASS : void 0),
+            marginBottom: temporalMarginBottom(xDomain) + bottomGutter,
+            axisMarks: tblTemporalXAxis(xDomain, 1, faceted ? X_AXIS_LABEL_CLASS : void 0, bottomGutter),
             markerToX: (m) => parseQuarter(m.x),
             tooltipXParse: (v) => +parseQuarter(v),
             tooltipXFormat: (v) => formatQuarter(new Date(v))
@@ -25814,7 +25849,7 @@ ${words.slice(bestI).join(" ")}`;
         parseX: (v) => v,
         xField: "_xc",
         validate: (r) => typeof r._xc === "string" && r._xc !== "",
-        buildXOpts(data, faceted = false, labelMode = "single", tagCategoryLabels = false) {
+        buildXOpts(data, { faceted = false, labelMode = "single", tagCategoryLabels = false } = {}) {
           const seen = /* @__PURE__ */ new Set();
           for (const row of data) {
             const cat = row._xc;
@@ -26102,6 +26137,186 @@ ${words.slice(bestI).join(" ")}`;
     }));
   }
 
+  // src/spec/rug.ts
+  function groupByLabel(entries, origin) {
+    const byLabel = /* @__PURE__ */ new Map();
+    for (const e of entries) {
+      const existing = byLabel.get(e.label);
+      if (existing) {
+        existing.intervals.push(e.interval);
+        if (existing.series !== e.series) delete existing.series;
+        continue;
+      }
+      byLabel.set(e.label, {
+        label: e.label,
+        color: e.color,
+        ...e.series != null ? { series: e.series } : {},
+        intervals: [e.interval],
+        origin,
+        legend: e.legend !== false
+      });
+    }
+    return [...byLabel.values()];
+  }
+  function rugTrackColor(track, seriesColor, resolve, neutral) {
+    return resolve(track.color) || (track.series != null ? seriesColor(track.series) : void 0) || neutral;
+  }
+  function resolveRugTracks(spec) {
+    const ann = resolveAnnotations(spec);
+    const bandTracks = groupByLabel(
+      ann.bands.filter((b) => b.rug === true && !!b.label).map((b) => ({
+        label: b.label,
+        color: b.color,
+        legend: b.legend,
+        interval: { from: b.start, to: b.end }
+      })),
+      "bands"
+    );
+    const shadeTracks = groupByLabel(
+      (spec.shading ?? []).filter((s) => s.rug === true && !!s.label && s.from != null && s.to != null).map((s) => ({
+        label: s.label,
+        color: s.color,
+        ...s.series != null ? { series: s.series } : {},
+        legend: s.legend,
+        interval: { from: s.from, to: s.to }
+      })),
+      "shading"
+    );
+    const explicit = (spec.rug?.tracks ?? []).filter((t60) => !!t60.label && t60.intervals.length > 0).map((t60) => ({
+      label: t60.label,
+      color: t60.color,
+      intervals: t60.intervals,
+      origin: "tracks",
+      legend: t60.legend !== false
+    }));
+    return [...bandTracks, ...shadeTracks, ...explicit];
+  }
+  var RUG_DEFAULT_HEIGHT = 8;
+  var RUG_GAP = 3;
+  var RUG_PAD = 2;
+  var RUG_ROW_GAP = 2;
+  function rugHeight(spec) {
+    return spec.rug?.height ?? RUG_DEFAULT_HEIGHT;
+  }
+  function rugRowCount(spec) {
+    const tracks = resolveRugTracks(spec);
+    if (!tracks.length) return 0;
+    return spec.rug?.rows === "per-track" ? tracks.length : 1;
+  }
+  function rugAllowance(spec) {
+    const rows = rugRowCount(spec);
+    if (!rows) return 0;
+    return RUG_GAP + rows * rugHeight(spec) + (rows - 1) * RUG_ROW_GAP + RUG_PAD;
+  }
+
+  // src/engine/annotation-legend.ts
+  function annotationKey(label) {
+    return `__annotation:${label}`;
+  }
+  var BAND_FILL_OPACITY = 0.1;
+  var SHADE_FILL_OPACITY = 0.5;
+  function wantsRow(entry) {
+    if (!entry.label) return false;
+    if (entry.legend === false) return false;
+    return entry.legend === true || entry.rug === true;
+  }
+  function labelMovedToLegend(spec, entry) {
+    return spec.legend !== false && wantsRow(entry);
+  }
+  function flattenOverWhite(color, opacity) {
+    if (opacity >= 1) return color;
+    const m = /^#([0-9a-f]{6})$/i.exec(color);
+    if (!m) return color;
+    const hex = m[1];
+    const t60 = Math.max(opacity, 0);
+    const channel = (i) => {
+      const v = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+      return Math.round(255 + (v - 255) * t60);
+    };
+    const out = [0, 1, 2].map((i) => channel(i).toString(16).padStart(2, "0")).join("");
+    return `#${out}`;
+  }
+  function shadeSwatchColors(region, seriesNames, colors) {
+    const explicit = resolveColor(region.color);
+    if (region.rug === true) {
+      return [
+        explicit || (region.series != null ? colors.get(region.series) : void 0) || TBL.color.annotationDim
+      ];
+    }
+    const opacity = region.fillOpacity ?? SHADE_FILL_OPACITY;
+    const tint = (c) => flattenOverWhite(c, opacity);
+    if (explicit) return [tint(explicit)];
+    const targets = region.series != null ? [region.series] : seriesNames;
+    const out = targets.map((s) => colors.get(s)).filter((c) => !!c).map(tint);
+    return out.length ? out : [tint(TBL.color.blue)];
+  }
+  function ruleRow(m, label) {
+    return {
+      series: annotationKey(label),
+      label,
+      color: resolveColorOr(m.color, TBL.color.annotationDim),
+      dashed: (m.style || "dashed") === "dashed",
+      markerShape: "line",
+      annotation: true,
+      isExtra: true
+    };
+  }
+  function fillRow(label, swatchColors) {
+    return {
+      series: annotationKey(label),
+      label,
+      color: swatchColors[0],
+      ...swatchColors.length > 1 ? { colors: swatchColors } : {},
+      dashed: false,
+      markerShape: "rect",
+      outlined: true,
+      annotation: true,
+      isExtra: true
+    };
+  }
+  function buildAnnotationLegendItems(spec, seriesNames, colors, {
+    formatValue: formatValue2
+  } = {}) {
+    if (spec.legend === false) return [];
+    const ann = resolveAnnotations(spec);
+    const rows = [];
+    ann.bands.forEach((b) => {
+      if (!wantsRow(b)) return;
+      const color = resolveColorOr(b.color, TBL.color.annotationDim);
+      const solid = b.rug === true;
+      rows.push(fillRow(b.label, [solid ? color : flattenOverWhite(color, BAND_FILL_OPACITY)]));
+    });
+    (spec.shading ?? []).forEach((s) => {
+      if (!wantsRow(s)) return;
+      rows.push(fillRow(s.label, shadeSwatchColors(s, seriesNames, colors)));
+    });
+    const fallbackFormat = formatValue2 ?? ((v) => String(v));
+    ann.xAxis.forEach((m) => {
+      if (wantsRow(m)) rows.push(ruleRow(m, xMarkerLabel(m)));
+    });
+    ann.yAxis.forEach((m) => {
+      if (wantsRow(m)) rows.push(ruleRow(m, yMarkerLabel(m, fallbackFormat)));
+    });
+    resolveRugTracks(spec).forEach((t60) => {
+      if (t60.origin !== "tracks" || !t60.legend) return;
+      rows.push(fillRow(t60.label, [resolveColorOr(t60.color, TBL.color.annotationDim)]));
+    });
+    const byKey = /* @__PURE__ */ new Map();
+    for (const r of rows) {
+      const key = `${r.label} ${r.markerShape} ${r.dashed}`;
+      const existing = byKey.get(key);
+      if (!existing) {
+        byKey.set(key, r);
+        continue;
+      }
+      if (r.markerShape !== "rect") continue;
+      const merged = [...existing.colors ?? [existing.color], ...r.colors ?? [r.color]];
+      const distinct = merged.filter((c, i) => c != null && merged.indexOf(c) === i);
+      if (distinct.length > 1) existing.colors = distinct;
+    }
+    return [...byKey.values()];
+  }
+
   // src/engine/marks/projected.ts
   function splitProjectedRuns(rows) {
     const bySeries = /* @__PURE__ */ new Map();
@@ -26152,7 +26367,7 @@ ${words.slice(bestI).join(" ")}`;
 
   // src/engine/marks/line.ts
   var SHADE_CLASS = "tbl-shade";
-  var SHADE_FILL_OPACITY = 0.5;
+  var SHADE_FILL_OPACITY2 = 0.5;
   function buildLineMarks(data, spec, ctx) {
     const { xField, colors, fxField, fyField } = ctx;
     const facetChannels = fxField && fyField ? { fx: fxField, fy: fyField } : {};
@@ -26161,6 +26376,7 @@ ${words.slice(bestI).join(" ")}`;
     const clipOpt = ctx.clipMarks ? { clip: true } : {};
     const underlay = [];
     const shadeSeriesOrder = [];
+    const shadeAnnotationOrder = [];
     if (spec.shading?.length && ctx.yDomain) {
       const [domainLo, domainHi] = domainBounds(ctx.yDomain);
       const clampToDomain = (v) => Math.min(Math.max(v, domainLo), domainHi);
@@ -26179,7 +26395,7 @@ ${words.slice(bestI).join(" ")}`;
             to: parseBound(region.to)
           });
           if (!runs.length) continue;
-          const fill = region.color && (resolveColor(region.color) || region.color) || colors.get(seriesKey) || TBL.color.blue;
+          const fill = resolveColorOr(region.color, colors.get(seriesKey) || TBL.color.blue);
           underlay.push(
             plot_0_6_16_esm_min_exports.areaY(runs.flatMap((r) => r.rows), {
               x: xField,
@@ -26187,13 +26403,17 @@ ${words.slice(bestI).join(" ")}`;
               y2: "_y",
               z: "_seg",
               fill,
-              fillOpacity: region.fillOpacity ?? SHADE_FILL_OPACITY,
+              fillOpacity: region.fillOpacity ?? SHADE_FILL_OPACITY2,
               className: SHADE_CLASS,
               ...facetChannels,
               ...clipOpt
             })
           );
-          for (let i = 0; i < runs.length; i++) shadeSeriesOrder.push(seriesKey);
+          const annKey = labelMovedToLegend(spec, region) ? annotationKey(region.label) : void 0;
+          for (let i = 0; i < runs.length; i++) {
+            shadeSeriesOrder.push(seriesKey);
+            shadeAnnotationOrder.push(annKey);
+          }
         }
       }
     }
@@ -26333,7 +26553,11 @@ ${words.slice(bestI).join(" ")}`;
     const xScaleOpts = categorical ? { type: "point", padding: 0.08 } : void 0;
     const tagging = [{ selector: 'g[aria-label="line"] path', seriesOrder }];
     if (shadeSeriesOrder.length) {
-      tagging.push({ selector: `g.${SHADE_CLASS} path`, seriesOrder: shadeSeriesOrder });
+      tagging.push({
+        selector: `g.${SHADE_CLASS} path`,
+        seriesOrder: shadeSeriesOrder,
+        ...shadeAnnotationOrder.some((k) => k != null) ? { annotationOrder: shadeAnnotationOrder } : {}
+      });
     }
     let symbolScaleOpts;
     if (pointData.length) {
@@ -27356,6 +27580,81 @@ ${words.slice(bestI).join(" ")}`;
     return builder;
   }
 
+  // src/engine/plot-scale.ts
+  function readLinearScale(svgEl3, axis) {
+    const scaleFn = svgEl3.scale;
+    if (typeof scaleFn !== "function") return null;
+    try {
+      const s = scaleFn.call(svgEl3, axis);
+      const d = s?.domain;
+      const r = s?.range;
+      if (!d || !r || d.length < 2 || r.length < 2) return null;
+      const d03 = Number(d[0]);
+      const d13 = Number(d[1]);
+      const r03 = r[0];
+      const r13 = r[1];
+      if (!Number.isFinite(d03) || !Number.isFinite(d13) || d03 === d13) return null;
+      return (v) => r03 + (v - d03) / (d13 - d03) * (r13 - r03);
+    } catch {
+      return null;
+    }
+  }
+
+  // src/engine/rug.ts
+  var SVG_NS = "http://www.w3.org/2000/svg";
+  var RUG_CLASS = "tbl-rug";
+  var MIN_BLOCK_WIDTH = 2;
+  function drawRug(svg, tracks, { height, rows = "single", parseX, keyFor, colorFor }) {
+    if (!tracks.length) return;
+    const toPx = readLinearScale(svg, "x");
+    if (!toPx) return;
+    const svgHeight = Number(svg.getAttribute("height"));
+    const svgWidth = Number(svg.getAttribute("width"));
+    const marginBottom = Number(svg.dataset.marginBottom);
+    const marginLeft = Number(svg.dataset.marginLeft);
+    const marginRight = Number(svg.dataset.marginRight);
+    if (![svgHeight, svgWidth, marginBottom, marginLeft, marginRight].every(Number.isFinite)) return;
+    const plotLeft = marginLeft;
+    const plotRight = svgWidth - marginRight;
+    const top = svgHeight - marginBottom + RUG_GAP;
+    const doc = svg.ownerDocument;
+    const g = doc.createElementNS(SVG_NS, "g");
+    g.setAttribute("class", RUG_CLASS);
+    g.setAttribute("aria-hidden", "true");
+    const perTrack = rows === "per-track";
+    tracks.forEach((track, trackIdx) => {
+      const fill = colorFor(track);
+      const key = keyFor?.(track);
+      const rowTop = top + (perTrack ? trackIdx * (height + RUG_ROW_GAP) : 0);
+      for (const iv3 of track.intervals) {
+        const from = parseX(iv3.from);
+        const to3 = parseX(iv3.to);
+        if (from == null || to3 == null || typeof from === "string" || typeof to3 === "string") continue;
+        const a = toPx(Number(from));
+        const b = toPx(Number(to3));
+        if (!Number.isFinite(a) || !Number.isFinite(b)) continue;
+        const spanLo = Math.min(a, b);
+        const spanHi = Math.max(a, b);
+        if (spanHi < plotLeft || spanLo > plotRight) continue;
+        const lo3 = Math.max(spanLo, plotLeft);
+        const hi3 = Math.min(spanHi, plotRight);
+        const width = Math.max(hi3 - lo3, MIN_BLOCK_WIDTH);
+        const rect = doc.createElementNS(SVG_NS, "rect");
+        rect.setAttribute("x", String(round(lo3)));
+        rect.setAttribute("y", String(round(rowTop)));
+        rect.setAttribute("width", String(round(width)));
+        rect.setAttribute("height", String(round(height)));
+        rect.setAttribute("fill", fill);
+        if (key) rect.setAttribute("data-annotation", key);
+        g.appendChild(rect);
+      }
+    });
+    if (g.childElementCount) svg.appendChild(g);
+  }
+  function round(v) {
+    return Math.round(v * 100) / 100;
+  }
+
   // src/engine/assemble-plot.ts
   var PLOT_CLASS = "tblchart";
   var LABEL_HALO = { stroke: "#FFFFFF", strokeWidth: 3, paintOrder: "stroke" };
@@ -27395,16 +27694,13 @@ ${words.slice(bestI).join(" ")}`;
     const faceted = layers.xScaleField === "fx";
     const fyFaceted = layers.fyScaleOpts != null;
     const ann = filterAnnotationsByFacet(resolveAnnotations(spec), paneFacetValue);
+    const keyedInLegend = (e) => labelMovedToLegend(spec, e);
+    const annotationGroups = [];
     const yTickFallbackFmt = makeTickFormatter(yTicks, valueAffixes);
     const yAxisAnn = ann.yAxis.map(
-      (m) => m.label ? { ...m, label: substituteValueToken(m.label, m.y, m.value_format, yTickFallbackFmt) } : m
+      (m) => m.label ? { ...m, label: yMarkerLabel(m, yTickFallbackFmt) } : m
     );
-    const xAxisAnn = ann.xAxis.map((m) => {
-      if (!m.label) return m;
-      const xNum = Number(m.x);
-      const fmt = m.value_format != null && Number.isFinite(xNum) ? m.value_format : void 0;
-      return { ...m, label: substituteValueToken(m.label, xNum, fmt, () => m.x) };
-    });
+    const xAxisAnn = ann.xAxis.map((m) => m.label ? { ...m, label: xMarkerLabel(m) } : m);
     const pointsAnn = (points ?? ann.points).map(
       (p) => Number.isFinite(p.y) ? { ...p, label: substituteValueToken(p.label, p.y, p.value_format, yTickFallbackFmt) } : p
     );
@@ -27429,7 +27725,7 @@ ${words.slice(bestI).join(" ")}`;
       const innerHForRows = height != null ? height - TBL_MARGIN_TOP - xOpts.marginBottom : null;
       if (innerHForRows != null && innerHForRows > 0 && yDomain[1] !== yDomain[0]) {
         for (const m of yAxisAnn) {
-          if (!m.label) continue;
+          if (!m.label || keyedInLegend(m)) continue;
           const py3 = TBL_MARGIN_TOP + (yDomain[1] - m.y) / (yDomain[1] - yDomain[0]) * innerHForRows;
           const relSide = m.labelSide ?? "top";
           const baseDy = relSide === "middle" ? 0 : relSide === "bottom" ? 6 : -7;
@@ -27446,14 +27742,14 @@ ${words.slice(bestI).join(" ")}`;
       }
       const labels = [];
       ann.bands.forEach((b, i) => {
-        if (!b.label) return;
+        if (!b.label || keyedInLegend(b)) return;
         const px3 = toPx(xOpts.markerToX({ x: b.start }));
         if (px3 == null) return;
         const w = b.label.length * LABEL_CHAR_PX;
         labels.push({ id: `b${i}`, iv: [px3 + 6, px3 + 6 + w] });
       });
       xAxisAnn.forEach((m, i) => {
-        if (!m.label || (m.labelPosition ?? "top") !== "top") return;
+        if (!m.label || keyedInLegend(m) || (m.labelPosition ?? "top") !== "top") return;
         const px3 = toPx(xOpts.markerToX(m));
         if (px3 == null) return;
         const side = m.labelSide ?? "right";
@@ -27475,17 +27771,20 @@ ${words.slice(bestI).join(" ")}`;
       const x13 = xOpts.markerToX({ x: band.start });
       const x23 = xOpts.markerToX({ x: band.end });
       if (x13 == null || x23 == null) return;
+      const bandClass = keyedInLegend(band) ? `${X_BAND_CLASS}-${bandIdx}` : void 0;
+      if (bandClass) annotationGroups.push({ className: bandClass, key: annotationKey(band.label) });
       marks.push(
         plot_0_6_16_esm_min_exports.rect([{ x1: x13, x2: x23, y1: yDomain[0], y2: yDomain[1] }], {
           x1: "x1",
           x2: "x2",
           y1: "y1",
           y2: "y2",
-          fill: band.color || TBL.color.annotationDim,
-          fillOpacity: 0.1
+          fill: resolveColorOr(band.color, TBL.color.annotationDim),
+          fillOpacity: 0.1,
+          ...bandClass ? { className: bandClass } : {}
         })
       );
-      if (band.label) {
+      if (band.label && !keyedInLegend(band)) {
         labelMarks.push(
           plot_0_6_16_esm_min_exports.text([{ x: x13, y: yDomain[1], t: band.label }], {
             x: "x",
@@ -27589,16 +27888,17 @@ ${words.slice(bestI).join(" ")}`;
       }
     }
     const drawXAxisMarker = (mx3, m, topDy, fyOpts) => {
-      const mColor = m.color && (resolveColor(m.color) || m.color) || TBL.color.annotationDim;
+      const mColor = resolveColorOr(m.color, TBL.color.annotationDim);
+      const ruleClass = fyOpts?.ruleClassName;
       marks.push(
         plot_0_6_16_esm_min_exports.ruleX([mx3], {
           stroke: mColor,
           strokeDasharray: (m.style || "dashed") === "dashed" ? "3 2" : null,
           strokeWidth: m.strokeWidth || 1,
-          ...fyOpts ? { className: fyOpts.ruleClassName } : {}
+          ...ruleClass ? { className: ruleClass } : {}
         })
       );
-      if (m.label) {
+      if (m.label && !keyedInLegend(m)) {
         const labelFy = fyOpts?.labelFy;
         const side = m.labelSide ?? "right";
         const anchor = side === "left" ? "end" : side === "middle" ? "middle" : "start";
@@ -27628,7 +27928,17 @@ ${words.slice(bestI).join(" ")}`;
         xAxisAnn.forEach((m, markerIdx) => {
           const mx3 = xOpts.markerToX(m);
           if (mx3 == null || typeof mx3 === "string") return;
-          drawXAxisMarker(mx3, m, staggerDy.get(`m${markerIdx}`) ?? 4);
+          let keyedClass;
+          if (keyedInLegend(m)) {
+            keyedClass = `${X_ANNOTATION_LINE_CLASS}-${markerIdx}`;
+            annotationGroups.push({ className: keyedClass, key: annotationKey(m.label) });
+          }
+          drawXAxisMarker(
+            mx3,
+            m,
+            staggerDy.get(`m${markerIdx}`) ?? 4,
+            keyedClass ? { ruleClassName: keyedClass } : void 0
+          );
         });
       }
     };
@@ -27653,7 +27963,13 @@ ${words.slice(bestI).join(" ")}`;
     }
     const markerList = yAxisAnn;
     markerList.forEach((m, i) => {
-      const markerColor = m.color && (resolveColor(m.color) || m.color) || TBL.color.annotationDim;
+      const markerColor = resolveColorOr(m.color, TBL.color.annotationDim);
+      if (keyedInLegend(m)) {
+        annotationGroups.push({
+          className: `${ANNOTATION_LINE_CLASS}-${i}`,
+          key: annotationKey(m.label)
+        });
+      }
       marks.push(
         plot_0_6_16_esm_min_exports.ruleY([m.y], {
           stroke: markerColor,
@@ -27669,7 +27985,7 @@ ${words.slice(bestI).join(" ")}`;
           className: `${ANNOTATION_LINE_CLASS}-${i}`
         })
       );
-      if (m.label) {
+      if (m.label && !keyedInLegend(m)) {
         const fxDomain = faceted ? layers.fxScaleOpts?.domain : void 0;
         const alongPos = m.labelPosition ?? "right";
         const left = alongPos === "left";
@@ -27703,7 +28019,7 @@ ${words.slice(bestI).join(" ")}`;
       const px3 = xOpts.markerToX({ x: p.x });
       if (px3 == null || !Number.isFinite(p.y)) continue;
       const py3 = p.y;
-      const pColor = p.color && (resolveColor(p.color) || p.color) || TBL.color.heading;
+      const pColor = resolveColorOr(p.color, TBL.color.heading);
       const dx3 = p.dx != null ? p.dx : 0;
       const dy3 = p.dy != null ? -p.dy : p.connector ? -28 : -6;
       const anchor = dx3 < 0 ? "end" : dx3 > 0 ? "start" : "middle";
@@ -27827,13 +28143,28 @@ ${words.slice(bestI).join(" ")}`;
     } else if (gridFaceted) {
       collapseFacetGridChrome(svg);
     }
-    for (const { selector, seriesOrder, shapeOrder, categoryOrder } of layers.tagging) {
+    for (const { selector, seriesOrder, shapeOrder, categoryOrder, annotationOrder } of layers.tagging) {
       svg.querySelectorAll(selector).forEach((el3, i) => {
         if (i < seriesOrder.length) el3.setAttribute("data-series", seriesOrder[i]);
         if (shapeOrder && i < shapeOrder.length) el3.setAttribute("data-shape", shapeOrder[i]);
         if (categoryOrder && i < categoryOrder.length) el3.setAttribute("data-category", categoryOrder[i]);
+        const ann2 = annotationOrder?.[i];
+        if (ann2) el3.setAttribute("data-annotation", ann2);
       });
     }
+    for (const { className, key } of annotationGroups) {
+      svg.querySelectorAll(`g.${className}`).forEach((g) => g.setAttribute("data-annotation", key));
+    }
+    drawRug(svg, resolveRugTracks(spec), {
+      height: rugHeight(spec),
+      ...spec.rug?.rows ? { rows: spec.rug.rows } : {},
+      // A keyed track's blocks carry its annotation key, so the strip participates in legend
+      // hover-dim in both directions.
+      keyFor: (track) => track.legend ? annotationKey(track.label) : void 0,
+      // The SAME resolution the legend chip uses, so a block and its key always match.
+      colorFor: (track) => rugTrackColor(track, (s) => colors.get(s), resolveColor, TBL.color.annotationDim),
+      parseX: (v) => xOpts.markerToX({ x: v })
+    });
     return svg;
   }
 
@@ -28090,6 +28421,7 @@ ${words.slice(bestI).join(" ")}`;
       const perPaneDataW = perPaneWidths ? perPaneWidths.map((w) => w - TBL_MARGIN_LEFT - TBL_MARGIN_RIGHT) : Array.from({ length: columns }, () => (opts.width ?? availW) - TBL_MARGIN_LEFT - TBL_MARGIN_RIGHT);
       const { mode: ppXLabelMode, marginBottom: ppMarginBottom } = coordinateXLabels(perPaneDataW);
       let firstLayers2;
+      let firstFormatValue2;
       const panes2 = paneValues.map((value, i) => {
         const paneRows = rows.filter((r) => r[facetField] === value);
         const col = i % columns;
@@ -28116,7 +28448,10 @@ ${words.slice(bestI).join(" ")}`;
           },
           `p${i}`
         );
-        if (i === 0) firstLayers2 = p.layers;
+        if (i === 0) {
+          firstLayers2 = p.layers;
+          firstFormatValue2 = p.formatValue;
+        }
         return {
           value,
           title: titleFor(value),
@@ -28137,7 +28472,8 @@ ${words.slice(bestI).join(" ")}`;
         spec,
         first2?.seriesOrder ?? [],
         first2?.colors ?? /* @__PURE__ */ new Map(),
-        firstLayers2 ?? { underlay: [], overlay: [], tagging: [], dashedNames: /* @__PURE__ */ new Set() }
+        firstLayers2 ?? { underlay: [], overlay: [], tagging: [], dashedNames: /* @__PURE__ */ new Set() },
+        firstFormatValue2
       );
       return {
         mode: "per-pane",
@@ -28195,6 +28531,7 @@ ${words.slice(bestI).join(" ")}`;
       colWidths.map((w, c) => w - colMarginLeft[c] - TBL_MARGIN_RIGHT)
     );
     let firstLayers;
+    let firstFormatValue;
     const panes = paneValues.map((value, i) => {
       const col = i % columns;
       const paneRows = rows.filter((r) => r[facetField] === value);
@@ -28221,7 +28558,10 @@ ${words.slice(bestI).join(" ")}`;
         },
         `p${i}`
       );
-      if (i === 0) firstLayers = p.layers;
+      if (i === 0) {
+        firstLayers = p.layers;
+        firstFormatValue = p.formatValue;
+      }
       return {
         value,
         title: titleFor(value),
@@ -28242,7 +28582,8 @@ ${words.slice(bestI).join(" ")}`;
       spec,
       first?.seriesOrder ?? [],
       first?.colors ?? /* @__PURE__ */ new Map(),
-      firstLayers ?? { underlay: [], overlay: [], tagging: [], dashedNames: /* @__PURE__ */ new Set() }
+      firstLayers ?? { underlay: [], overlay: [], tagging: [], dashedNames: /* @__PURE__ */ new Set() },
+      firstFormatValue
     );
     return {
       mode: "shared",
@@ -28521,12 +28862,12 @@ ${words.slice(bestI).join(" ")}`;
     const catsForX = spec.xAxisType === "categorical" ? Array.from(new Set(dataInScope.map((r) => r._xc).filter((c) => !!c))) : [];
     const dataWidthForX = (opts.width ?? 720) - (opts.marginLeft ?? TBL_MARGIN_LEFT) - (opts.marginRight ?? TBL_MARGIN_RIGHT);
     const xLabelMode = opts.xLabelMode ?? bandLabelMode(catsForX, dataWidthForX);
-    const xOpts = adapter.buildXOpts(
-      dataInScope,
-      facetInfo != null,
-      xLabelMode,
-      chartType === "bar" || chartType === "stacked"
-    );
+    const xOpts = adapter.buildXOpts(dataInScope, {
+      faceted: facetInfo != null,
+      labelMode: xLabelMode,
+      tagCategoryLabels: chartType === "bar" || chartType === "stacked",
+      bottomGutter: rugAllowance(spec)
+    });
     if (opts.marginBottom != null) xOpts.marginBottom = opts.marginBottom;
     const valueAffixes = resolveValueAffixes(spec);
     const effWidth = opts.width ?? 720;
@@ -28614,23 +28955,24 @@ ${words.slice(bestI).join(" ")}`;
       colors,
       valueAffixes,
       yDomain,
+      formatValue: makeTickFormatter(yTicks, valueAffixes),
       dataInScope,
       layers,
       tooltipXParse: xOpts.tooltipXParse,
       tooltipXFormat: xOpts.tooltipXFormat
     };
   }
-  function buildLegendItems(spec, seriesNames, colors, layers) {
+  function buildLegendItems(spec, seriesNames, colors, layers, formatValue2) {
     if (spec.legend === false) return null;
     const chartType = spec.chartType;
     const seriesLabels = spec.series_labels ?? {};
     const labelFor = (name) => seriesLabels[name] ?? name;
     const hasDashOverrides = layers.dashedNames.size > 0;
     const legendColorFor = (name) => layers.seriesColors?.get(name) ?? colors.get(name);
+    let baseItems = null;
     if (chartType === "scatter" || chartType === "dotplot") {
-      if (seriesNames.length <= 1) return null;
       const distinctShape = !!(layers.shapeNames && layers.shapeNames.length && !layers.shapeIsSeries);
-      return seriesNames.map((name, i) => {
+      baseItems = seriesNames.length <= 1 ? null : seriesNames.map((name, i) => {
         const base = {
           series: name,
           label: labelFor(name),
@@ -28645,10 +28987,8 @@ ${words.slice(bestI).join(" ")}`;
         }
         return { ...base, markerShape: "point", markerSymbol: "circle" };
       });
-    }
-    if (chartType === "dumbbell") {
-      if (seriesNames.length <= 1) return null;
-      return seriesNames.map((name) => ({
+    } else if (chartType === "dumbbell") {
+      baseItems = seriesNames.length <= 1 ? null : seriesNames.map((name) => ({
         series: name,
         label: labelFor(name),
         color: legendColorFor(name),
@@ -28657,17 +28997,18 @@ ${words.slice(bestI).join(" ")}`;
         markerSymbol: "circle",
         ...(spec.series_marker?.[name] ?? "filled") === "hollow" ? { hollow: true } : {}
       }));
+    } else {
+      const markerShape = chartType === "bar" || chartType === "stacked" || chartType === "histogram" ? "rect" : "line";
+      const withSymbols = markerShape === "line" && spec.points === true;
+      baseItems = seriesNames.length > 1 || hasDashOverrides ? seriesNames.map((name, i) => ({
+        series: name,
+        label: labelFor(name),
+        color: legendColorFor(name),
+        dashed: spec.series_styles?.[name]?.dashed === true,
+        markerShape,
+        ...withSymbols ? { markerSymbol: markerSymbolForIndex(i) } : {}
+      })) : null;
     }
-    const markerShape = chartType === "bar" || chartType === "stacked" || chartType === "histogram" ? "rect" : "line";
-    const withSymbols = markerShape === "line" && spec.points === true;
-    const baseItems = seriesNames.length > 1 || hasDashOverrides ? seriesNames.map((name, i) => ({
-      series: name,
-      label: labelFor(name),
-      color: legendColorFor(name),
-      dashed: spec.series_styles?.[name]?.dashed === true,
-      markerShape,
-      ...withSymbols ? { markerSymbol: markerSymbolForIndex(i) } : {}
-    })) : null;
     let legendItems = baseItems;
     if (layers.legendExtras && layers.legendExtras.length > 0) {
       const extras = layers.legendExtras.map((extra) => ({
@@ -28679,6 +29020,12 @@ ${words.slice(bestI).join(" ")}`;
         isExtra: true
       }));
       legendItems = legendItems ? [...legendItems, ...extras] : extras;
+    }
+    const annotationRows = buildAnnotationLegendItems(spec, seriesNames, colors, {
+      ...formatValue2 ? { formatValue: formatValue2 } : {}
+    });
+    if (annotationRows.length) {
+      legendItems = legendItems ? [...legendItems, ...annotationRows] : annotationRows;
     }
     return legendItems;
   }
@@ -28696,7 +29043,7 @@ ${words.slice(bestI).join(" ")}`;
     const pane = renderPane(spec, rows, opts);
     const { svg, seriesNames, colors, valueAffixes, dataInScope, layers } = pane;
     const seriesLabels = spec.series_labels ?? {};
-    const legendItems = buildLegendItems(spec, seriesNames, colors, layers);
+    const legendItems = buildLegendItems(spec, seriesNames, colors, layers, pane.formatValue);
     const shapeLegendItems = buildShapeLegendItems(spec, layers);
     return {
       svg,
@@ -28734,14 +29081,14 @@ ${words.slice(bestI).join(" ")}`;
   }
 
   // src/engine/legend.ts
-  var SVG_NS = "http://www.w3.org/2000/svg";
+  var SVG_NS2 = "http://www.w3.org/2000/svg";
   function buildSymbolSwatch(doc, color, dashed, symbol) {
     const stroke = color || "currentColor";
-    const svg = doc.createElementNS(SVG_NS, "svg");
+    const svg = doc.createElementNS(SVG_NS2, "svg");
     svg.setAttribute("width", "22");
     svg.setAttribute("height", "12");
     svg.setAttribute("viewBox", "0 0 22 12");
-    const line = doc.createElementNS(SVG_NS, "line");
+    const line = doc.createElementNS(SVG_NS2, "line");
     line.setAttribute("x1", "1");
     line.setAttribute("x2", "21");
     line.setAttribute("y1", "6");
@@ -28750,7 +29097,7 @@ ${words.slice(bestI).join(" ")}`;
     line.setAttribute("stroke-width", "2");
     if (dashed) line.setAttribute("stroke-dasharray", "4 2");
     svg.appendChild(line);
-    const path = doc.createElementNS(SVG_NS, "path");
+    const path = doc.createElementNS(SVG_NS2, "path");
     path.setAttribute("d", symbolPathD(symbol, 32));
     path.setAttribute("transform", "translate(11,6)");
     path.setAttribute("fill", stroke);
@@ -28760,11 +29107,11 @@ ${words.slice(bestI).join(" ")}`;
     return svg;
   }
   function buildPointSwatch(doc, color, symbol, hollow = false) {
-    const svg = doc.createElementNS(SVG_NS, "svg");
+    const svg = doc.createElementNS(SVG_NS2, "svg");
     svg.setAttribute("width", "18");
     svg.setAttribute("height", "16");
     svg.setAttribute("viewBox", "0 0 18 16");
-    const path = doc.createElementNS(SVG_NS, "path");
+    const path = doc.createElementNS(SVG_NS2, "path");
     path.setAttribute("d", symbolPathD(symbol, 100));
     path.setAttribute("transform", "translate(9,7)");
     path.setAttribute("fill", hollow ? "#ffffff" : color);
@@ -28774,11 +29121,11 @@ ${words.slice(bestI).join(" ")}`;
     return svg;
   }
   function buildColorChip(doc, color) {
-    const svg = doc.createElementNS(SVG_NS, "svg");
+    const svg = doc.createElementNS(SVG_NS2, "svg");
     svg.setAttribute("width", "18");
     svg.setAttribute("height", "16");
     svg.setAttribute("viewBox", "0 0 18 16");
-    const rect = doc.createElementNS(SVG_NS, "rect");
+    const rect = doc.createElementNS(SVG_NS2, "rect");
     const size = 13;
     rect.setAttribute("x", String((18 - size) / 2));
     rect.setAttribute("y", String(7 - size / 2));
@@ -28788,6 +29135,14 @@ ${words.slice(bestI).join(" ")}`;
     rect.setAttribute("fill", color);
     svg.appendChild(rect);
     return svg;
+  }
+  function bandedGradient(colors) {
+    const stops = colors.map((c, i) => {
+      const from = (i / colors.length * 100).toFixed(4);
+      const to3 = ((i + 1) / colors.length * 100).toFixed(4);
+      return `${c} ${from}% ${to3}%`;
+    }).join(", ");
+    return `linear-gradient(to right, ${stops})`;
   }
   var SHAPE_LEGEND_COLOR = "#555B66";
   function renderLegend(parent, items, {
@@ -28830,25 +29185,32 @@ ${words.slice(bestI).join(" ")}`;
     }
     const safeItems = items ?? [];
     const safeShapeItems = shapeItems ?? [];
-    const allSeries = safeItems.filter((i) => !i.nonInteractive).map((i) => i.series);
+    const allSeries = safeItems.filter((i) => !i.nonInteractive && !i.annotation).map((i) => i.series);
     const allShapes = safeShapeItems.map((i) => i.shape);
     const pinned = /* @__PURE__ */ new Set();
     let hovered = null;
     const pinnedShape = /* @__PURE__ */ new Set();
     let hoveredShape = null;
+    const allAnnotations = safeItems.filter((i) => i.annotation).map((i) => i.series);
+    const pinnedAnn = /* @__PURE__ */ new Set();
+    let hoveredAnn = null;
     const resetBtn = doc.createElement("button");
     const applyHighlight = () => {
       const active = new Set(pinned);
       if (hovered) active.add(hovered);
       const activeShape = new Set(pinnedShape);
       if (hoveredShape) activeShape.add(hoveredShape);
-      const dimColor = active.size > 0 && active.size < allSeries.length;
+      const activeAnn = new Set(pinnedAnn);
+      if (hoveredAnn) activeAnn.add(hoveredAnn);
+      const selected = active.size + activeAnn.size;
+      const dimColor = selected > 0 && selected < allSeries.length + allAnnotations.length;
       const dimShape = activeShape.size > 0 && activeShape.size < allShapes.length;
       if (svg) {
-        svg.querySelectorAll("[data-series]").forEach((p) => {
+        svg.querySelectorAll("[data-series], [data-annotation]").forEach((p) => {
           const s = p.getAttribute("data-series");
+          const ann = p.getAttribute("data-annotation");
           const sh3 = p.getAttribute("data-shape");
-          const colorOk = !dimColor || active.has(s);
+          const colorOk = !dimColor || s != null && active.has(s) || ann != null && activeAnn.has(ann);
           const shapeOk = !dimShape || sh3 != null && activeShape.has(sh3);
           p.classList.toggle("tbl-dimmed", !(colorOk && shapeOk));
         });
@@ -28858,13 +29220,18 @@ ${words.slice(bestI).join(" ")}`;
           const sh3 = btn.dataset.shape;
           btn.classList.toggle("is-pinned", pinnedShape.has(sh3));
           btn.setAttribute("aria-pressed", String(pinnedShape.has(sh3)));
+        } else if (btn.dataset.annotation != null) {
+          const key = btn.dataset.annotation;
+          btn.classList.toggle("is-pinned", pinnedAnn.has(key));
+          btn.setAttribute("aria-pressed", String(pinnedAnn.has(key)));
+          btn.classList.toggle("is-hovered", hoveredAnn === key);
         } else {
           const s = btn.dataset.series;
           btn.classList.toggle("is-pinned", pinned.has(s));
           btn.setAttribute("aria-pressed", String(pinned.has(s)));
         }
       });
-      resetBtn.hidden = pinned.size === 0 && pinnedShape.size === 0;
+      resetBtn.hidden = pinned.size === 0 && pinnedShape.size === 0 && pinnedAnn.size === 0;
       onHighlight?.(active);
     };
     const togglePin = (series) => {
@@ -28873,17 +29240,24 @@ ${words.slice(bestI).join(" ")}`;
       else pinned.add(series);
       applyHighlight();
     };
+    const togglePinAnnotation = (key) => {
+      if (!allAnnotations.includes(key)) return;
+      if (pinnedAnn.has(key)) pinnedAnn.delete(key);
+      else pinnedAnn.add(key);
+      applyHighlight();
+    };
     const togglePinShape = (shape) => {
       if (!allShapes.includes(shape)) return;
       if (pinnedShape.has(shape)) pinnedShape.delete(shape);
       else pinnedShape.add(shape);
       applyHighlight();
     };
-    for (const { series, label: displayLabel, color, dashed = false, markerShape, markerSymbol, hollow = false, nonInteractive } of safeItems) {
+    for (const { series, label: displayLabel, color, colors: swatchColors, dashed = false, markerShape, markerSymbol, hollow = false, nonInteractive, annotation = false, outlined = false } of safeItems) {
       const btn = nonInteractive ? doc.createElement("span") : doc.createElement("button");
       if (!nonInteractive) {
         btn.type = "button";
-        btn.dataset.series = series;
+        if (annotation) btn.dataset.annotation = series;
+        else btn.dataset.series = series;
         btn.setAttribute("aria-pressed", "false");
       }
       btn.className = "tbl-legend-item";
@@ -28892,7 +29266,13 @@ ${words.slice(bestI).join(" ")}`;
       swatch.className = "tbl-legend-swatch";
       if (markerShape === "rect") {
         swatch.classList.add("is-rect");
-        if (color) swatch.style.background = color;
+        if (outlined) swatch.classList.add("is-outlined");
+        if (swatchColors && swatchColors.length > 1) {
+          swatch.style.background = bandedGradient(swatchColors);
+          swatch.style.width = `${swatchWidthFor(swatchColors.length)}px`;
+        } else if (color) {
+          swatch.style.background = color;
+        }
       } else if (markerShape === "point") {
         swatch.classList.add("is-point");
         swatch.appendChild(buildPointSwatch(doc, color || SHAPE_LEGEND_COLOR, markerSymbol || "circle", hollow));
@@ -28917,24 +29297,27 @@ ${words.slice(bestI).join(" ")}`;
       btn.appendChild(swatch);
       btn.appendChild(labelEl);
       if (!nonInteractive) {
-        btn.addEventListener("pointerenter", () => {
+        const enter = annotation ? () => {
+          hoveredAnn = series;
+          applyHighlight();
+        } : () => {
           hovered = series;
           applyHighlight();
-        });
-        btn.addEventListener("pointerleave", () => {
+        };
+        const leave = annotation ? () => {
+          hoveredAnn = null;
+          applyHighlight();
+        } : () => {
           hovered = null;
           applyHighlight();
-        });
-        btn.addEventListener("focus", () => {
-          hovered = series;
-          applyHighlight();
-        });
-        btn.addEventListener("blur", () => {
-          hovered = null;
-          applyHighlight();
-        });
+        };
+        btn.addEventListener("pointerenter", enter);
+        btn.addEventListener("pointerleave", leave);
+        btn.addEventListener("focus", enter);
+        btn.addEventListener("blur", leave);
         btn.addEventListener("click", () => {
-          togglePin(series);
+          if (annotation) togglePinAnnotation(series);
+          else togglePin(series);
         });
       }
       colorContainer.appendChild(btn);
@@ -28947,6 +29330,7 @@ ${words.slice(bestI).join(" ")}`;
     resetBtn.addEventListener("click", () => {
       pinned.clear();
       pinnedShape.clear();
+      pinnedAnn.clear();
       applyHighlight();
     });
     colorContainer.appendChild(resetBtn);
@@ -28992,6 +29376,13 @@ ${words.slice(bestI).join(" ")}`;
     return {
       element: legend,
       toggle: togglePin,
+      hoverAnnotation: (key) => {
+        const next = key != null && allAnnotations.includes(key) ? key : null;
+        if (next === hoveredAnn) return;
+        hoveredAnn = next;
+        applyHighlight();
+      },
+      toggleAnnotation: togglePinAnnotation,
       pinnedSeries: () => [...pinned],
       rebind: (newSvg) => {
         svg = newSvg;
@@ -29815,23 +30206,10 @@ ${words.slice(bestI).join(" ")}`;
       g.setAttribute("opacity", "1");
     };
   }
-  function readLinearScale(svgEl3, axis) {
-    const scaleFn = svgEl3.scale;
-    if (typeof scaleFn !== "function") return null;
-    try {
-      const s = scaleFn.call(svgEl3, axis);
-      const d = s?.domain;
-      const r = s?.range;
-      if (!d || !r || d.length < 2 || r.length < 2 || d[1] === d[0]) return null;
-      const d03 = d[0], d13 = d[1], r03 = r[0], r13 = r[1];
-      return (v) => r03 + (v - d03) / (d13 - d03) * (r13 - r03);
-    } catch {
-      return null;
-    }
-  }
   function readLinearYScale(svgEl3) {
     return readLinearScale(svgEl3, "y");
   }
+  var CROSSHAIR_HIT_SELECTOR = ".tbl-crosshair-hit, .tbl-facet-crosshair-hit, .tbl-band-crosshair-hit, .tbl-hist-hover-hit, .tbl-catline-hit";
   var COORD_NS = "http://www.w3.org/2000/svg";
   var COORD_LABEL_DARK = "#1A1A2E";
   var TOTAL_PILL_COLOR = "#000000";
@@ -31043,7 +31421,7 @@ ${words.slice(bestI).join(" ")}`;
   var LOGO_ASPECT = 4;
 
   // src/embed/figure-chrome.ts
-  var SVG_NS2 = "http://www.w3.org/2000/svg";
+  var SVG_NS3 = "http://www.w3.org/2000/svg";
   var XLINK_NS = "http://www.w3.org/1999/xlink";
   var W = 1e3;
   var H10 = 750;
@@ -31063,7 +31441,7 @@ ${words.slice(bestI).join(" ")}`;
   var AXIS = TBL.color.axis;
   var HEADING = TBL.color.heading;
   function svgEl(doc, name, attrs = {}) {
-    const el3 = doc.createElementNS(SVG_NS2, name);
+    const el3 = doc.createElementNS(SVG_NS3, name);
     for (const [k, v] of Object.entries(attrs)) el3.setAttribute(k, String(v));
     return el3;
   }
@@ -31117,7 +31495,7 @@ ${words.slice(bestI).join(" ")}`;
   }
   function createExportRoot(doc, width, height) {
     const root = svgEl(doc, "svg", {
-      xmlns: SVG_NS2,
+      xmlns: SVG_NS3,
       "xmlns:xlink": XLINK_NS,
       width,
       height
@@ -31242,7 +31620,8 @@ ${words.slice(bestI).join(" ")}`;
     }
     for (const item of items) {
       const color = item.color ?? NAVY;
-      const itemW = SW + GAP + measureText(item.label, legendFont);
+      const swatchW = item.colors && item.colors.length > 1 ? Math.max(SW, swatchWidthFor(item.colors.length)) : SW;
+      const itemW = swatchW + GAP + measureText(item.label, legendFont);
       if (x > MARGIN && x + itemW > MARGIN + INNER_W) {
         x = MARGIN;
         y += ROW_H;
@@ -31284,9 +31663,29 @@ ${words.slice(bestI).join(" ")}`;
           })
         );
       } else if (item.markerShape === "rect" || item.markerShape === "chip") {
-        const chip = 13;
+        const tints = item.colors && item.colors.length > 1 ? item.colors : null;
+        const chipH = 13;
+        const chipW = tints ? swatchWidthFor(tints.length) : chipH;
+        const chipX = x + (SW - chipW) / 2;
+        const chipY = cy3 - chipH / 2;
+        if (tints) {
+          const band = chipW / tints.length;
+          tints.forEach((c, i) => {
+            root.appendChild(
+              svgEl2("rect", { x: chipX + i * band, y: chipY, width: band + 0.5, height: chipH, fill: c })
+            );
+          });
+        }
         root.appendChild(
-          svgEl2("rect", { x: x + (SW - chip) / 2, y: cy3 - chip / 2, width: chip, height: chip, rx: 4, fill: color })
+          svgEl2("rect", {
+            x: chipX,
+            y: chipY,
+            width: chipW,
+            height: chipH,
+            rx: 4,
+            ...tints ? { fill: "none" } : { fill: color },
+            ...item.outlined ? { stroke: SWATCH_OUTLINE, "stroke-width": 1 } : {}
+          })
         );
       } else {
         root.appendChild(
@@ -31294,7 +31693,7 @@ ${words.slice(bestI).join(" ")}`;
         );
       }
       root.appendChild(
-        textEl2(x + SW + GAP, y, item.label, {
+        textEl2(x + swatchW + GAP, y, item.label, {
           size: 13,
           weight: W_BODY,
           fill: BODY
@@ -31523,16 +31922,27 @@ ${words.slice(bestI).join(" ")}`;
     }
     return "top";
   }
-  function resolveSeriesAtPoint(svgEl3, evt) {
+  function resolveAttrAtPoint(svgEl3, evt, attr, accept) {
     const doc = svgEl3.ownerDocument;
     if (typeof doc.elementsFromPoint !== "function") return null;
-    const stack = doc.elementsFromPoint(evt.clientX, evt.clientY);
-    for (const el3 of stack) {
-      const series = el3.getAttribute?.("data-series");
-      if (series) return series;
+    for (const el3 of doc.elementsFromPoint(evt.clientX, evt.clientY)) {
+      const value = el3.getAttribute?.(attr);
+      if (value && (!accept || accept(el3))) return value;
       if (el3 === svgEl3) break;
     }
     return null;
+  }
+  function resolveSeriesAtPoint(svgEl3, evt) {
+    return resolveAttrAtPoint(svgEl3, evt, "data-series");
+  }
+  function resolveRugAnnotationAtPoint(svgEl3, evt) {
+    return resolveAttrAtPoint(svgEl3, evt, "data-annotation", (el3) => !!el3.closest?.(`g.${RUG_CLASS}`));
+  }
+  function rugStripTop(svgEl3) {
+    const block = svgEl3.querySelector(`g.${RUG_CLASS} rect`);
+    if (!block) return null;
+    const y = Number(block.getAttribute("y"));
+    return Number.isFinite(y) ? y : null;
   }
   function addLineHitPaths(svgEl3) {
     const NS2 = "http://www.w3.org/2000/svg";
@@ -32151,6 +32561,21 @@ ${words.slice(bestI).join(" ")}`;
       currentOverlay?._ro?.disconnect();
       currentOverlay?.remove();
       currentOverlay = attachYAxisOverlay(canvasScroll, svg);
+      const stripTop = rugStripTop(svg);
+      if (legendHandle && stripTop != null) {
+        const handle = legendHandle;
+        svg.querySelectorAll(CROSSHAIR_HIT_SELECTOR).forEach((el3) => el3.setAttribute("height", String(stripTop)));
+        svg.addEventListener("pointermove", (evt) => {
+          handle.hoverAnnotation(resolveRugAnnotationAtPoint(svg, evt));
+        });
+        svg.addEventListener("pointerleave", () => {
+          handle.hoverAnnotation(null);
+        });
+        svg.addEventListener("click", (evt) => {
+          const key = resolveRugAnnotationAtPoint(svg, evt);
+          if (key) handle.toggleAnnotation(key);
+        });
+      }
       if (legendHandle && !isPoint) {
         const handle = legendHandle;
         card.classList.add("is-selectable");
@@ -33629,7 +34054,7 @@ ${words.slice(bestI).join(" ")}`;
       }
     }
   }
-  var SVG_NS4 = "http://www.w3.org/2000/svg";
+  var SVG_NS5 = "http://www.w3.org/2000/svg";
   function renderRichSvgText(doc, s, opts) {
     const runs = parseRich(s);
     const sf3 = opts.fontSize * SCRIPT_SCALE;
@@ -33652,7 +34077,7 @@ ${words.slice(bestI).join(" ")}`;
       const w = lineWidth(line);
       return opts.anchor === "middle" ? opts.x - w / 2 : opts.anchor === "end" ? opts.x - w : opts.x;
     };
-    const t60 = doc.createElementNS(SVG_NS4, "text");
+    const t60 = doc.createElementNS(SVG_NS5, "text");
     t60.setAttribute("x", String(lineStartX(lines[0])));
     t60.setAttribute("y", String(opts.baselineY));
     t60.setAttribute("text-anchor", "start");
@@ -33665,7 +34090,7 @@ ${words.slice(bestI).join(" ")}`;
     const subDrop = opts.fontSize * 0.16;
     const lineHeight = opts.fontSize + 3;
     const put = (text, x, y, italic, script) => {
-      const ts3 = doc.createElementNS(SVG_NS4, "tspan");
+      const ts3 = doc.createElementNS(SVG_NS5, "tspan");
       ts3.setAttribute("x", String(x));
       ts3.setAttribute("y", String(y));
       if (script) ts3.setAttribute("font-size", String(sf3));
@@ -34179,7 +34604,7 @@ ${words.slice(bestI).join(" ")}`;
   }
 
   // src/table/render-svg.ts
-  var SVG_NS5 = "http://www.w3.org/2000/svg";
+  var SVG_NS6 = "http://www.w3.org/2000/svg";
   var HEADER_FONT = TBL.size.legend;
   var BODY_FONT = 13;
   var SUBLABEL_FONT = TBL.size.annotation;
@@ -34197,7 +34622,7 @@ ${words.slice(bestI).join(" ")}`;
     const headerTierRules = spec?.header_tier_rules === true;
     const spannerRules = spec?.spanner_rules !== false;
     const el3 = (name, attrs = {}) => {
-      const node = doc.createElementNS(SVG_NS5, name);
+      const node = doc.createElementNS(SVG_NS6, name);
       for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, String(v));
       return node;
     };
@@ -34256,10 +34681,10 @@ ${words.slice(bestI).join(" ")}`;
     const rule = (x13, y13, x23, y23, stroke) => el3("line", { x1: x13, y1: y13, x2: x23, y2: y23, stroke, "stroke-width": 1 });
     const ruleStrong = (x13, y13, x23, y23) => rule(x13, y13, x23, y23, TBL.color.axisStroke);
     const ruleGroup = (x13, y13, x23, y23) => rule(x13, y13, x23, y23, TBL.color.border);
-    const ruleRow = (x13, y13, x23, y23) => rule(x13, y13, x23, y23, TBL.color.gridline);
+    const ruleRow2 = (x13, y13, x23, y23) => rule(x13, y13, x23, y23, TBL.color.gridline);
     const spannerLine = (x13, y13, x23, y23) => rule(x13, y13, x23, y23, TBL.color.border);
     const svg = el3("svg", {
-      xmlns: SVG_NS5,
+      xmlns: SVG_NS6,
       width: layout.totalWidth,
       height: layout.totalHeight,
       viewBox: `0 0 ${layout.totalWidth} ${layout.totalHeight}`
@@ -34490,7 +34915,7 @@ ${words.slice(bestI).join(" ")}`;
       const next = layout.rows[idx + 1];
       const nextIsGroup = next != null && "group" in next;
       if (!nextIsGroup) {
-        rg3.appendChild(ruleRow(0, rect.y + rect.h, layout.totalWidth, rect.y + rect.h));
+        rg3.appendChild(ruleRow2(0, rect.y + rect.h, layout.totalWidth, rect.y + rect.h));
       }
       bodyG.appendChild(rg3);
     });
