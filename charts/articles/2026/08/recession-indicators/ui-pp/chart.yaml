@@ -1,0 +1,41 @@
+chartType: line
+title: "A rule based on UI continued claims works well over the last 50 years"
+subtitle: Percentage points
+note: >-
+  Blocks beneath the x-axis mark the months in each category; the fills in the
+  plot show those months relative to the threshold. Weekly claims are shown
+  monthly, taking the last observation in each month.
+source: Department of Labor via FRED and authors' calculations.
+xAxisType: temporal
+
+columns:
+  x: time
+  value: value
+
+yAxisPolicy:
+  min: 0.0
+  max: 3.0
+  tickCount: 5
+
+annotations:
+  bands:
+    - { start: "1973-12-01", end: "1975-04-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "1980-02-01", end: "1980-08-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "1981-08-01", end: "1982-12-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "1990-08-01", end: "1991-04-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "2001-04-01", end: "2001-12-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "2008-01-01", end: "2009-07-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "2020-03-01", end: "2020-05-01", color: grey, label: "US recessions", legend: true, rug: true }
+  yAxis:
+    - { y: 0.25, label: "Threshold (0.25)", color: grey, labelPosition: right }
+
+shading:
+  - { from: "1973-12-01", to: "1974-01-01", side: negative, baseline: 0.25, color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { from: "1981-08-01", to: "1981-11-01", side: negative, baseline: 0.25, color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { from: "1990-08-01", to: "1990-09-01", side: negative, baseline: 0.25, color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { from: "2008-01-01", to: "2008-03-01", side: negative, baseline: 0.25, color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { from: "1976-09-01", to: "1976-12-01", side: positive, baseline: 0.25, color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { from: "1979-12-01", to: "1980-02-01", side: positive, baseline: 0.25, color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { from: "2001-02-01", to: "2001-04-01", side: positive, baseline: 0.25, color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+
+data: data.csv

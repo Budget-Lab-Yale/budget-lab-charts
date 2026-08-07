@@ -1,0 +1,12 @@
+title: "Reading the recession indicators"
+slug: "recession-indicators"
+date: "2026-08-01"
+url: ""
+figures:
+  sahm-rule: "Figure 1"
+  michez-rule: "Figure 2"
+  yield-curve: "Figure 3"
+  ui-pp: "Figure 4"
+  cfnai: "Figure 5"
+  news-sentiment: "Figure 6"
+  ui-percent: "Appendix Figure 1"
