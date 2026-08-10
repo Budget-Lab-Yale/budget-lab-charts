@@ -103,10 +103,45 @@ a:hover { text-decoration: underline; }
 .fl-clear:hover { text-decoration: underline; }
 .fl-clear[hidden] { display: none; }
 
+/* ── Collections ──────────────────────────────────────────────
+   One <details> per publication. Native disclosure rather than a scripted toggle, so keyboard
+   and screen-reader behaviour comes from the element instead of hand-rolled ARIA. */
+.fl-col { border-bottom: 1px solid var(--border); }
+.fl-col:last-child { border-bottom: 0; }
+.fl-col__head {
+  display: flex; align-items: baseline; gap: 12px 18px; flex-wrap: wrap;
+  padding: 22px 0; cursor: pointer; list-style: none;
+}
+.fl-col__head::-webkit-details-marker { display: none; }   /* Safari's default triangle */
+.fl-col__head:hover .fl-col__title { color: var(--blue); }
+/* Chevron and title share one flex item so the marker can never wrap onto its own line. */
+.fl-col__lead { display: flex; align-items: baseline; gap: 12px; flex: 1 1 340px; min-width: 0; }
+.fl-col__chev {
+  flex: none; width: 10px; color: var(--t-muted);
+  transition: transform .15s ease; transform: rotate(0deg);
+}
+.fl-col[open] > .fl-col__head .fl-col__chev { transform: rotate(90deg); }
+.fl-col__title {
+  margin: 0; min-width: 0;
+  font-size: 19px; font-weight: 700; line-height: 1.3; letter-spacing: -.01em; color: var(--t-head);
+}
+.fl-col__meta { display: flex; align-items: center; gap: 12px; margin-left: auto; font-size: 13.5px; color: var(--t-muted); white-space: nowrap; }
+.fl-col__count { font-variant-numeric: tabular-nums; }
+.fl-col__chip {
+  padding: 2px 8px; border: 1px solid var(--border); border-radius: 99px; background: var(--bg-subtle);
+  font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--t-body);
+}
+.fl-col__date { color: var(--t-body); }
+.fl-col__link { display: inline-flex; align-items: center; color: var(--t-muted); }
+.fl-col__link:hover { color: var(--blue); }
+.fl-col__link svg { display: block; }
+.fl-col__figures { padding: 0 0 30px; }
+
 /* ── Grid ─────────────────────────────────────────────────── */
-.fl-resultline { margin: 18px 0 14px; font-size: 13px; color: var(--t-muted); }
+.fl-resultline { margin: 18px 0 4px; font-size: 13px; color: var(--t-muted); }
 .fl-resultline strong { color: var(--t-head); font-weight: 700; }
 .fl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); gap: var(--gap); }
+.fl-card__eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--t-muted); }
 .fl-card {
   position: relative; /* anchors the embed-copy button overlay */
   display: flex; flex-direction: column; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius);
@@ -151,6 +186,9 @@ a:hover { text-decoration: underline; }
 .fl-footer__inner { max-width: var(--maxw); margin: 0 auto; padding: 26px 24px; font-size: 13px; color: var(--t-muted); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 
 @media (max-width: 620px) {
+  .fl-col__head { padding: 18px 0; }
+  .fl-col__meta { margin-left: 22px; }   /* aligns under the title, past the chevron */
+  .fl-col__title { font-size: 17px; }
   .fl-pagetitle { font-size: 25px; }
   .fl-header__logo { height: 42px; }
   .fl-nav { gap: 18px; }
@@ -199,12 +237,12 @@ a:hover { text-decoration: underline; }
       <svg class="fl-search__icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M11.74 10.34a6 6 0 1 0-1.4 1.4l3.2 3.2a1 1 0 0 0 1.42-1.42l-3.22-3.18ZM3 6.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0Z"/></svg>
       <input id="q" type="search" placeholder="Search figures…" autocomplete="off" aria-label="Search figures">
     </div>
-    <select id="f-sort" class="fl-select" aria-label="Sort figures"><option value="newest">Sort: Newest</option><option value="az">Sort: A–Z</option><option value="collection">Sort: by collection</option></select>
+    <select id="f-order" class="fl-select" aria-label="Order publications"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select>
     <button class="fl-clear" id="clear" type="button" hidden>Clear</button>
   </div>
 
   <p class="fl-resultline" id="resultline" aria-live="polite"></p>
-  <div class="fl-grid" id="grid"></div>
+  <div id="collections"></div>
   <div class="fl-empty" id="empty" hidden>
     <h3>No figures match</h3>
     <p>Try a different search, or <button type="button" id="empty-clear">clear your search</button>.</p>
@@ -228,12 +266,18 @@ a:hover { text-decoration: underline; }
 (function () {
   "use strict";
   const $ = (s) => document.querySelector(s);
-  const grid = $("#grid"), empty = $("#empty"), resultline = $("#resultline");
-  const els = { q: $("#q"), sort: $("#f-sort"), clear: $("#clear") };
+  const collections = $("#collections"), empty = $("#empty"), resultline = $("#resultline");
+  const els = { q: $("#q"), order: $("#f-order"), clear: $("#clear") };
 
   const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const MONTHS_LONG = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   function ym(d) { if (!d) return ""; const m = /^(\d{4})-(\d{2})/.exec(d); return m ? `${MONTHS[+m[2]-1]} ${m[1]}` : d; }
+  // Parsed from the ISO parts, not `new Date(iso)`, which shifts the day in negative-offset zones.
+  function longDate(d) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || "");
+    return m ? `${MONTHS_LONG[+m[2]-1]} ${+m[3]}, ${m[1]}` : (d || "");
+  }
 
   // ---- Embed snippet ----
   // Hardcoded production embed.js URL — so a snippet copied from a PR preview (or a local build)
@@ -245,38 +289,91 @@ a:hover { text-decoration: underline; }
   function buildSnippet(id) { return `<script src="${EMBED_BASE}" chart="${id}"><\/script>`; }
 
   let DATA = [];
-  const state = { q: "", sort: "newest" };
+  const state = { q: "", order: "newest" };
 
   // ---- URL hash <-> state (shareable filtered views) ----
   function readHash() {
     const p = new URLSearchParams(location.hash.slice(1));
-    state.q = p.get("q") || ""; state.sort = p.get("sort") || "newest";
+    state.q = p.get("q") || ""; state.order = p.get("order") === "oldest" ? "oldest" : "newest";
   }
   function writeHash() {
     const p = new URLSearchParams();
     if (state.q) p.set("q", state.q);
-    if (state.sort && state.sort !== "newest") p.set("sort", state.sort);
+    if (state.order !== "newest") p.set("order", state.order);
     const h = p.toString();
     history.replaceState(null, "", h ? "#" + h : location.pathname + location.search);
   }
   function syncControls() {
-    els.q.value = state.q; els.sort.value = state.sort;
+    els.q.value = state.q; els.order.value = state.order;
   }
 
-  function sortKey(c) { return c.date || c.created || ""; }
-  function filtered() {
+  // ---- Grouping ----
+  // Figures group by publication. Order within a group is the `order` field — the position in the
+  // collection file's `figures:` map — so the author sets it in YAML rather than the gallery
+  // parsing "Appendix Figure A1" style labels. -1 means the chart isn't listed there; sort last.
+  const figOrder = (c) => (typeof c.order === "number" && c.order >= 0 ? c.order : 1e9);
+  const colDate = (c) => c.date || c.created || "";
+
+  function matches(c, q) {
+    if (!q) return true;
+    const hay = [c.title, c.collectionTitle, c.eyebrow, (c.tags || []).join(" ")].join(" ").toLowerCase();
+    return hay.includes(q);
+  }
+
+  function grouped() {
     const q = state.q.trim().toLowerCase();
-    let rows = DATA.filter((c) => {
-      if (q) {
-        const hay = [c.title, c.collectionTitle, (c.tags || []).join(" ")].join(" ").toLowerCase();
-        if (!hay.includes(q)) return false;
+    const byCollection = new Map();
+
+    for (const c of DATA) {
+      if (!matches(c, q)) continue;
+      let g = byCollection.get(c.collection);
+      if (!g) {
+        g = {
+          slug: c.collection, title: c.collectionTitle || c.collection, kind: c.kind,
+          date: colDate(c), cadence: c.cadence || "", url: c.url || "", figures: [],
+        };
+        byCollection.set(c.collection, g);
       }
-      return true;
-    });
-    if (state.sort === "az") rows.sort((a, b) => a.title.localeCompare(b.title));
-    else if (state.sort === "collection") rows.sort((a, b) => (a.collectionTitle || "").localeCompare(b.collectionTitle || "") || a.title.localeCompare(b.title));
-    else rows.sort((a, b) => sortKey(b).localeCompare(sortKey(a)) || a.title.localeCompare(b.title));
-    return rows;
+      g.figures.push(c);
+    }
+
+    const groups = [...byCollection.values()];
+    for (const g of groups) {
+      g.figures.sort((a, b) => figOrder(a) - figOrder(b) || a.title.localeCompare(b.title));
+    }
+    const dir = state.order === "oldest" ? 1 : -1;
+    groups.sort((a, b) => dir * a.date.localeCompare(b.date) || a.title.localeCompare(b.title));
+    return groups;
+  }
+
+  // ---- Markup ----
+  const ICON_EXTERNAL = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+  const ICON_CHEVRON = '<svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" aria-hidden="true"><path d="M2 0l6 5-6 5z"/></svg>';
+
+  function collectionHTML(g, open) {
+    const n = g.figures.length;
+    const chip = g.cadence ? `<span class="fl-col__chip">${esc(g.cadence)}</span>` : "";
+    // No url (not yet published) simply renders no link — decided over a "forthcoming" marker.
+    const link = g.url
+      ? `<a class="fl-col__link" href="${esc(g.url)}" target="_blank" rel="noopener"
+            aria-label="Read the publication: ${esc(g.title)} (opens in a new tab)"
+            title="Read the publication">${ICON_EXTERNAL}</a>`
+      : "";
+    return `<details class="fl-col" data-collection="${esc(g.slug)}"${open ? " open" : ""}>
+      <summary class="fl-col__head">
+        <span class="fl-col__lead">
+          <span class="fl-col__chev">${ICON_CHEVRON}</span>
+          <h2 class="fl-col__title">${esc(g.title)}</h2>
+        </span>
+        <span class="fl-col__meta">
+          <span class="fl-col__count">${n} figure${n === 1 ? "" : "s"}</span>
+          ${chip}
+          <span class="fl-col__date">${esc(longDate(g.date))}</span>
+          ${link}
+        </span>
+      </summary>
+      <div class="fl-col__figures"><div class="fl-grid">${g.figures.map(cardHTML).join("")}</div></div>
+    </details>`;
   }
 
   function cardHTML(c) {
@@ -286,9 +383,9 @@ a:hover { text-decoration: underline; }
       <a class="fl-card__link" href="${esc(c.id)}/">
         ${thumb}
         <div class="fl-card__body">
+          ${c.eyebrow ? `<span class="fl-card__eyebrow">${esc(c.eyebrow)}</span>` : ""}
           <span class="fl-card__title">${esc(c.title)}</span>
           <span class="fl-card__foot">
-            <span class="fl-card__collection">${esc(c.collectionTitle)}</span>
             ${dateText ? `<span>${esc(dateText)}</span>` : ""}
           </span>
         </div>
@@ -331,7 +428,10 @@ a:hover { text-decoration: underline; }
       btn.setAttribute("aria-label", btn.dataset.label);
     }, 1600);
   }
-  function onGridClick(e) {
+  function onCollectionsClick(e) {
+    // A link inside <summary> would otherwise toggle the disclosure as well as navigate.
+    if (e.target.closest(".fl-col__link")) { e.stopPropagation(); return; }
+
     const btn = e.target.closest(".fl-card__embed");
     if (!btn) return;
     e.preventDefault();
@@ -341,25 +441,40 @@ a:hover { text-decoration: underline; }
   }
 
   function apply() {
-    const rows = filtered();
-    grid.innerHTML = rows.map(cardHTML).join("");
-    empty.hidden = rows.length > 0;
+    const groups = grouped();
+    const searching = Boolean(state.q.trim());
+    // Collections that survive a search open regardless of how the reader left them, so matches are
+    // never hidden behind a collapsed header. Without a search, everything starts open.
+    const openSlugs = new Set();
+    if (!searching) {
+      for (const el of collections.querySelectorAll(".fl-col")) {
+        if (el.open) openSlugs.add(el.dataset.collection);
+      }
+    }
+    const firstRender = collections.children.length === 0;
+
+    collections.innerHTML = groups
+      .map((g) => collectionHTML(g, searching || firstRender || openSlugs.has(g.slug)))
+      .join("");
+
+    const shown = groups.reduce((n, g) => n + g.figures.length, 0);
+    const total = DATA.length;
+    empty.hidden = shown > 0;
     els.clear.hidden = !state.q;
-    const total = DATA.length, shown = rows.length;
-    resultline.innerHTML = state.q
-      ? `<strong>${shown}</strong> of ${total} figure${total === 1 ? "" : "s"}`
-      : `<strong>${total}</strong> figure${total === 1 ? "" : "s"}`;
+    resultline.innerHTML = searching
+      ? `<strong>${shown}</strong> of ${total} figure${total === 1 ? "" : "s"} in ${groups.length} publication${groups.length === 1 ? "" : "s"}`
+      : `<strong>${total}</strong> figure${total === 1 ? "" : "s"} in ${groups.length} publication${groups.length === 1 ? "" : "s"}`;
     writeHash();
   }
 
-  function reset() { state.q = ""; state.sort = "newest"; syncControls(); apply(); }
+  function reset() { state.q = ""; state.order = "newest"; syncControls(); apply(); }
 
   function bind() {
     els.q.addEventListener("input", () => { state.q = els.q.value; apply(); });
-    els.sort.addEventListener("change", () => { state.sort = els.sort.value; apply(); });
+    els.order.addEventListener("change", () => { state.order = els.order.value; apply(); });
     els.clear.addEventListener("click", reset);
     $("#empty-clear").addEventListener("click", reset);
-    grid.addEventListener("click", onGridClick);   // delegated — survives card re-renders
+    collections.addEventListener("click", onCollectionsClick);   // delegated — survives re-renders
   }
 
   fetch("./catalog/index.json")
