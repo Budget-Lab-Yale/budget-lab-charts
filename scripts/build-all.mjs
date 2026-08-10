@@ -26,6 +26,13 @@ import os from "node:os";
 // leaving the iframe taller than the settled content (trailing whitespace). A ResizeObserver on
 // <body> + a couple of post-load nudges force iframe-resizer to re-measure the true height. Gated
 // to embedded context (window.self !== window.top); no-op on the standalone/gallery view.
+// Pages link one shared copy of the engine runtime + stylesheet (written to _site/embed/v1 by
+// `npm run assets`) instead of inlining ~1.65 MB each. Chart ids are 2 segments, so a page sits 2
+// levels deep and ../../embed/v1 resolves to the Pages-root embed dir — the same relative form the
+// resizer tag below already relies on, which is what keeps file:// (thumbnails) and the
+// /pr-preview/pr-<n>/ prefix working without rewriting anything.
+const ASSETS_BASE = "../../embed/v1";
+
 const RESIZER_TAG =
   '<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script>' +
   '<script>(function(){if(window.self===window.top)return;' +
@@ -53,6 +60,7 @@ import {
   THUMBS_EPOCH,
   FONTS_EPOCH,
   readEngineVersion,
+  readEngineSemver,
   computeRenderVersion,
   hashChart,
   readManifest,
@@ -139,7 +147,7 @@ function renderChart(id) {
   // The figure-number eyebrow lives in the collection file (article.yaml / tracker.yaml), keyed
   // by chart-folder slug — an article property, not the chart spec. Pass it at render time.
   const eyebrow = collection.figures?.[chartSlug];
-  const renderArgs = ["render", specPath, "-o", outFile];
+  const renderArgs = ["render", specPath, "-o", outFile, "--assets-base", ASSETS_BASE];
   if (eyebrow) renderArgs.push("--eyebrow", eyebrow);
 
   const { executable, args, options } = buildTblChartCmd(renderArgs);
@@ -212,6 +220,7 @@ for (const id of toReuse) reuseChart(id);
 // Write the manifest describing the full current set of charts.
 writeManifest(join(REPO_ROOT, "dist", ".manifest.json"), {
   renderVersion,
+  engineVersion: readEngineSemver(),
   charts: Object.fromEntries(charts.map((c) => [c.id, { hash: currentHashes[c.id] }])),
 });
 

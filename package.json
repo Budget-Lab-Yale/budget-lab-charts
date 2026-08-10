@@ -13,13 +13,14 @@
     "build": "node scripts/build-all.mjs",
     "catalog": "node scripts/build-catalog.mjs",
     "site": "node scripts/assemble-site.mjs",
+    "assets": "node scripts/build-assets.mjs",
     "thumbs": "node scripts/thumbs.mjs",
-    "all": "npm run catalog && npm run validate && npm run build && npm run site && npm run thumbs",
+    "all": "npm run catalog && npm run validate && npm run build && npm run site && npm run assets && npm run thumbs",
     "dev": "node scripts/dev-server.mjs",
     "test": "node --test --test-concurrency=1"
   },
   "dependencies": {
-    "budget-lab-chart-engine": "git+https://github.com/Budget-Lab-Yale/budget-lab-chart-engine.git#v1.9.0"
+    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v1.10.0"
   },
   "devDependencies": {
     "playwright": "^1.61.0"

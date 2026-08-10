@@ -13,4 +13,8 @@ CI. The chart engine is a pinned dependency; this repo is content only.
 - **Verify**: `npm run catalog` (regenerates the committed `catalog/index.json` — required after
   content changes; CI publishes the committed copy as-is), then `npm run validate` (merge gate;
   fails if that catalog is stale), `npm run dev` (live preview at localhost:5173).
+- **Chart pages link a shared engine asset** (`_site/embed/v1/engine-<version>.js`) rather than
+  inlining the engine. `npm run assets` writes it and must run before `npm run thumbs`; `npm run all`
+  handles the order. Asset filenames carry the engine version, so an engine repin needs no other
+  change — but never delete a published version's assets by hand; `prune.mjs` handles retention.
 - PRs get an automatic live preview URL from CI; merging to `main` publishes.
