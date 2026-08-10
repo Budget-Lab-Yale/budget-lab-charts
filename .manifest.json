@@ -73,6 +73,27 @@
     "atus-childcare/work-by-youngest-child-age": {
       "hash": "9611d8286a75fdba7f6a966668586c899cefb127b014db850b31a8e00a91e9ed"
     },
+    "recession-indicators/cfnai": {
+      "hash": "2adc7d9a2eb27499a9e01ab5b69217e8e2b4bf6ddbee8254824ed47759bc53bd"
+    },
+    "recession-indicators/michez-rule": {
+      "hash": "1ef9d18491bb7a23bdf25bb782f0ed5fa452ebfcff4e2b676f45b04964e51994"
+    },
+    "recession-indicators/news-sentiment": {
+      "hash": "20941bcf2142539218c787c22a8e8736896cf1fa981116a6f5719705053ead5d"
+    },
+    "recession-indicators/sahm-rule": {
+      "hash": "dc4c360744164bbdd93fa3a92fb4dae08e712cd1d333be6977c831072646da21"
+    },
+    "recession-indicators/ui-percent": {
+      "hash": "40bd3792b7acd9f716112d651d067b13c6656c4db0ff0b0718d64f8c71ef7ba4"
+    },
+    "recession-indicators/ui-pp": {
+      "hash": "cf4093636f23e6e1690c3d2aa39b8e4139170d565379d6066f28c6f71a1d5ba7"
+    },
+    "recession-indicators/yield-curve": {
+      "hash": "1862aecda5c8bda0d122f8c0a27792290a850153bbda9868e24e377147596358"
+    },
     "tariff-model-update-july2026/eta-effect": {
       "hash": "9550314845907f7b051a7480892beaa621e0463513975f22e2eb07f18a709273"
     },
