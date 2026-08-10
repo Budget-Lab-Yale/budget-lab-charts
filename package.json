@@ -12,10 +12,11 @@
     "validate": "node scripts/validate-all.mjs",
     "build": "node scripts/build-all.mjs",
     "catalog": "node scripts/build-catalog.mjs",
+    "vendor-spec": "node scripts/vendor-spec.mjs",
     "site": "node scripts/assemble-site.mjs",
     "assets": "node scripts/build-assets.mjs",
     "thumbs": "node scripts/thumbs.mjs",
-    "all": "npm run catalog && npm run validate && npm run build && npm run site && npm run assets && npm run thumbs",
+    "all": "npm run catalog && npm run vendor-spec && npm run validate && npm run build && npm run site && npm run assets && npm run thumbs",
     "dev": "node scripts/dev-server.mjs",
     "test": "node --test --test-concurrency=1"
   },

@@ -98,7 +98,7 @@ npm install            # only needed for the optional local preview in step 6
    ```
    `chartType`, `title`, `xAxisType`, and `data` are required; everything else is optional. For the
    full list of fields, chart types, and CSV formatting, see
-   [CONFIG-REFERENCE.md](CONFIG-REFERENCE.md). Existing articles under `charts/articles/` are good
+   [ENGINE-CONFIG-SPEC.md](ENGINE-CONFIG-SPEC.md). Existing articles under `charts/articles/` are good
    working examples to copy from.
 
 6. **Preview locally (optional)** to refine the design before pushing:
@@ -211,6 +211,7 @@ e.g. `ai-labor-market/augmented-occupations`. It carries **no date and no tree**
 | `npm run validate` | Structural/identity checks, then `tbl-chart validate` on every `chart.yaml`; exit 1 if any fail. |
 | `npm run build` | Render every chart to `dist/<id>/index.html`; copy `data.csv`. |
 | `npm run catalog` | Write `catalog/index.json` from all `chart.yaml` + collection files. Commit the result — it is what CI publishes. |
+| `npm run vendor-spec` | Re-copy the pinned engine's `CONFIG-SPEC.md` to `ENGINE-CONFIG-SPEC.md`. Only needed after changing the engine pin. |
 | `npm run site` | Assemble the publishable gallery into `_site/` (landing page + chart pages + catalog). |
 | `npm run assets` | Write the engine's shared runtime + stylesheet into `_site/embed/v1/`. |
 | `npm run thumbs` | Headless-screenshot each page into `_site/<id>/thumb.png` (gallery card thumbnails). |
@@ -280,8 +281,9 @@ if omitted; `series` and `facet` are optional (`facet` defines small-multiples p
 Required: `chartType`, `title`, `xAxisType`, `data`. Common optional: `columns`, `subtitle`,
 `source`, `note`, `x_axis_title`, `y_axis_title`, `series_order`, `series_colors`,
 `series_styles`, `series_labels`, `points`, `small_multiples`, `confidence_bands`, `tags`. See
-**[CONFIG-REFERENCE.md](CONFIG-REFERENCE.md)** for the full field-by-field reference (chart.yaml,
-table.yaml, collection files, and the CSV format).
+**[ENGINE-CONFIG-SPEC.md](ENGINE-CONFIG-SPEC.md)** for the full field-by-field figure reference
+(chart.yaml, table.yaml, colors, and the CSV format), and
+**[CONFIG-REFERENCE.md](CONFIG-REFERENCE.md)** for this repo's own collection files.
 
 ---
 
@@ -350,10 +352,20 @@ The engine is pinned as a git-tag dependency in `package.json`:
 
 To bump:
 
-1. Update the tag in `package.json` (e.g. `#v0.2.1`).
-2. Run `npm install` to pull the new version and update `package-lock.json`.
-3. Run `npm run validate` (and `npm run all` to eyeball the gallery) to confirm specs still build.
-4. Commit `package.json` + `package-lock.json`.
+1. Update the tag in `package.json` (e.g. `#v1.10.0`).
+2. Run `npm install` to pull the new version and update `package-lock.json`. npm will sometimes
+   consider a git dependency already satisfied and not re-resolve it — confirm with
+   `node -p "require('budget-lab-chart-engine/package.json').version"`, and if it still reports the
+   old version, `rm -rf node_modules/budget-lab-chart-engine && npm install <the git+https URL>`.
+3. Run `npm run vendor-spec` to re-copy the engine's figure spec into `ENGINE-CONFIG-SPEC.md`.
+   `npm run validate` fails if you skip this, so a repin cannot merge with a stale spec.
+4. Run `npm run validate` (and `npm run all` to eyeball the gallery) to confirm specs still build.
+   A repin changes the render version, so every chart re-renders and re-screenshots once.
+5. Commit `package.json`, `package-lock.json`, and `ENGINE-CONFIG-SPEC.md`.
+
+Read the engine's CHANGELOG for the versions you are skipping: a repin re-renders every existing
+figure, so a change in the engine's defaults or a renamed field shows up across the whole archive at
+once, not just in new charts.
 
 ---
 

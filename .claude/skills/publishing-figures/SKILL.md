@@ -23,7 +23,7 @@ ask before writing files.
 ## Authoritative docs — read before writing YAML
 
 The schema is strict (`additionalProperties: false`): unknown or misspelled fields fail the
-build, so never invent fields. Field-by-field reference: **`CONFIG-REFERENCE.md`** at the repo
+build, so never invent fields. Field-by-field reference: **`ENGINE-CONFIG-SPEC.md`** at the repo
 root — read the sections relevant to your task (`chart.yaml`, `table.yaml`, `article.yaml`,
 `tracker.yaml`, CSV format, Colors). Workflow overview: `README.md`. Undecided design choices
 (chart type, annotations, colors): [references/chart-decisions.md](references/chart-decisions.md).
@@ -107,7 +107,7 @@ wide, Excel, multiple files, formatted numbers — follow
 
 `charts/articles/2026/06/atus-childcare/` is a good tracked exemplar (richer example set at
 `charts/articles/2026/07/ai-fiscal/` if present — but note its annotation syntax is legacy;
-write the modern `annotations:` block per CONFIG-REFERENCE.md instead of copying
+write the modern `annotations:` block per ENGINE-CONFIG-SPEC.md instead of copying
 `xAxisPolicy.markers`/`bands` or `yAxisPolicy.markers`).
 
 ## Step 5 — Verify and finish (all four, in order)
