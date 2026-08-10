@@ -38,6 +38,6 @@ The update is a **data-only, in-place** change:
 3. Touch nothing else: no folder renames, no changes to `created`, `slug`, or figure folder
    names — embeds on external sites reference the durable id `<slug>/<figure-folder>`.
    `chart.yaml` changes only if the user explicitly wants a design change.
-4. Verify per SKILL.md Step 5: `npm run validate`, then `npm run catalog` (a data-only update
-   usually leaves the catalog unchanged, but retitles/renumbers don't), preview with
+4. Verify per SKILL.md Step 5: `npm run catalog` (a data-only update usually leaves the catalog
+   unchanged, but retitles/renumbers don't), then `npm run validate`, preview with
    `npm run dev`, and summarize what changed (periods added, values revised).

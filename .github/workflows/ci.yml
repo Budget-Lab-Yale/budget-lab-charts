@@ -6,6 +6,14 @@ name: CI
 # The engine is a public git dependency. npm pins git deps as `git+ssh://` in the lockfile, which
 # the runner has no key for — so each job rewrites GitHub SSH URLs to HTTPS before `npm ci`
 # (no auth needed for a public repo).
+#
+# Two deliberate economies, because the content build itself takes ~2s and everything else is
+# environment:
+#   * Chromium is only installed when `thumbs --plan` reports a cache miss, and then only the
+#     headless shell, from a version-keyed cache. Thumbnails are content-addressed and carried
+#     forward from gh-pages, so a PR renders them once and its merge reuses them.
+#   * setup-node pins no version: the runner image's Node (>= 20) is already in place, while
+#     requesting an exact version downloads a second copy every job.
 on:
   workflow_dispatch:
   push:
@@ -24,20 +32,21 @@ concurrency:
 
 jobs:
   # ── Merge gate ────────────────────────────────────────────────────────────
-  # Spec/structure/data validation only — no rendering, no Chromium. Make this a required status
-  # check in branch protection so a malformed chart.yaml can't merge.
+  # Spec/structure/data validation + committed-catalog freshness. No rendering, no Chromium. Make
+  # this a required status check in branch protection so a malformed chart.yaml can't merge.
+  # PR-only: the deploy job runs the same validation inline rather than paying a second cold start.
   validate:
     name: Validate
-    if: github.event.action != 'closed'
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: "20"
           cache: "npm"
       - name: Install (engine over HTTPS)
         run: |
+          node --version   # the image's Node, not a downloaded one; must satisfy engines >= 20
           git config --global url."https://github.com/".insteadOf ssh://git@github.com/
           git config --global url."https://github.com/".insteadOf git@github.com:
           npm ci
@@ -47,16 +56,20 @@ jobs:
   # Builds + assembles the site and publishes it to gh-pages at /pr-preview/pr-<n>/, then comments
   # the URL on the PR. On PR close the same action removes that directory. Fork PRs get a read-only
   # token and are skipped by the action (no preview) — acceptable for an internal repo.
+  #
+  # This job is where thumbnails are normally rendered: it publishes them to the shared
+  # .build/thumbs cache at the gh-pages root, so the production deploy after merge reuses them.
   preview:
     name: PR preview
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    env:
+      GH_PAGES_DIR: ${{ github.workspace }}/.gh-pages
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         if: github.event.action != 'closed'
         with:
-          node-version: "20"
           cache: "npm"
       - name: Fetch prior gh-pages state
         if: github.event.action != 'closed'
@@ -65,19 +78,41 @@ jobs:
           ref: gh-pages
           path: .gh-pages
         continue-on-error: true   # first ever run has no gh-pages
-      - name: Build site
+      - name: Install (engine over HTTPS)
         if: github.event.action != 'closed'
-        env:
-          GH_PAGES_DIR: ${{ github.workspace }}/.gh-pages
         run: |
+          node --version   # the image's Node, not a downloaded one; must satisfy engines >= 20
           git config --global url."https://github.com/".insteadOf ssh://git@github.com/
           git config --global url."https://github.com/".insteadOf git@github.com:
           npm ci
-          npx playwright install --with-deps chromium
+      - name: Build site
+        if: github.event.action != 'closed'
+        run: |
           npm run build
-          npm run catalog
           npm run site
-          npm run thumbs
+      - name: Plan thumbnails
+        id: thumbs
+        if: github.event.action != 'closed'
+        run: node scripts/thumbs.mjs --plan
+      - name: Resolve Playwright version
+        id: pw
+        if: github.event.action != 'closed' && steps.thumbs.outputs.misses != '0'
+        run: echo "version=$(node -p "require('./package-lock.json').packages['node_modules/playwright'].version")" >> "$GITHUB_OUTPUT"
+      - name: Cache Chromium
+        if: github.event.action != 'closed' && steps.thumbs.outputs.misses != '0'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-shell-${{ runner.os }}-${{ steps.pw.outputs.version }}
+      - name: Install Chromium
+        if: github.event.action != 'closed' && steps.thumbs.outputs.misses != '0'
+        # Headless shell only: thumbs.mjs launches headless, so the full Chrome build is 177 MiB of
+        # dead weight. --with-deps is omitted too — the runner image already carries every library
+        # it would install (it adds only CJK/Cyrillic fonts, which TBL charts never render).
+        run: npx playwright install chromium --only-shell
+      - name: Thumbnails
+        if: github.event.action != 'closed'
+        run: npm run thumbs
       - name: Publish build cache to gh-pages
         if: github.event.action != 'closed'
         uses: peaceiris/actions-gh-pages@v4
@@ -95,19 +130,20 @@ jobs:
           umbrella-dir: pr-preview
 
   # ── Production deploy ─────────────────────────────────────────────────────
-  # On merge to main: build + assemble + publish _site/ to the gh-pages root. keep_files:true so a
-  # production deploy never wipes the pr-preview/ subtree. (Caveat: keep_files also means a removed
-  # chart leaves stale files at the root — prune the gh-pages branch manually on the rare removal.)
+  # On merge to main: validate, build, then apply _site/ to the already-checked-out gh-pages tree
+  # and push ONCE. A single push means one commit and one GitHub Pages build per deploy (the old
+  # publish-then-prune pair triggered two, the first of which was immediately cancelled), and the
+  # published tree is never briefly in an unpruned intermediate state.
   deploy:
     name: Deploy to GitHub Pages
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
-    needs: validate
     runs-on: ubuntu-latest
+    env:
+      GH_PAGES_DIR: ${{ github.workspace }}/.gh-pages
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-          node-version: "20"
           cache: "npm"
       - name: Fetch prior gh-pages state
         uses: actions/checkout@v5
@@ -115,38 +151,65 @@ jobs:
           ref: gh-pages
           path: .gh-pages
         continue-on-error: true   # first ever run has no gh-pages
-      - name: Build site
-        env:
-          GH_PAGES_DIR: ${{ github.workspace }}/.gh-pages
+      - name: Install (engine over HTTPS)
         run: |
+          node --version   # the image's Node, not a downloaded one; must satisfy engines >= 20
           git config --global url."https://github.com/".insteadOf ssh://git@github.com/
           git config --global url."https://github.com/".insteadOf git@github.com:
           npm ci
-          npx playwright install --with-deps chromium
-          npm run build
-          npm run catalog
-          npm run site
-          npm run thumbs
-      - name: Publish to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_site
-          publish_branch: gh-pages
-          keep_files: true
-      - name: Prune orphans
+      - name: Validate
+        run: npm run validate
+      - name: Build site
         run: |
-          git -C .gh-pages fetch origin gh-pages
-          git -C .gh-pages reset --hard origin/gh-pages
-          prs=$(gh pr list --state open --json number -q '[.[].number]|join(",")') || { echo "gh pr list failed; skipping prune"; exit 0; }
-          node scripts/prune.mjs --open-prs "$prs"
-          if [ -n "$(git -C .gh-pages status --porcelain)" ]; then
-            git -C .gh-pages config user.name "github-actions[bot]"
-            git -C .gh-pages config user.email "github-actions[bot]@users.noreply.github.com"
-            git -C .gh-pages add -A
-            git -C .gh-pages commit -m "Prune orphaned charts and closed-PR previews"
-            git -C .gh-pages push origin HEAD:gh-pages
-          fi
+          npm run build
+          npm run site
+      - name: Plan thumbnails
+        id: thumbs
+        run: node scripts/thumbs.mjs --plan
+      - name: Resolve Playwright version
+        id: pw
+        if: steps.thumbs.outputs.misses != '0'
+        run: echo "version=$(node -p "require('./package-lock.json').packages['node_modules/playwright'].version")" >> "$GITHUB_OUTPUT"
+      - name: Cache Chromium
+        if: steps.thumbs.outputs.misses != '0'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ms-playwright-shell-${{ runner.os }}-${{ steps.pw.outputs.version }}
+      - name: Install Chromium
+        if: steps.thumbs.outputs.misses != '0'
+        run: npx playwright install chromium --only-shell
+      - name: Thumbnails
+        run: npm run thumbs
+      - name: Publish to gh-pages
         env:
-          GH_PAGES_DIR: ${{ github.workspace }}/.gh-pages
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # A repo that has never deployed has no gh-pages to check out: start an orphan branch.
+          if [ ! -d .gh-pages/.git ]; then
+            echo "No prior gh-pages branch — initializing one."
+            mkdir -p .gh-pages
+            git -C .gh-pages init -b gh-pages
+            git -C .gh-pages remote add origin \
+              "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          fi
+
+          # Copy over the prior tree rather than replacing it: pr-preview/ and superseded cache
+          # entries must survive the copy so prune.mjs can decide what is actually dead.
+          cp -a _site/. .gh-pages/
+
+          if prs=$(gh pr list --state open --json number -q '[.[].number]|join(",")'); then
+            node scripts/prune.mjs --open-prs "$prs"
+          else
+            echo "gh pr list failed — publishing without the prune sweep."
+          fi
+
+          if [ -z "$(git -C .gh-pages status --porcelain)" ]; then
+            echo "gh-pages is already up to date; nothing to publish."
+            exit 0
+          fi
+          git -C .gh-pages config user.name "github-actions[bot]"
+          git -C .gh-pages config user.email "github-actions[bot]@users.noreply.github.com"
+          git -C .gh-pages add -A
+          git -C .gh-pages commit -m "deploy: ${GITHUB_SHA}"
+          git -C .gh-pages push origin HEAD:gh-pages
