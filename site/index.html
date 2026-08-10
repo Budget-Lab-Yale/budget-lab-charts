@@ -137,6 +137,30 @@ a:hover { text-decoration: underline; }
 .fl-col__link svg { display: block; }
 .fl-col__figures { padding: 0 0 30px; }
 
+/* ── Listing bar ──────────────────────────────────────────── */
+.fl-listbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+/* Lifted from the chart engine's collapsible-table control (.tbl-table-collapse-all-corner): an
+   outlined pill that inverts to a navy fill on hover, so the affordance reads the same in a table
+   figure and here. Type and padding are scaled up from the engine's 11px/2px-6px, which is sized
+   for dense table chrome rather than a page heading row. */
+.fl-toggleall {
+  appearance: none; -webkit-appearance: none;
+  display: inline-block;
+  font: 600 12px/1 var(--font);
+  color: var(--t-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .12s ease, border-color .12s ease, background-color .12s ease;
+}
+.fl-toggleall:hover, .fl-toggleall:focus-visible {
+  color: #fff; background: var(--navy); border-color: var(--navy);
+}
+.fl-toggleall[hidden] { display: none; }
+
 /* ── Grid ─────────────────────────────────────────────────── */
 .fl-resultline { margin: 18px 0 4px; font-size: 13px; color: var(--t-muted); }
 .fl-resultline strong { color: var(--t-head); font-weight: 700; }
@@ -151,8 +175,6 @@ a:hover { text-decoration: underline; }
 .fl-card__thumb { aspect-ratio: 16 / 9; background: var(--bg-subtle) center/cover no-repeat; border-bottom: 1px solid var(--border); }
 .fl-card__body { padding: 13px 15px 15px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
 .fl-card__title { font-size: 15.5px; font-weight: 700; color: var(--t-head); line-height: 1.25; letter-spacing: -.01em; }
-.fl-card__foot { margin-top: auto; padding-top: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; font-size: 12.5px; color: var(--t-muted); }
-.fl-card__collection { color: var(--t-body); }
 
 /* Main click target: the link wraps thumb + body and fills the card */
 .fl-card__link { display: flex; flex-direction: column; flex: 1; color: inherit; text-decoration: none; }
@@ -194,7 +216,7 @@ a:hover { text-decoration: underline; }
   .fl-nav { gap: 18px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .fl-card { transition: none; }
+  .fl-card, .fl-toggleall, .fl-col__chev { transition: none; }
 }
 </style>
 </head>
@@ -241,7 +263,10 @@ a:hover { text-decoration: underline; }
     <button class="fl-clear" id="clear" type="button" hidden>Clear</button>
   </div>
 
-  <p class="fl-resultline" id="resultline" aria-live="polite"></p>
+  <div class="fl-listbar">
+    <p class="fl-resultline" id="resultline" aria-live="polite"></p>
+    <button class="fl-toggleall" id="toggle-all" type="button"></button>
+  </div>
   <div id="collections"></div>
   <div class="fl-empty" id="empty" hidden>
     <h3>No figures match</h3>
@@ -267,12 +292,10 @@ a:hover { text-decoration: underline; }
   "use strict";
   const $ = (s) => document.querySelector(s);
   const collections = $("#collections"), empty = $("#empty"), resultline = $("#resultline");
-  const els = { q: $("#q"), order: $("#f-order"), clear: $("#clear") };
+  const els = { q: $("#q"), order: $("#f-order"), clear: $("#clear"), toggleAll: $("#toggle-all") };
 
-  const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   const MONTHS_LONG = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  function ym(d) { if (!d) return ""; const m = /^(\d{4})-(\d{2})/.exec(d); return m ? `${MONTHS[+m[2]-1]} ${m[1]}` : d; }
   // Parsed from the ISO parts, not `new Date(iso)`, which shifts the day in negative-offset zones.
   function longDate(d) {
     const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d || "");
@@ -377,7 +400,6 @@ a:hover { text-decoration: underline; }
   }
 
   function cardHTML(c) {
-    const dateText = c.kind === "oneoff" && c.date ? ym(c.date) : "";
     const thumb = `<div class="fl-card__thumb" style="background-image:url('${esc(c.id)}/thumb.png')"></div>`;
     return `<div class="fl-card">
       <a class="fl-card__link" href="${esc(c.id)}/">
@@ -385,9 +407,6 @@ a:hover { text-decoration: underline; }
         <div class="fl-card__body">
           ${c.eyebrow ? `<span class="fl-card__eyebrow">${esc(c.eyebrow)}</span>` : ""}
           <span class="fl-card__title">${esc(c.title)}</span>
-          <span class="fl-card__foot">
-            ${dateText ? `<span>${esc(dateText)}</span>` : ""}
-          </span>
         </div>
       </a>
       <button class="fl-card__embed" type="button" data-embed-id="${esc(c.id)}" aria-label="Copy embed code for ${esc(c.title)}">${ICON_CODE}${embedLabel("Embed")}</button>
@@ -464,7 +483,28 @@ a:hover { text-decoration: underline; }
     resultline.innerHTML = searching
       ? `<strong>${shown}</strong> of ${total} figure${total === 1 ? "" : "s"} in ${groups.length} publication${groups.length === 1 ? "" : "s"}`
       : `<strong>${total}</strong> figure${total === 1 ? "" : "s"} in ${groups.length} publication${groups.length === 1 ? "" : "s"}`;
+    syncToggleAll();
     writeHash();
+  }
+
+  // The button's label is the action it will perform, so it has to track manual toggling too.
+  // `toggle` does not bubble, hence the capture-phase listener in bind().
+  function allDetails() { return [...collections.querySelectorAll(".fl-col")]; }
+
+  // Same rule as the engine's table control (buildCollapseAllButton): if ANY section is expanded the
+  // button collapses everything, otherwise it expands everything. That makes the mixed state
+  // behave identically in a table figure and in this gallery.
+  function syncToggleAll() {
+    const all = allDetails();
+    els.toggleAll.hidden = all.length === 0;
+    els.toggleAll.textContent = all.some((d) => d.open) ? "Collapse all" : "Expand all";
+  }
+
+  function onToggleAll() {
+    const all = allDetails();
+    const collapsing = all.some((d) => d.open);
+    for (const d of all) d.open = !collapsing;
+    syncToggleAll();
   }
 
   function reset() { state.q = ""; state.order = "newest"; syncControls(); apply(); }
@@ -474,7 +514,9 @@ a:hover { text-decoration: underline; }
     els.order.addEventListener("change", () => { state.order = els.order.value; apply(); });
     els.clear.addEventListener("click", reset);
     $("#empty-clear").addEventListener("click", reset);
+    els.toggleAll.addEventListener("click", onToggleAll);
     collections.addEventListener("click", onCollectionsClick);   // delegated — survives re-renders
+    collections.addEventListener("toggle", syncToggleAll, true);  // capture: `toggle` doesn't bubble
   }
 
   fetch("./catalog/index.json")
