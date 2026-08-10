@@ -138,32 +138,21 @@ a:hover { text-decoration: underline; }
 .fl-col__figures { padding: 0 0 30px; }
 
 /* ── Listing bar ──────────────────────────────────────────── */
-.fl-listbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-/* Lifted from the chart engine's collapsible-table control (.tbl-table-collapse-all-corner): an
-   outlined pill that inverts to a navy fill on hover, so the affordance reads the same in a table
-   figure and here. Type and padding are scaled up from the engine's 11px/2px-6px, which is sized
-   for dense table chrome rather than a page heading row. */
+/* Sits in the controls row, so it takes the same chrome as .fl-select rather than inventing its
+   own: one control height, one border, one radius across search / order / this. */
 .fl-toggleall {
   appearance: none; -webkit-appearance: none;
-  display: inline-block;
-  font: 600 12px/1 var(--font);
-  color: var(--t-muted);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 6px 10px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color .12s ease, border-color .12s ease, background-color .12s ease;
+  height: var(--control-h); padding: 0 14px;
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--t-head);
+  background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+  cursor: pointer; white-space: nowrap;
+  transition: border-color .15s ease, background-color .15s ease, color .15s ease;
 }
-.fl-toggleall:hover, .fl-toggleall:focus-visible {
-  color: #fff; background: var(--navy); border-color: var(--navy);
-}
+.fl-toggleall:hover { border-color: var(--sky); background: var(--bg-subtle); }
+.fl-toggleall:focus-visible { border-color: var(--blue); }
 .fl-toggleall[hidden] { display: none; }
 
 /* ── Grid ─────────────────────────────────────────────────── */
-.fl-resultline { margin: 18px 0 4px; font-size: 13px; color: var(--t-muted); }
-.fl-resultline strong { color: var(--t-head); font-weight: 700; }
 .fl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); gap: var(--gap); }
 .fl-card__eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--t-muted); }
 .fl-card {
@@ -206,6 +195,7 @@ a:hover { text-decoration: underline; }
 /* ── Footer ───────────────────────────────────────────────── */
 .fl-footer { border-top: 1px solid var(--border); }
 .fl-footer__inner { max-width: var(--maxw); margin: 0 auto; padding: 26px 24px; font-size: 13px; color: var(--t-muted); display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.fl-footer__inner strong { color: var(--t-head); font-weight: 700; }
 
 @media (max-width: 620px) {
   .fl-col__head { padding: 18px 0; }
@@ -254,19 +244,16 @@ a:hover { text-decoration: underline; }
   <h1 class="fl-pagetitle">Chart Library</h1>
 
   <!-- Search + sort -->
-  <div class="fl-controls" role="search">
-    <div class="fl-search">
+  <div class="fl-controls">
+    <div class="fl-search" role="search">
       <svg class="fl-search__icon" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M11.74 10.34a6 6 0 1 0-1.4 1.4l3.2 3.2a1 1 0 0 0 1.42-1.42l-3.22-3.18ZM3 6.5a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0Z"/></svg>
       <input id="q" type="search" placeholder="Search figures…" autocomplete="off" aria-label="Search figures">
     </div>
     <select id="f-order" class="fl-select" aria-label="Order publications"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select>
+    <button class="fl-toggleall" id="toggle-all" type="button"></button>
     <button class="fl-clear" id="clear" type="button" hidden>Clear</button>
   </div>
 
-  <div class="fl-listbar">
-    <p class="fl-resultline" id="resultline" aria-live="polite"></p>
-    <button class="fl-toggleall" id="toggle-all" type="button"></button>
-  </div>
   <div id="collections"></div>
   <div class="fl-empty" id="empty" hidden>
     <h3>No figures match</h3>
@@ -277,7 +264,7 @@ a:hover { text-decoration: underline; }
 <footer class="fl-footer">
   <div class="fl-footer__inner">
     <span>The Budget Lab</span>
-    <span id="footer-note"></span>
+    <span id="footer-note" aria-live="polite"></span>
   </div>
 </footer>
 
@@ -291,7 +278,7 @@ a:hover { text-decoration: underline; }
 (function () {
   "use strict";
   const $ = (s) => document.querySelector(s);
-  const collections = $("#collections"), empty = $("#empty"), resultline = $("#resultline");
+  const collections = $("#collections"), empty = $("#empty"), footerNote = $("#footer-note");
   const els = { q: $("#q"), order: $("#f-order"), clear: $("#clear"), toggleAll: $("#toggle-all") };
 
   const MONTHS_LONG = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -480,9 +467,10 @@ a:hover { text-decoration: underline; }
     const total = DATA.length;
     empty.hidden = shown > 0;
     els.clear.hidden = !state.q;
-    resultline.innerHTML = searching
-      ? `<strong>${shown}</strong> of ${total} figure${total === 1 ? "" : "s"} in ${groups.length} publication${groups.length === 1 ? "" : "s"}`
-      : `<strong>${total}</strong> figure${total === 1 ? "" : "s"} in ${groups.length} publication${groups.length === 1 ? "" : "s"}`;
+    const pubs = `${groups.length} publication${groups.length === 1 ? "" : "s"}`;
+    footerNote.innerHTML = searching
+      ? `<strong>${shown}</strong> of ${total} figure${total === 1 ? "" : "s"} in ${pubs}`
+      : `<strong>${total}</strong> figure${total === 1 ? "" : "s"} in ${pubs}`;
     syncToggleAll();
     writeHash();
   }
@@ -523,11 +511,10 @@ a:hover { text-decoration: underline; }
     .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then((data) => {
       DATA = Array.isArray(data) ? data : [];
-      $("#footer-note").textContent = `${DATA.length} figures in the archive`;
       readHash(); syncControls(); bind(); apply();
     })
     .catch((err) => {
-      resultline.textContent = "";
+      footerNote.textContent = "";
       empty.hidden = false;
       empty.innerHTML = `<h3>Couldn't load the catalog</h3><p>The figure index (<code>catalog/index.json</code>) didn't load (${esc(err.message)}). If you're viewing this locally, serve the site over HTTP rather than opening the file directly.</p>`;
     });
