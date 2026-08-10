@@ -9,6 +9,8 @@
     "date": "2026-07-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 6,
     "path": "charts/articles/2026/07/ai-fiscal/atr-by-decile/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/atr-by-decile/data.csv",
     "tags": []
@@ -23,6 +25,8 @@
     "date": "2026-07-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 10,
     "path": "charts/articles/2026/07/ai-fiscal/debt-to-gdp/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/debt-to-gdp/data.csv",
     "tags": []
@@ -37,6 +41,8 @@
     "date": "2026-07-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 7,
     "path": "charts/articles/2026/07/ai-fiscal/gdp-growth-history/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/gdp-growth-history/data.csv",
     "tags": []
@@ -51,6 +57,8 @@
     "date": "2026-07-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 5,
     "path": "charts/articles/2026/07/ai-fiscal/inequality-gini/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/inequality-gini/data.csv",
     "tags": []
@@ -65,6 +73,8 @@
     "date": "2026-07-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 11,
     "path": "charts/articles/2026/07/ai-fiscal/key-parameters/table.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/key-parameters/data.csv",
     "tags": []
@@ -79,6 +89,8 @@
     "date": "2026-07-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 12,
     "path": "charts/articles/2026/07/ai-fiscal/key-parameters-symbols/table.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/key-parameters-symbols/data.csv",
     "tags": []
@@ -93,6 +105,8 @@
     "date": "2026-07-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 8,
     "path": "charts/articles/2026/07/ai-fiscal/labor-share-history/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/labor-share-history/data.csv",
     "tags": []
@@ -107,6 +121,8 @@
     "date": "2026-07-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 1,
     "path": "charts/articles/2026/07/ai-fiscal/revenue-by-income-type/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/revenue-by-income-type/data.csv",
     "tags": []
@@ -121,6 +137,8 @@
     "date": "2026-07-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 2,
     "path": "charts/articles/2026/07/ai-fiscal/revenue-by-instrument/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/revenue-by-instrument/data.csv",
     "tags": []
@@ -135,6 +153,8 @@
     "date": "2026-07-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 4,
     "path": "charts/articles/2026/07/ai-fiscal/revenue-fixed-vs-reallocated/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/revenue-fixed-vs-reallocated/data.csv",
     "tags": []
@@ -149,6 +169,8 @@
     "date": "2026-07-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 0,
     "path": "charts/articles/2026/07/ai-fiscal/revenue-headline/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/revenue-headline/data.csv",
     "tags": []
@@ -163,6 +185,8 @@
     "date": "2026-07-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 3,
     "path": "charts/articles/2026/07/ai-fiscal/revenue-vs-factor-income/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/revenue-vs-factor-income/data.csv",
     "tags": []
@@ -177,6 +201,8 @@
     "date": "2026-07-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 9,
     "path": "charts/articles/2026/07/ai-fiscal/revenue-vs-pretax-income/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/revenue-vs-pretax-income/data.csv",
     "tags": []
@@ -191,6 +217,8 @@
     "date": "2026-06-24",
     "created": "",
     "cadence": "",
+    "url": "https://budgetlab.yale.edu/research/how-gen-x-and-millennial-parents-managed-their-time",
+    "order": 0,
     "path": "charts/articles/2026/06/atus-childcare/childcare-by-activity/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/childcare-by-activity/data.csv",
     "tags": []
@@ -205,6 +233,8 @@
     "date": "2026-06-24",
     "created": "",
     "cadence": "",
+    "url": "https://budgetlab.yale.edu/research/how-gen-x-and-millennial-parents-managed-their-time",
+    "order": 1,
     "path": "charts/articles/2026/06/atus-childcare/childcare-by-cohort-all-adults/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/childcare-by-cohort-all-adults/data.csv",
     "tags": []
@@ -219,6 +249,8 @@
     "date": "2026-06-24",
     "created": "",
     "cadence": "",
+    "url": "https://budgetlab.yale.edu/research/how-gen-x-and-millennial-parents-managed-their-time",
+    "order": 2,
     "path": "charts/articles/2026/06/atus-childcare/childcare-by-cohort-parents/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/childcare-by-cohort-parents/data.csv",
     "tags": []
@@ -233,6 +265,8 @@
     "date": "2026-06-24",
     "created": "",
     "cadence": "",
+    "url": "https://budgetlab.yale.edu/research/how-gen-x-and-millennial-parents-managed-their-time",
+    "order": 5,
     "path": "charts/articles/2026/06/atus-childcare/childcare-by-household-type/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/childcare-by-household-type/data.csv",
     "tags": []
@@ -247,6 +281,8 @@
     "date": "2026-06-24",
     "created": "",
     "cadence": "",
+    "url": "https://budgetlab.yale.edu/research/how-gen-x-and-millennial-parents-managed-their-time",
+    "order": 8,
     "path": "charts/articles/2026/06/atus-childcare/childcare-by-household-type-and-child-age/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/childcare-by-household-type-and-child-age/data.csv",
     "tags": []
@@ -261,6 +297,8 @@
     "date": "2026-06-24",
     "created": "",
     "cadence": "",
+    "url": "https://budgetlab.yale.edu/research/how-gen-x-and-millennial-parents-managed-their-time",
+    "order": 7,
     "path": "charts/articles/2026/06/atus-childcare/childcare-by-sex-and-child-age/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/childcare-by-sex-and-child-age/data.csv",
     "tags": []
@@ -275,6 +313,8 @@
     "date": "2026-06-24",
     "created": "",
     "cadence": "",
+    "url": "https://budgetlab.yale.edu/research/how-gen-x-and-millennial-parents-managed-their-time",
+    "order": 9,
     "path": "charts/articles/2026/06/atus-childcare/leisure-by-cohort/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/leisure-by-cohort/data.csv",
     "tags": []
@@ -289,6 +329,8 @@
     "date": "2026-06-24",
     "created": "",
     "cadence": "",
+    "url": "https://budgetlab.yale.edu/research/how-gen-x-and-millennial-parents-managed-their-time",
+    "order": 10,
     "path": "charts/articles/2026/06/atus-childcare/leisure-by-household-type/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/leisure-by-household-type/data.csv",
     "tags": []
@@ -303,6 +345,8 @@
     "date": "2026-06-24",
     "created": "",
     "cadence": "",
+    "url": "https://budgetlab.yale.edu/research/how-gen-x-and-millennial-parents-managed-their-time",
+    "order": 3,
     "path": "charts/articles/2026/06/atus-childcare/work-by-cohort-parents/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/work-by-cohort-parents/data.csv",
     "tags": []
@@ -317,6 +361,8 @@
     "date": "2026-06-24",
     "created": "",
     "cadence": "",
+    "url": "https://budgetlab.yale.edu/research/how-gen-x-and-millennial-parents-managed-their-time",
+    "order": 6,
     "path": "charts/articles/2026/06/atus-childcare/work-by-household-type/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/work-by-household-type/data.csv",
     "tags": []
@@ -331,6 +377,8 @@
     "date": "2026-06-24",
     "created": "",
     "cadence": "",
+    "url": "https://budgetlab.yale.edu/research/how-gen-x-and-millennial-parents-managed-their-time",
+    "order": 4,
     "path": "charts/articles/2026/06/atus-childcare/work-by-youngest-child-age/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/work-by-youngest-child-age/data.csv",
     "tags": []
@@ -345,6 +393,8 @@
     "date": "2026-08-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 4,
     "path": "charts/articles/2026/08/recession-indicators/cfnai/chart.yaml",
     "dataPath": "charts/articles/2026/08/recession-indicators/cfnai/data.csv",
     "tags": []
@@ -359,6 +409,8 @@
     "date": "2026-08-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 1,
     "path": "charts/articles/2026/08/recession-indicators/michez-rule/chart.yaml",
     "dataPath": "charts/articles/2026/08/recession-indicators/michez-rule/data.csv",
     "tags": []
@@ -373,6 +425,8 @@
     "date": "2026-08-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 5,
     "path": "charts/articles/2026/08/recession-indicators/news-sentiment/chart.yaml",
     "dataPath": "charts/articles/2026/08/recession-indicators/news-sentiment/data.csv",
     "tags": []
@@ -387,6 +441,8 @@
     "date": "2026-08-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 0,
     "path": "charts/articles/2026/08/recession-indicators/sahm-rule/chart.yaml",
     "dataPath": "charts/articles/2026/08/recession-indicators/sahm-rule/data.csv",
     "tags": []
@@ -401,6 +457,8 @@
     "date": "2026-08-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 6,
     "path": "charts/articles/2026/08/recession-indicators/ui-percent/chart.yaml",
     "dataPath": "charts/articles/2026/08/recession-indicators/ui-percent/data.csv",
     "tags": []
@@ -415,6 +473,8 @@
     "date": "2026-08-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 3,
     "path": "charts/articles/2026/08/recession-indicators/ui-pp/chart.yaml",
     "dataPath": "charts/articles/2026/08/recession-indicators/ui-pp/data.csv",
     "tags": []
@@ -429,6 +489,8 @@
     "date": "2026-08-01",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 2,
     "path": "charts/articles/2026/08/recession-indicators/yield-curve/chart.yaml",
     "dataPath": "charts/articles/2026/08/recession-indicators/yield-curve/data.csv",
     "tags": []
@@ -443,6 +505,8 @@
     "date": "2026-07-07",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 1,
     "path": "charts/articles/2026/07/tariff-model-update-july2026/eta-effect/chart.yaml",
     "dataPath": "charts/articles/2026/07/tariff-model-update-july2026/eta-effect/data.csv",
     "tags": []
@@ -457,6 +521,8 @@
     "date": "2026-07-07",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 3,
     "path": "charts/articles/2026/07/tariff-model-update-july2026/etas/chart.yaml",
     "dataPath": "charts/articles/2026/07/tariff-model-update-july2026/etas/data.csv",
     "tags": []
@@ -471,6 +537,8 @@
     "date": "2026-07-07",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 0,
     "path": "charts/articles/2026/07/tariff-model-update-july2026/etr-vintages/chart.yaml",
     "dataPath": "charts/articles/2026/07/tariff-model-update-july2026/etr-vintages/data.csv",
     "tags": []
@@ -485,6 +553,8 @@
     "date": "2026-07-07",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 4,
     "path": "charts/articles/2026/07/tariff-model-update-july2026/headline-results/table.yaml",
     "dataPath": "charts/articles/2026/07/tariff-model-update-july2026/headline-results/data.csv",
     "tags": []
@@ -499,6 +569,8 @@
     "date": "2026-07-07",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 2,
     "path": "charts/articles/2026/07/tariff-model-update-july2026/price-waterfall/chart.yaml",
     "dataPath": "charts/articles/2026/07/tariff-model-update-july2026/price-waterfall/data.csv",
     "tags": []
@@ -513,6 +585,8 @@
     "date": "2026-07-07",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 5,
     "path": "charts/articles/2026/07/tariff-model-update-july2026/update-decomposition/table.yaml",
     "dataPath": "charts/articles/2026/07/tariff-model-update-july2026/update-decomposition/data.csv",
     "tags": []
@@ -527,6 +601,8 @@
     "date": "2026-07-31",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 3,
     "path": "charts/articles/2026/08/ui-recipiency/appendix-figure-1-job-losers-share/chart.yaml",
     "dataPath": "charts/articles/2026/08/ui-recipiency/appendix-figure-1-job-losers-share/data.csv",
     "tags": []
@@ -541,6 +617,8 @@
     "date": "2026-07-31",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 0,
     "path": "charts/articles/2026/08/ui-recipiency/figure-1-insured-vs-total-unemployment/chart.yaml",
     "dataPath": "charts/articles/2026/08/ui-recipiency/figure-1-insured-vs-total-unemployment/data.csv",
     "tags": []
@@ -555,6 +633,8 @@
     "date": "2026-07-31",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 1,
     "path": "charts/articles/2026/08/ui-recipiency/figure-2-long-term-unemployment-share/chart.yaml",
     "dataPath": "charts/articles/2026/08/ui-recipiency/figure-2-long-term-unemployment-share/data.csv",
     "tags": []
@@ -569,6 +649,8 @@
     "date": "2026-07-31",
     "created": "",
     "cadence": "",
+    "url": "",
+    "order": 2,
     "path": "charts/articles/2026/08/ui-recipiency/figure-3-indexed-claims-vs-unemployment/chart.yaml",
     "dataPath": "charts/articles/2026/08/ui-recipiency/figure-3-indexed-claims-vs-unemployment/data.csv",
     "tags": []

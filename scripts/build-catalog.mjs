@@ -35,6 +35,11 @@ export function buildCatalog(charts, { onEntry } = {}) {
     const relPath = relative(REPO_ROOT, specPath).replace(/\\/g, "/");
     const dataPath = relative(REPO_ROOT, join(dir, "data.csv")).replace(/\\/g, "/");
 
+    // Presentation order within the collection is the order the `figures:` map is written in, so
+    // the author controls it by editing the YAML — no parsing of "Figure 2" / "Appendix Table 1"
+    // labels, which come in too many shapes to sort reliably. -1 = not listed; consumers sort last.
+    const order = Object.keys(collection.figures ?? {}).indexOf(chartSlug);
+
     catalog.push({
       id,
       kind,
@@ -48,6 +53,8 @@ export function buildCatalog(charts, { onEntry } = {}) {
       date: kind === "oneoff" ? (collection.date ?? "") : "",
       created: kind === "tracker" ? (collection.created ?? "") : "",
       cadence: kind === "tracker" ? (collection.cadence ?? "") : "",
+      url: collection.url ?? "",
+      order,
       path: relPath,
       dataPath,
       tags: spec.tags ?? [],
