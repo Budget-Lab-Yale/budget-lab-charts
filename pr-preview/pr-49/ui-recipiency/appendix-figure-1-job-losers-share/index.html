@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The share of CPS unemployed who lost their jobs has remained relatively stable</title>
+<link rel="stylesheet" href="../../embed/v1/chart-1.10.0.css">
+<style>html.tbl-embedded body{margin:0 !important}html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style><script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}catch(e){document.documentElement.classList.add("tbl-embedded")}</script>
+</head>
+<body>
+<div id="chart" style="max-width:760px;margin:32px auto;padding:0 16px"></div>
+<script src="../../embed/v1/engine-1.10.0.js"></script>
+<script>
+var el = document.getElementById("chart");
+if (typeof BudgetLabChart === "undefined") {
+  renderUnavailable(el, "The share of CPS unemployed who lost their jobs has remained relatively stable", "APPENDIX FIGURE 1");
+} else {
+BudgetLabChart.mountChart(el, {
+  spec: {"chartType":"line","title":"The share of CPS unemployed who lost their jobs has remained relatively stable","value_suffix":"%","source":"BLS via FRED. Data are seasonally adjusted.","xAxisType":"temporal","columns":{"x":"date"},"yAxisPolicy":{"min":40,"max":64},"data":"data.csv"},
+  rows: [{"date":"2022-01-01","value":"49.4"},{"date":"2022-02-01","value":"47.4"},{"date":"2022-03-01","value":"45.6"},{"date":"2022-04-01","value":"47.8"},{"date":"2022-05-01","value":"45.3"},{"date":"2022-06-01","value":"43.8"},{"date":"2022-07-01","value":"45.7"},{"date":"2022-08-01","value":"46.8"},{"date":"2022-09-01","value":"44.4"},{"date":"2022-10-01","value":"45.5"},{"date":"2022-11-01","value":"46.3"},{"date":"2022-12-01","value":"45.5"},{"date":"2023-01-01","value":"44.4"},{"date":"2023-02-01","value":"46.2"},{"date":"2023-03-01","value":"49.3"},{"date":"2023-04-01","value":"45.8"},{"date":"2023-05-01","value":"48.8"},{"date":"2023-06-01","value":"47.3"},{"date":"2023-07-01","value":"45.3"},{"date":"2023-08-01","value":"47.1"},{"date":"2023-09-01","value":"45.8"},{"date":"2023-10-01","value":"48.3"},{"date":"2023-11-01","value":"49.3"},{"date":"2023-12-01","value":"48.8"},{"date":"2024-01-01","value":"48.7"},{"date":"2024-02-01","value":"49.4"},{"date":"2024-03-01","value":"47.2"},{"date":"2024-04-01","value":"49.2"},{"date":"2024-05-01","value":"48.4"},{"date":"2024-06-01","value":"47.1"},{"date":"2024-07-01","value":"48.9"},{"date":"2024-08-01","value":"47.4"},{"date":"2024-09-01","value":"47.9"},{"date":"2024-10-01","value":"48.6"},{"date":"2024-11-01","value":"47.7"},{"date":"2024-12-01","value":"47.2"},{"date":"2025-01-01","value":"46.7"},{"date":"2025-02-01","value":"46.7"},{"date":"2025-03-01","value":"46.7"},{"date":"2025-04-01","value":"47.6"},{"date":"2025-05-01","value":"48.1"},{"date":"2025-06-01","value":"47.1"},{"date":"2025-07-01","value":"46.2"},{"date":"2025-08-01","value":"47.1"},{"date":"2025-09-01","value":"46.8"},{"date":"2025-11-01","value":"45.7"},{"date":"2025-12-01","value":"46.4"},{"date":"2026-01-01","value":"46.6"},{"date":"2026-02-01","value":"47.6"},{"date":"2026-03-01","value":"46.8"},{"date":"2026-04-01","value":"47.2"},{"date":"2026-05-01","value":"46.2"},{"date":"2026-06-01","value":"46.4"}],
+  eyebrow: /[?&]eyebrow=(off|0|false|none|hide)\b/i.test(location.search) ? undefined : "APPENDIX FIGURE 1",
+});
+}
+function renderUnavailable(el, title, eyebrow) {
+  var box = document.createElement("div");
+  box.setAttribute("role", "note");
+  box.style.cssText = "font:16px/1.5 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1c1c1c;border:1px solid #d9dce3;border-radius:4px;padding:20px";
+  if (eyebrow) {
+    var e = document.createElement("p");
+    e.textContent = eyebrow;
+    e.style.cssText = "margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a5f6b";
+    box.appendChild(e);
+  }
+  var h = document.createElement("p");
+  h.textContent = title;
+  h.style.cssText = "margin:0 0 12px;font-weight:600";
+  box.appendChild(h);
+  var p = document.createElement("p");
+  p.style.cssText = "margin:0;color:#5a5f6b";
+  p.appendChild(document.createTextNode("An error occurred, please try reloading this page. If this problem persists please contact "));
+  var a = document.createElement("a");
+  a.href = "mailto:budgetlab@yale.edu";
+  a.textContent = "budgetlab@yale.edu";
+  a.style.color = "inherit";
+  p.appendChild(a);
+  p.appendChild(document.createTextNode("."));
+  box.appendChild(p);
+  el.appendChild(box);
+}
+</script>
+<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script><script>(function(){if(window.self===window.top)return;function fit(){try{if(window.parentIFrame&&window.parentIFrame.size)window.parentIFrame.size();}catch(e){}}var t;function soon(){clearTimeout(t);t=setTimeout(fit,60);}if(window.ResizeObserver){try{new ResizeObserver(soon).observe(document.body);}catch(e){}}window.addEventListener("load",function(){setTimeout(fit,200);setTimeout(fit,800);});if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}})();</script>
+</body>
+</html>
