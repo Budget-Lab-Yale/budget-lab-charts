@@ -1,0 +1,40 @@
+chartType: line
+title: "A news-based sentiment indicator tracks recession risk, though with both false negatives and false positives"
+subtitle: Index points, monthly average of daily values
+note: >-
+  Only net-negative sentiment is shown. Blocks beneath the x-axis mark the months in
+  each category; the fills show those months relative to the threshold.
+source: Federal Reserve Bank of San Francisco (Shapiro, Sudhof, and Wilson 2022) and authors' calculations.
+
+xAxisType: temporal
+columns:
+  x: time
+  value: value
+
+yAxisPolicy:
+  min: 0.0
+  max: -0.8
+  tickCount: 5
+
+annotations:
+  bands:
+    - { start: "1980-02-01", end: "1980-08-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "1981-08-01", end: "1982-12-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "1990-08-01", end: "1991-04-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "2001-04-01", end: "2001-12-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "2008-01-01", end: "2009-07-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "2020-03-01", end: "2020-05-01", color: grey, label: "US recessions", legend: true, rug: true }
+  yAxis:
+    - { y: -0.25, label: "Threshold (-0.25)", color: grey, labelPosition: left }
+
+shading:
+  - { side: positive, baseline: -0.25, from: "1980-02-01", to: "1980-03-01", color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { side: positive, baseline: -0.25, from: "1981-08-01", to: "1982-07-01", color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { side: positive, baseline: -0.25, from: "1990-08-01", to: "1990-09-01", color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { side: positive, baseline: -0.25, from: "2001-04-01", to: "2001-10-01", color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { side: positive, baseline: -0.25, from: "2008-01-01", to: "2008-03-01", color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { side: negative, baseline: -0.25, from: "2011-07-01", to: "2011-10-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { side: negative, baseline: -0.25, from: "2011-12-01", to: "2012-01-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { side: negative, baseline: -0.25, from: "2023-05-01", to: "2023-07-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+
+data: data.csv

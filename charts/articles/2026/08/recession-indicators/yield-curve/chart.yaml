@@ -1,0 +1,45 @@
+chartType: line
+title: "The yield curve provides commonly used indicators that generate false positives"
+subtitle: 2Y minus 10Y, percentage points
+note: >-
+  Blocks beneath the x-axis mark the months in each category; the fills in the
+  plot show those months relative to the inversion threshold.
+source: US Treasury and Federal Reserve Board via FRED and authors' calculations.
+
+xAxisType: temporal
+columns:
+  x: time
+  value: value
+
+yAxisPolicy:
+  min: -3.0
+  max: 3.0
+  tickCount: 7
+
+annotations:
+  bands:
+    - { start: "1980-02-01", end: "1980-08-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "1981-08-01", end: "1982-12-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "1990-08-01", end: "1991-04-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "2001-04-01", end: "2001-12-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "2008-01-01", end: "2009-07-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "2020-03-01", end: "2020-05-01", color: grey, label: "US recessions", legend: true, rug: true }
+  yAxis:
+    - { y: 0.0, label: "Inversion Threshold", color: grey, labelPosition: middle }
+
+shading:
+  - { side: positive, from: "1978-08-01", to: "1980-02-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { side: positive, from: "1980-09-01", to: "1981-08-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { side: positive, from: "1988-12-01", to: "1989-07-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { side: positive, from: "1989-08-01", to: "1989-12-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { side: positive, from: "1990-03-01", to: "1990-04-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { side: positive, from: "1998-05-01", to: "1998-08-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { side: positive, from: "2000-02-01", to: "2001-01-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { side: positive, from: "2005-12-01", to: "2006-04-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { side: positive, from: "2006-06-01", to: "2007-04-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { side: positive, from: "2007-05-01", to: "2007-07-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { side: positive, from: "2019-08-01", to: "2019-09-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { side: positive, from: "2022-04-01", to: "2022-05-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { side: positive, from: "2022-07-01", to: "2024-10-01", color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+
+data: data.csv

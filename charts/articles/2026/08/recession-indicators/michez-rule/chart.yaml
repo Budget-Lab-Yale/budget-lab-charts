@@ -1,0 +1,35 @@
+chartType: line
+title: "The Michez Rule is somewhat faster at identifying recessions than the Sahm Rule, but had a larger false positive in 2024"
+subtitle: Percentage points
+note: >-
+  Blocks beneath the x-axis mark the months in each category; the fills in the
+  plot show those months relative to the threshold.
+source: BLS, Michaillat and Saez (2025), and authors' calculations. The series draws from revised unemployment and vacancy data.
+
+xAxisType: temporal
+
+columns:
+  x: time
+  value: value
+
+yAxisPolicy:
+  min: 0.0
+  max: 1.2
+  tickCount: 5
+
+annotations:
+  bands:
+    - { start: "2001-04-01", end: "2001-12-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "2008-01-01", end: "2009-07-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "2020-03-01", end: "2020-05-01", color: grey, label: "US recessions", legend: true, rug: true }
+  yAxis:
+    - { y: 0.29, label: "Threshold (0.29)", color: grey, labelPosition: middle }
+
+shading:
+  - { from: "2001-04-01", to: "2001-07-01", side: negative, baseline: 0.29, color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { from: "2008-01-01", to: "2008-04-01", side: negative, baseline: 0.29, color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { from: "2020-03-01", to: "2020-04-01", side: negative, baseline: 0.29, color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { from: "2024-03-01", to: "2025-06-01", side: positive, baseline: 0.29, color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+  - { from: "2025-12-01", to: "2026-02-01", side: positive, baseline: 0.29, color: red, fillOpacity: 0.3, label: "False positives", legend: true, rug: true }
+
+data: data.csv

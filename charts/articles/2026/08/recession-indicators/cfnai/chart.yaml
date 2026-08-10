@@ -1,0 +1,39 @@
+chartType: line
+title: "An aggregate indicator, comprising many variables, performed well in the post-pandemic period"
+subtitle: Index points, three-month moving average
+note: >-
+  Only below-trend readings are shown. Blocks beneath the x-axis mark the months in
+  each category; the fills show those months relative to the threshold.
+source: Federal Reserve Bank of Chicago via FRED and authors' calculations.
+
+xAxisType: temporal
+columns:
+  x: time
+  value: value
+
+yAxisPolicy:
+  min: 0.0
+  max: -3.0
+  tickCount: 5
+
+annotations:
+  bands:
+    - { start: "1970-01-01", end: "1970-12-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "1973-12-01", end: "1975-04-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "1980-02-01", end: "1980-08-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "1981-08-01", end: "1982-12-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "1990-08-01", end: "1991-04-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "2001-04-01", end: "2001-12-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "2008-01-01", end: "2009-07-01", color: grey, label: "US recessions", legend: true, rug: true }
+    - { start: "2020-03-01", end: "2020-05-01", color: grey, label: "US recessions", legend: true, rug: true }
+  yAxis:
+    - { y: -0.7, label: "Threshold (-0.7)", color: grey }
+
+shading:
+  - { from: "1973-12-01", to: "1974-10-01", side: positive, baseline: -0.7, color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { from: "1980-02-01", to: "1980-04-01", side: positive, baseline: -0.7, color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { from: "1981-08-01", to: "1981-10-01", side: positive, baseline: -0.7, color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { from: "1990-08-01", to: "1990-11-01", side: positive, baseline: -0.7, color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+  - { from: "2008-01-01", to: "2008-04-01", side: positive, baseline: -0.7, color: amber, fillOpacity: 0.45, label: "False negatives", legend: true, rug: true }
+
+data: data.csv
