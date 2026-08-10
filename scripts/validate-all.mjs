@@ -1,17 +1,26 @@
 /**
  * validate-all.mjs — validate every chart in charts/.
  *
- * Two stages:
+ * Three stages:
  *   1. Structural / identity checks (this repo's organization rules).
  *   2. `tbl-chart validate` on every chart.yaml (the engine's spec schema).
+ *   3. The committed catalog/index.json is current.
  *
  * Exit 0 if all pass. Exit 1 if any fail. Stage 1 fails fast before stage 2.
+ *
+ * Stage 2 is one `tbl-chart` process per chart and the cost is almost entirely Node startup, so
+ * the spawns run through a bounded pool (VALIDATE_CONCURRENCY, default = cores capped at 4).
+ * Output is buffered per chart and printed in listCharts() order, so the log stays deterministic
+ * regardless of completion order.
  */
 
-import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { spawn } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import os from "node:os";
 import { listCharts, buildTblChartCmd } from "./lib.mjs";
+import { runPool } from "./pool.mjs";
+import { buildCatalog, serializeCatalog, CATALOG_PATH } from "./build-catalog.mjs";
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const COLLECTION_FILE_BY_KIND = { oneoff: "article.yaml", tracker: "tracker.yaml" };
@@ -98,35 +107,65 @@ console.log("Structure & identity OK.\n");
 // --- Stage 2: engine spec validation ---
 console.log(`Validating ${charts.length} chart(s)...\n`);
 
-let allPassed = true;
+const concurrency = Number(process.env.VALIDATE_CONCURRENCY) || Math.min(os.cpus().length, 4);
 
-for (const { specPath, id } of charts) {
+/** Run `tbl-chart validate <specPath>` and capture its exit status + streams. */
+function validateSpec(specPath) {
   const { executable, args, options } = buildTblChartCmd(["validate", specPath]);
-  const result = spawnSync(executable, args, {
-    ...options,
-    stdio: "pipe",
-    encoding: "utf-8",
+  return new Promise((resolve, reject) => {
+    const child = spawn(executable, args, { ...options, stdio: ["ignore", "pipe", "pipe"] });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.setEncoding("utf-8");
+    child.stderr.setEncoding("utf-8");
+    child.stdout.on("data", (chunk) => { stdout += chunk; });
+    child.stderr.on("data", (chunk) => { stderr += chunk; });
+    child.on("error", reject);
+    child.on("close", (status) => resolve({ status, stdout, stderr }));
   });
-
-  const passed = result.status === 0;
-  const icon = passed ? "PASS" : "FAIL";
-  console.log(`[${icon}] ${id}`);
-
-  if (result.stdout?.trim()) {
-    console.log(result.stdout.trimEnd());
-  }
-  if (result.stderr?.trim()) {
-    console.error(result.stderr.trimEnd());
-  }
-  if (!passed) {
-    allPassed = false;
-  }
 }
 
-console.log();
-if (allPassed) {
-  console.log(`All ${charts.length} chart(s) validated successfully.`);
-} else {
+const results = await runPool(charts, concurrency, ({ specPath }) => validateSpec(specPath));
+
+let allPassed = true;
+
+for (const [i, { id }] of charts.entries()) {
+  const { status, stdout, stderr } = results[i];
+  const passed = status === 0;
+  console.log(`[${passed ? "PASS" : "FAIL"}] ${id}`);
+
+  if (stdout.trim()) console.log(stdout.trimEnd());
+  if (stderr.trim()) console.error(stderr.trimEnd());
+  if (!passed) allPassed = false;
+}
+
+if (!allPassed) {
+  console.log();
   console.error("One or more charts failed validation.");
   process.exit(1);
 }
+
+// --- Stage 3: committed catalog is current ---
+// The build no longer regenerates the catalog, so the committed copy is what ships: a stale commit
+// would publish stale figure metadata.
+console.log();
+console.log("Checking committed catalog/index.json...\n");
+
+// Newline-insensitive: the blob is LF, but a Windows checkout under core.autocrlf=true holds CRLF,
+// and a byte comparison would then call a perfectly current catalog stale.
+const lf = (text) => text.replace(/\r\n/g, "\n");
+
+const expectedCatalog = lf(serializeCatalog(buildCatalog(charts)));
+const committedCatalog = existsSync(CATALOG_PATH) ? lf(readFileSync(CATALOG_PATH, "utf-8")) : null;
+
+if (committedCatalog !== expectedCatalog) {
+  console.error(
+    committedCatalog === null
+      ? "catalog/index.json is missing — run `npm run catalog` and commit it."
+      : "catalog/index.json is stale — run `npm run catalog` and commit the result.",
+  );
+  process.exit(1);
+}
+console.log("Catalog is current.\n");
+
+console.log(`All ${charts.length} chart(s) validated successfully.`);

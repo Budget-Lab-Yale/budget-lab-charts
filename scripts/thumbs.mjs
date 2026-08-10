@@ -11,11 +11,13 @@
  * thumbs`) cache is copied out instead of re-screenshotted. Misses are screenshotted through a
  * bounded pool of reusable Chromium pages (THUMB_CONCURRENCY).
  *
- * Run AFTER `npm run site` (it reads _site/<id>/index.html). Requires Chromium:
- *   npx playwright install chromium
+ * Run AFTER `npm run site` (it reads _site/<id>/index.html). Chromium is only needed when there is
+ * at least one miss, so CI asks first and installs the browser only then:
+ *   node scripts/thumbs.mjs --plan     # prints the miss count; writes misses=N to $GITHUB_OUTPUT
+ *   npx playwright install chromium --only-shell
  */
 
-import { existsSync, mkdirSync, copyFileSync } from "node:fs";
+import { existsSync, mkdirSync, copyFileSync, appendFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import os from "node:os";
@@ -33,12 +35,42 @@ export function thumbCachePath(id, hash) {
   return `.build/thumbs/${id}/${hash}.png`;
 }
 
-async function main() {
-  if (!existsSync(OUT)) {
-    console.error("_site/ not found — run `npm run site` first.");
-    process.exit(1);
+/**
+ * Classify every chart as a cache-hit (thumbnail already exists for its content hash), a miss
+ * (needs screenshotting), or skipped (no assembled page). Read-only: copies nothing, so `--plan`
+ * can answer "is Chromium needed?" without touching _site/.
+ *
+ * @returns {{ hits: {id, thumbOut, cached}[], misses: {id, pagePath, thumbOut, hash}[], skipped: string[] }}
+ */
+export function planThumbs({ charts, hashById, ghPagesDir, outDir = OUT }) {
+  const hits = [];
+  const misses = [];
+  const skipped = [];
+
+  for (const { id } of charts) {
+    const pagePath = join(outDir, id, "index.html");
+    if (!existsSync(pagePath)) {
+      skipped.push(id);
+      continue;
+    }
+
+    const hash = hashById.get(id);
+    const thumbOut = join(outDir, id, "thumb.png");
+    const rel = hash ? thumbCachePath(id, hash) : null;
+    const newHit = rel ? join(outDir, rel) : null;
+    const priorHit = rel && ghPagesDir ? join(ghPagesDir, rel) : null;
+    const cached =
+      newHit && existsSync(newHit) ? newHit : priorHit && existsSync(priorHit) ? priorHit : null;
+
+    if (cached) hits.push({ id, thumbOut, cached, newHit });
+    else misses.push({ id, pagePath, thumbOut, hash });
   }
 
+  return { hits, misses, skipped };
+}
+
+/** Resolve the chart list + content hashes that `planThumbs` needs. */
+async function loadPlanInputs() {
   const charts = await listCharts();
 
   // Read hashes: prefer the assembled _site manifest, else the dist manifest.
@@ -49,41 +81,50 @@ async function main() {
     Object.entries(manifest?.charts ?? {}).map(([id, entry]) => [id, entry?.hash]),
   );
 
-  const ghPagesDir = process.env.GH_PAGES_DIR;
-  const priorCacheDir = ghPagesDir ? join(ghPagesDir, ".build", "thumbs") : null;
+  return { charts, hashById, ghPagesDir: process.env.GH_PAGES_DIR };
+}
+
+/**
+ * `--plan`: report how many thumbnails would need screenshotting, so CI can skip the Chromium
+ * download entirely when the answer is zero. Never launches a browser.
+ */
+async function plan() {
+  if (!existsSync(OUT)) {
+    console.error("_site/ not found — run `npm run site` first.");
+    process.exit(1);
+  }
+
+  const { charts, hashById, ghPagesDir } = await loadPlanInputs();
+  const { hits, misses, skipped } = planThumbs({ charts, hashById, ghPagesDir });
+
+  console.log(
+    `thumbs plan: ${misses.length} to screenshot, ${hits.length} cached, ${skipped.length} without a page (of ${charts.length})`,
+  );
+  for (const miss of misses) console.log(`  ~ ${miss.id} (needs screenshot)`);
+
+  if (process.env.GITHUB_OUTPUT) {
+    appendFileSync(process.env.GITHUB_OUTPUT, `misses=${misses.length}\n`);
+  }
+}
+
+async function main() {
+  if (!existsSync(OUT)) {
+    console.error("_site/ not found — run `npm run site` first.");
+    process.exit(1);
+  }
+
+  const { charts, hashById, ghPagesDir } = await loadPlanInputs();
 
   console.log(`Generating ${charts.length} thumbnail(s)...\n`);
 
-  // Partition into cache-hits (resolved immediately) and misses (need screenshotting).
-  const misses = [];
-  let hitCount = 0;
+  const { hits, misses, skipped } = planThumbs({ charts, hashById, ghPagesDir });
 
-  for (const { id } of charts) {
-    const pagePath = join(OUT, id, "index.html");
-    if (!existsSync(pagePath)) {
-      console.warn(`  ! ${id}: no _site page — skipped`);
-      continue;
-    }
-
-    const hash = hashById.get(id);
-    const thumbOut = join(OUT, id, "thumb.png");
-
-    if (hash) {
-      const rel = thumbCachePath(id, hash);
-      const newHit = join(OUT, rel);
-      const priorHit = priorCacheDir ? join(ghPagesDir, rel) : null;
-      const cached = existsSync(newHit) ? newHit : priorHit && existsSync(priorHit) ? priorHit : null;
-      if (cached) {
-        // Copy to the served thumb AND ensure it lives in the new cache for carry-forward.
-        copyOut(cached, thumbOut);
-        copyOut(cached, newHit);
-        hitCount++;
-        console.log(`  = ${id}/thumb.png (cache-hit)`);
-        continue;
-      }
-    }
-
-    misses.push({ id, pagePath, thumbOut, hash });
+  for (const id of skipped) console.warn(`  ! ${id}: no _site page — skipped`);
+  for (const { id, thumbOut, cached, newHit } of hits) {
+    // Copy to the served thumb AND ensure it lives in the new cache for carry-forward.
+    copyOut(cached, thumbOut);
+    copyOut(cached, newHit);
+    console.log(`  = ${id}/thumb.png (cache-hit)`);
   }
 
   let madeCount = 0;
@@ -95,7 +136,7 @@ async function main() {
       browser = await chromium.launch({ args: ["--no-sandbox"] }); // --no-sandbox: CI runners
     } catch (err) {
       console.error(
-        `thumbs: could not launch Chromium (${err.message}).\nInstall it with: npx playwright install chromium`,
+        `thumbs: could not launch Chromium (${err.message}).\nInstall it with: npx playwright install chromium --only-shell`,
       );
       process.exit(1);
     }
@@ -127,9 +168,8 @@ async function main() {
     await browser.close();
   }
 
-  const total = charts.length;
   console.log();
-  console.log(`thumbs: screenshotted ${madeCount}, cache-hit ${hitCount} (of ${total})`);
+  console.log(`thumbs: screenshotted ${madeCount}, cache-hit ${hits.length} (of ${charts.length})`);
 }
 
 /** Screenshot one chart page's `.figure-card` and write to the served thumb + the content cache. */
@@ -152,5 +192,6 @@ function copyOut(src, dest) {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  await main();
+  if (process.argv.slice(2).includes("--plan")) await plan();
+  else await main();
 }

@@ -7,6 +7,12 @@
  * only what the current production manifest + open-PR list say are no longer live, behind a
  * protected-path whitelist so build state, embed framework, and site chrome are never touched.
  *
+ * The thumbnail cache is content-addressed, so it needs its own sweep: every edit or engine repin
+ * mints a new `<hash>.png` and the superseded ones would otherwise accumulate forever. A cached
+ * thumbnail is live if its hash appears in the production manifest OR in an open PR preview's own
+ * manifest — that second clause is what keeps an in-flight PR's cache warm through a main deploy,
+ * so its eventual merge is still a cache hit and never re-screenshots.
+ *
  * Usage (run against a gh-pages checkout, e.g. from CI):
  *   GH_PAGES_DIR=.gh-pages node scripts/prune.mjs --open-prs "6,42,99"
  */
@@ -96,6 +102,50 @@ export function classifyForPrune({ entries, manifestIds, openPrNumbers }) {
 }
 
 /**
+ * Pure classifier over the flat list of cached thumbnails (built by `main()`'s walk of
+ * `.build/thumbs`). A thumbnail is live only if `liveHashes` holds its `<id>` -> `<hash>` pair;
+ * anything else is a superseded generation. Entries whose path doesn't parse as
+ * `<collection>/<chart>/<hash>.png` are kept — prune never deletes what it can't identify.
+ *
+ * @param {{ thumbs: {id: string, hash: string}[], liveHashes: Map<string, Set<string>> }} args
+ * @returns {{ deleteThumbs: {id: string, hash: string}[], keepThumbs: {id: string, hash: string}[] }}
+ */
+export function classifyThumbCache({ thumbs, liveHashes }) {
+  const deleteThumbs = [];
+  const keepThumbs = [];
+
+  for (const thumb of thumbs) {
+    if (liveHashes.get(thumb.id)?.has(thumb.hash)) keepThumbs.push(thumb);
+    else deleteThumbs.push(thumb);
+  }
+
+  return { deleteThumbs, keepThumbs };
+}
+
+/**
+ * Collect the `<id>` -> `{hash}` pairs worth keeping: the production manifest plus every open PR
+ * preview's manifest. `readManifestAt` is injected so this stays unit-testable.
+ *
+ * @returns {Map<string, Set<string>>}
+ */
+export function collectLiveHashes({ manifest, openPrNumbers, readPreviewManifest }) {
+  const live = new Map();
+
+  const add = (source) => {
+    for (const [id, entry] of Object.entries(source?.charts ?? {})) {
+      if (!entry?.hash) continue;
+      if (!live.has(id)) live.set(id, new Set());
+      live.get(id).add(entry.hash);
+    }
+  };
+
+  add(manifest);
+  for (const pr of openPrNumbers) add(readPreviewManifest(pr));
+
+  return live;
+}
+
+/**
  * Parse a comma-separated PR-number string (from `--open-prs`) into an array of positive integers.
  * Empty/whitespace/non-numeric tokens are dropped, so `""` yields `[]` (not `[0]`).
  */
@@ -155,6 +205,33 @@ function buildEntries(ghPagesDir, manifestIds) {
   return entries;
 }
 
+/**
+ * Walk `.build/thumbs/<collection>/<chart>/<hash>.png` into the flat list `classifyThumbCache`
+ * expects. Unparseable paths are omitted, which leaves them untouched on disk.
+ */
+function buildThumbEntries(ghPagesDir) {
+  const root = join(ghPagesDir, ".build", "thumbs");
+  if (!existsSync(root)) return [];
+
+  const thumbs = [];
+  for (const collection of readdirSync(root, { withFileTypes: true })) {
+    if (!collection.isDirectory()) continue;
+    const collectionDir = join(root, collection.name);
+    for (const chart of readdirSync(collectionDir, { withFileTypes: true })) {
+      if (!chart.isDirectory()) continue;
+      for (const file of readdirSync(join(collectionDir, chart.name), { withFileTypes: true })) {
+        if (!file.isFile() || !file.name.endsWith(".png")) continue;
+        thumbs.push({
+          id: `${collection.name}/${chart.name}`,
+          hash: file.name.slice(0, -".png".length),
+          rel: `.build/thumbs/${collection.name}/${chart.name}/${file.name}`,
+        });
+      }
+    }
+  }
+  return thumbs;
+}
+
 async function main() {
   const ghPagesDir = process.env.GH_PAGES_DIR;
   if (!ghPagesDir || !existsSync(ghPagesDir)) {
@@ -184,9 +261,27 @@ async function main() {
     console.log(`  - ${dir}`);
   }
 
+  // Superseded thumbnails: keyed by content hash, so every edit or engine repin orphans the prior
+  // generation. Open PR previews' hashes are held live so a merge still hits their warm cache.
+  const { deleteThumbs, keepThumbs } = classifyThumbCache({
+    thumbs: buildThumbEntries(ghPagesDir),
+    liveHashes: collectLiveHashes({
+      manifest,
+      openPrNumbers,
+      readPreviewManifest: (pr) =>
+        readManifest(join(ghPagesDir, "pr-preview", `pr-${pr}`, ".build", "manifest.json")),
+    }),
+  });
+
+  for (const thumb of deleteThumbs) {
+    rmSync(join(ghPagesDir, thumb.rel), { force: true });
+    console.log(`  - ${thumb.rel}`);
+  }
+
   console.log();
   console.log(
-    `prune: deleted ${deleteChartDirs.length} chart dir(s), ${deletePreviewDirs.length} preview dir(s); kept ${keep.length}`,
+    `prune: deleted ${deleteChartDirs.length} chart dir(s), ${deletePreviewDirs.length} preview dir(s), ` +
+      `${deleteThumbs.length} stale thumbnail(s); kept ${keep.length} path(s) and ${keepThumbs.length} thumbnail(s)`,
   );
 }
 

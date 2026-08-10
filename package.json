@@ -14,7 +14,7 @@
     "catalog": "node scripts/build-catalog.mjs",
     "site": "node scripts/assemble-site.mjs",
     "thumbs": "node scripts/thumbs.mjs",
-    "all": "npm run validate && npm run build && npm run catalog && npm run site && npm run thumbs",
+    "all": "npm run catalog && npm run validate && npm run build && npm run site && npm run thumbs",
     "dev": "node scripts/dev-server.mjs",
     "test": "node --test --test-concurrency=1"
   },

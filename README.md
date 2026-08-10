@@ -3,7 +3,7 @@
 The Budget Lab chart archive. This repo holds chart specs and data for published figures. It
 pins a specific version of
 [budget-lab-chart-engine](https://github.com/Budget-Lab-Yale/budget-lab-chart-engine)
-and runs a validate → build → catalog → site pipeline over that content, with a live preview
+and runs a catalog → validate → build → site pipeline over that content, with a live preview
 deployed for every pull request.
 
 The engine is **the tool**; this repo is **the content**.
@@ -208,12 +208,14 @@ e.g. `ai-labor-market/augmented-occupations`. It carries **no date and no tree**
 |---|---|
 | `npm run validate` | Structural/identity checks, then `tbl-chart validate` on every `chart.yaml`; exit 1 if any fail. |
 | `npm run build` | Render every chart to `dist/<id>/index.html`; copy `data.csv`. |
-| `npm run catalog` | Write `catalog/index.json` from all `chart.yaml` + collection files. |
+| `npm run catalog` | Write `catalog/index.json` from all `chart.yaml` + collection files. Commit the result — it is what CI publishes. |
 | `npm run site` | Assemble the publishable gallery into `_site/` (landing page + chart pages + catalog). |
 | `npm run thumbs` | Headless-screenshot each page into `_site/<id>/thumb.png` (gallery card thumbnails). |
 | `npm run all` | All of the above, in order. |
 
-Run order: validate → build → catalog → site → thumbs (`npm run all` does this).
+Run order: catalog → validate → build → site → thumbs (`npm run all` does this). The catalog comes
+first because `npm run validate` fails on a stale committed `catalog/index.json`, and CI publishes
+that committed copy rather than regenerating it.
 
 ### Incremental builds
 
@@ -229,6 +231,9 @@ unchanged charts are copied from the prior build instead of re-rendered and re-s
 - The cache is keyed by a `renderVersion` string. Bumping `THUMBS_EPOCH` or `FONTS_EPOCH` in
   `scripts/incremental.mjs` — or an engine version change — invalidates every entry and forces a
   full rebuild.
+- Superseded thumbnails are garbage-collected by `scripts/prune.mjs` on each production deploy: a
+  cached thumbnail survives only if its hash is in the production manifest or in an **open** PR
+  preview's manifest, so an in-flight PR keeps its warm cache through unrelated merges.
 
 ---
 
@@ -333,13 +338,21 @@ To bump:
 
 `.github/workflows/ci.yml` has three jobs:
 
-- **validate** — the merge gate (spec/structure/data). Make it a required status check.
+- **validate** — the merge gate (spec/structure/data/catalog), on PRs. Make it a required status
+  check.
 - **preview** — on each PR, builds the site and publishes it to the `gh-pages` branch at
   `pr-preview/pr-<n>/`, then comments the live URL. The directory is removed when the PR closes.
-- **deploy** — on merge to `main`, publishes the site to the `gh-pages` branch **root** (the
-  production gallery), preserving the `pr-preview/` subtree.
+  This is also where thumbnails are normally rendered; it publishes them to the shared
+  `.build/thumbs` cache so the deploy after merge reuses them instead of re-screenshotting.
+- **deploy** — on merge to `main`, re-runs validation, then applies `_site/` to the checked-out
+  `gh-pages` tree, prunes what is no longer live, and pushes **once** — one commit and one Pages
+  build per deploy, preserving the `pr-preview/` subtree.
 
-The build (`validate → build → catalog → site → thumbs → _site/`) is **host-agnostic**. Migrating
+Chromium is installed only when `node scripts/thumbs.mjs --plan` reports a cache miss, and then
+only the headless shell from a version-keyed cache. On a typical merge the thumbnails are already
+warm and no browser is downloaded at all.
+
+The build (`catalog → validate → build → site → thumbs → _site/`) is **host-agnostic**. Migrating
 off GitHub Pages later (e.g. Cloudflare Pages / Netlify, which give per-PR previews natively)
 means replacing only the preview/deploy steps — not the build.
 
@@ -406,10 +419,10 @@ git lfs install
 
 ```sh
 git clone <this-repo>
-npm install                      # installs the engine + Playwright (for thumbnails)
-npx playwright install chromium  # for `npm run thumbs`
+npm install                                    # installs the engine + Playwright (for thumbnails)
+npx playwright install chromium --only-shell    # for `npm run thumbs`; headless shell is all it needs
 
-npm run all                      # validate → build → catalog → site → thumbs
+npm run all                                    # catalog → validate → build → site → thumbs
 npx http-server _site            # preview the gallery over HTTP
 ```
 

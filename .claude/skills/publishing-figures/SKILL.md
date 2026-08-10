@@ -112,10 +112,11 @@ write the modern `annotations:` block per CONFIG-REFERENCE.md instead of copying
 
 ## Step 5 — Verify and finish (all four, in order)
 
-1. **`npm run validate`** — must pass with zero errors. Engine errors are pointed; fix and re-run.
-2. **`npm run catalog`** — regenerates `catalog/index.json`, which is a **committed** file that
-   downstream embeds read. Any content add/retitle/renumber makes it stale; commit the updated
-   catalog together with the content. (The README quick-start omits this step — do it anyway.)
+1. **`npm run catalog`** — regenerates `catalog/index.json`, a **committed** file that downstream
+   embeds read and that CI publishes as-is. Any content add/retitle/renumber makes it stale;
+   commit the updated catalog together with the content.
+2. **`npm run validate`** — must pass with zero errors. Engine errors are pointed; fix and re-run.
+   Stage 3 fails if the committed catalog is stale, which is why step 1 comes first.
 3. **Preview** — `npm run dev` serves a live preview at `http://localhost:5173` (auto-reloads on
    save, shows engine errors inline). Tell the user to look at the rendered figure before the
    PR; charts are reviewed visually, there are no image baselines.

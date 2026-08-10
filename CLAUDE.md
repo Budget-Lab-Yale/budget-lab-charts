@@ -10,7 +10,7 @@ CI. The chart engine is a pinned dependency; this repo is content only.
   fields fail the build. Never invent fields.
 - **Identity is permanent**: collection slugs and figure folder names become public embed URLs;
   never rename them after merge.
-- **Verify**: `npm run validate` (merge gate), `npm run catalog` (regenerates the committed
-  `catalog/index.json` — required after content changes), `npm run dev` (live preview at
-  localhost:5173).
+- **Verify**: `npm run catalog` (regenerates the committed `catalog/index.json` — required after
+  content changes; CI publishes the committed copy as-is), then `npm run validate` (merge gate;
+  fails if that catalog is stale), `npm run dev` (live preview at localhost:5173).
 - PRs get an automatic live preview URL from CI; merging to `main` publishes.
