@@ -125,13 +125,17 @@ a:hover { text-decoration: underline; }
   margin: 0; min-width: 0;
   font-size: 19px; font-weight: 700; line-height: 1.3; letter-spacing: -.01em; color: var(--t-head);
 }
-/* Fixed columns, because each collection is its own <details> and so its own formatting context —
-   nothing can auto-size a column across sibling rows. Widths fit the longest realistic content
-   ("13 figures", "September 30, 2026"); both text columns are right-aligned so their right edges
-   line up down the page. The link column is always present, empty when a collection has no url, so
-   a missing link cannot shift the columns. */
+/* Each collection is its own <details>, so no CSS can size a column across sibling rows — the date
+   column is set from JS (sizeDateColumn) to the widest date actually rendered, which is the least
+   width that cannot wrap. Reserving for the longest date the format can produce ("September 30,
+   2026", 125px) would instead leave 35-55px of dead space to the left of every shorter date, since
+   both columns are right-aligned. The 126px fallback covers a no-JS/pre-measure paint.
+   The count column is max-content: everything to its right is fixed and the grid is flush right, so
+   its right edge lands identically on every row whatever its width. The link column always renders,
+   empty when a collection has no url, so a missing link cannot shift the columns. */
 .fl-col__meta {
-  display: grid; grid-template-columns: 5.5em 9.5em 16px; align-items: center; gap: 0 18px;
+  display: grid; grid-template-columns: max-content var(--meta-date-w, 126px) 16px;
+  align-items: center; gap: 0 10px;
   margin-left: auto; font-size: 13.5px; color: var(--t-muted); white-space: nowrap;
 }
 .fl-col__count { text-align: right; font-variant-numeric: tabular-nums; }
@@ -481,6 +485,7 @@ a:hover { text-decoration: underline; }
     footerNote.innerHTML = searching
       ? `<strong>${shown}</strong> of ${total} figure${total === 1 ? "" : "s"} in ${pubs}`
       : `<strong>${total}</strong> figure${total === 1 ? "" : "s"} in ${pubs}`;
+    sizeDateColumn();
     syncToggleAll();
     writeHash();
   }
@@ -488,6 +493,24 @@ a:hover { text-decoration: underline; }
   // The button's label is the action it will perform, so it has to track manual toggling too.
   // `toggle` does not bubble, hence the capture-phase listener in bind().
   function allDetails() { return [...collections.querySelectorAll(".fl-col")]; }
+
+  /** Width of an element's text, independent of the box it sits in. */
+  function textWidth(el) {
+    const r = document.createRange();
+    r.selectNodeContents(el);
+    return r.getBoundingClientRect().width;
+  }
+
+  // Size the date column to the widest date on the page: enough that none wraps, and no more.
+  // Safe to run after layout — the cells are `white-space: nowrap`, so a measured text width never
+  // depends on the column width it feeds, and this cannot oscillate.
+  function sizeDateColumn() {
+    const dates = collections.querySelectorAll(".fl-col__date");
+    if (!dates.length) return;
+    let max = 0;
+    for (const el of dates) max = Math.max(max, textWidth(el));
+    collections.style.setProperty("--meta-date-w", `${Math.ceil(max)}px`);
+  }
 
   // Same rule as the engine's table control (buildCollapseAllButton): if ANY section is expanded the
   // button collapses everything, otherwise it expands everything. That makes the mixed state
@@ -522,6 +545,7 @@ a:hover { text-decoration: underline; }
     .then((data) => {
       DATA = Array.isArray(data) ? data : [];
       readHash(); syncControls(); bind(); apply();
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(sizeDateColumn);
     })
     .catch((err) => {
       footerNote.textContent = "";
