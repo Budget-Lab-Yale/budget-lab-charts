@@ -90,6 +90,7 @@ jobs:
         run: |
           npm run build
           npm run site
+          npm run assets
       - name: Plan thumbnails
         id: thumbs
         if: github.event.action != 'closed'
@@ -163,6 +164,7 @@ jobs:
         run: |
           npm run build
           npm run site
+          npm run assets
       - name: Plan thumbnails
         id: thumbs
         run: node scripts/thumbs.mjs --plan
@@ -194,12 +196,18 @@ jobs:
               "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           fi
 
+          # The engine version this deploy replaces. Readers holding page HTML cached under
+          # max-age=600 keep requesting its assets for up to ten minutes, so prune must not sweep
+          # them yet. Read before the copy overwrites the prior manifest.
+          prior=$(node -p "try{JSON.parse(require('fs').readFileSync('.gh-pages/.build/manifest.json','utf8')).engineVersion||''}catch(e){''}")
+          echo "prior engine version: ${prior:-(none)}"
+
           # Copy over the prior tree rather than replacing it: pr-preview/ and superseded cache
           # entries must survive the copy so prune.mjs can decide what is actually dead.
           cp -a _site/. .gh-pages/
 
           if prs=$(gh pr list --state open --json number -q '[.[].number]|join(",")'); then
-            node scripts/prune.mjs --open-prs "$prs"
+            node scripts/prune.mjs --open-prs "$prs" --keep-engine "$prior"
           else
             echo "gh pr list failed — publishing without the prune sweep."
           fi

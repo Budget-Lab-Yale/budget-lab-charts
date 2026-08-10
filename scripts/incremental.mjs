@@ -19,6 +19,20 @@ export function readEngineVersion(repoRoot = REPO_ROOT) {
   }
 }
 
+/**
+ * The engine's semver, which is what its shared asset filenames carry (engine-<semver>.js). Read
+ * from the installed package rather than the lockfile, whose `resolved` is a git commit. Recorded
+ * in the manifest so prune can tell which assets published pages still reference.
+ */
+export function readEngineSemver(repoRoot = REPO_ROOT) {
+  try {
+    const pkgPath = join(repoRoot, "node_modules", "budget-lab-chart-engine", "package.json");
+    return JSON.parse(readFileSync(pkgPath, "utf8")).version ?? "unknown";
+  } catch {
+    return "unknown";
+  }
+}
+
 export function computeRenderVersion({ engineRef, thumbsEpoch, fontsEpoch }) {
   return `engine:${engineRef}|thumbs:${thumbsEpoch}|fonts:${fontsEpoch}`;
 }
