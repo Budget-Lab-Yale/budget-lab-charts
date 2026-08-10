@@ -3,7 +3,7 @@
 The Budget Lab chart archive. This repo holds chart specs and data for published figures. It
 pins a specific version of
 [budget-lab-chart-engine](https://github.com/Budget-Lab-Yale/budget-lab-chart-engine)
-and runs a catalog → validate → build → site pipeline over that content, with a live preview
+and runs a catalog → validate → build → site → assets pipeline over that content, with a live preview
 deployed for every pull request.
 
 The engine is **the tool**; this repo is **the content**.
@@ -177,11 +177,13 @@ Generated outputs (not committed except catalog):
 
 ```
 dist/<collection-slug>/<chart-folder>/
-  index.html                    # self-contained interactive chart
+  index.html                    # chart page (~29 KB; links the shared engine assets)
   data.csv                      # copy of the chart's data
 
 catalog/index.json              # array of chart metadata; committed
 _site/                          # the assembled gallery published to Pages (incl. per-chart thumb.png)
+_site/embed/v1/engine-<v>.js    # the shared engine runtime, one copy per engine version
+_site/embed/v1/chart-<v>.css    # the shared stylesheet (carries the base64 font)
 ```
 
 ## Identity
@@ -210,10 +212,13 @@ e.g. `ai-labor-market/augmented-occupations`. It carries **no date and no tree**
 | `npm run build` | Render every chart to `dist/<id>/index.html`; copy `data.csv`. |
 | `npm run catalog` | Write `catalog/index.json` from all `chart.yaml` + collection files. Commit the result — it is what CI publishes. |
 | `npm run site` | Assemble the publishable gallery into `_site/` (landing page + chart pages + catalog). |
+| `npm run assets` | Write the engine's shared runtime + stylesheet into `_site/embed/v1/`. |
 | `npm run thumbs` | Headless-screenshot each page into `_site/<id>/thumb.png` (gallery card thumbnails). |
 | `npm run all` | All of the above, in order. |
 
-Run order: catalog → validate → build → site → thumbs (`npm run all` does this). The catalog comes
+Run order: catalog → validate → build → site → assets → thumbs (`npm run all` does this). `assets`
+must precede `thumbs`, which screenshots the assembled pages and cannot render a chart whose
+runtime is missing. The catalog comes
 first because `npm run validate` fails on a stale committed `catalog/index.json`, and CI publishes
 that committed copy rather than regenerating it.
 
@@ -234,6 +239,24 @@ unchanged charts are copied from the prior build instead of re-rendered and re-s
 - Superseded thumbnails are garbage-collected by `scripts/prune.mjs` on each production deploy: a
   cached thumbnail survives only if its hash is in the production manifest or in an **open** PR
   preview's manifest, so an in-flight PR keeps its warm cache through unrelated merges.
+
+### Shared engine assets
+
+Chart pages don't inline the engine. Each links `../../embed/v1/engine-<version>.js` and
+`chart-<version>.css`, written by `npm run assets`, which takes a page from ~1.65 MB to ~29 KB and
+means a reader browsing several figures downloads the runtime once rather than per figure.
+
+- **Filenames carry the engine version**, so a repin never overwrites what an already-published page
+  asks for. `prune.mjs` keeps the version the current deploy renders against plus the one it
+  replaced (passed as `--keep-engine`), because page HTML cached under `max-age=600` keeps
+  requesting the old assets for up to ten minutes. Older versions are swept. Unversioned neighbours
+  in `embed/v1/` — the embed loader, iframe-resizer — are never touched.
+- **PR previews are self-contained**: each publishes its own `embed/v1/` inside `pr-preview/pr-<n>/`,
+  so a PR that repins the engine cannot collide with production's version.
+- **The references are relative**, which is what keeps pages working from `file://` (how
+  `npm run thumbs` loads them) and under the preview prefix.
+- `npm run dev` still renders self-contained pages, since it renders on demand and has no `_site/`
+  to link into. Output is pixel-identical either way, so the preview is faithful.
 
 ---
 
@@ -352,7 +375,7 @@ Chromium is installed only when `node scripts/thumbs.mjs --plan` reports a cache
 only the headless shell from a version-keyed cache. On a typical merge the thumbnails are already
 warm and no browser is downloaded at all.
 
-The build (`catalog → validate → build → site → thumbs → _site/`) is **host-agnostic**. Migrating
+The build (`catalog → validate → build → site → assets → thumbs → _site/`) is **host-agnostic**. Migrating
 off GitHub Pages later (e.g. Cloudflare Pages / Netlify, which give per-PR previews natively)
 means replacing only the preview/deploy steps — not the build.
 
@@ -422,7 +445,7 @@ git clone <this-repo>
 npm install                                    # installs the engine + Playwright (for thumbnails)
 npx playwright install chromium --only-shell    # for `npm run thumbs`; headless shell is all it needs
 
-npm run all                                    # catalog → validate → build → site → thumbs
+npm run all                                    # catalog → validate → build → site → assets → thumbs
 npx http-server _site            # preview the gallery over HTTP
 ```
 

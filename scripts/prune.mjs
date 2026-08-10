@@ -102,6 +102,26 @@ export function classifyForPrune({ entries, manifestIds, openPrNumbers }) {
 }
 
 /**
+ * Pure classifier over the shared engine assets in `embed/v1` (built by `main()`'s walk). Chart
+ * pages link `engine-<version>.js` + `chart-<version>.css` by exact filename, so deleting a
+ * version any published page still asks for blanks that figure.
+ *
+ * Only those two filename shapes are considered. Everything else in the directory — the embed
+ * loader, iframe-resizer, licences — is left alone; it is not versioned and not ours to sweep.
+ *
+ * @param {{ assets: {name: string, version: string}[], liveVersions: Set<string> }} args
+ */
+export function classifyEngineAssets({ assets, liveVersions }) {
+  const deleteAssets = [];
+  const keepAssets = [];
+  for (const asset of assets) {
+    if (liveVersions.has(asset.version)) keepAssets.push(asset);
+    else deleteAssets.push(asset);
+  }
+  return { deleteAssets, keepAssets };
+}
+
+/**
  * Pure classifier over the flat list of cached thumbnails (built by `main()`'s walk of
  * `.build/thumbs`). A thumbnail is live only if `liveHashes` holds its `<id>` -> `<hash>` pair;
  * anything else is a superseded generation. Entries whose path doesn't parse as
@@ -149,6 +169,14 @@ export function collectLiveHashes({ manifest, openPrNumbers, readPreviewManifest
  * Parse a comma-separated PR-number string (from `--open-prs`) into an array of positive integers.
  * Empty/whitespace/non-numeric tokens are dropped, so `""` yields `[]` (not `[0]`).
  */
+/** Parse a comma-separated engine-version string (from `--keep-engine`) into a trimmed array. */
+export function parseKeepEngine(csv) {
+  return String(csv ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s !== "");
+}
+
 export function parseOpenPrs(csv) {
   return String(csv ?? "")
     .split(",")
@@ -203,6 +231,23 @@ function buildEntries(ghPagesDir, manifestIds) {
   }
 
   return entries;
+}
+
+/**
+ * Walk `embed/v1` for versioned engine assets. Names that don't match `engine-<v>.js` or
+ * `chart-<v>.css` are omitted, so unversioned neighbours are never candidates for deletion.
+ */
+function buildEngineAssetEntries(ghPagesDir) {
+  const dir = join(ghPagesDir, "embed", "v1");
+  if (!existsSync(dir)) return [];
+
+  const assets = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isFile()) continue;
+    const match = entry.name.match(/^engine-(.+)\.js$/) ?? entry.name.match(/^chart-(.+)\.css$/);
+    if (match) assets.push({ name: entry.name, version: match[1], rel: `embed/v1/${entry.name}` });
+  }
+  return assets;
 }
 
 /**
@@ -278,10 +323,31 @@ async function main() {
     console.log(`  - ${thumb.rel}`);
   }
 
+  // Superseded engine assets. Live = the version this deploy renders against, plus any passed via
+  // --keep-engine: the deploy hands over the version it is replacing, because readers holding
+  // page HTML cached under `max-age=600` keep asking for it for up to ten minutes. Open PR previews
+  // need no entry here — each preview publishes its own embed/v1 copy inside its own subtree.
+  const liveVersions = new Set(
+    [manifest.engineVersion, ...parseKeepEngine(argValue(process.argv.slice(2), "--keep-engine"))]
+      .filter((v) => typeof v === "string" && v !== ""),
+  );
+  const { deleteAssets, keepAssets } = liveVersions.size
+    ? classifyEngineAssets({ assets: buildEngineAssetEntries(ghPagesDir), liveVersions })
+    : { deleteAssets: [], keepAssets: [] };
+
+  if (!liveVersions.size) {
+    console.log("  ! manifest has no engineVersion — skipping the engine-asset sweep");
+  }
+  for (const asset of deleteAssets) {
+    rmSync(join(ghPagesDir, asset.rel), { force: true });
+    console.log(`  - ${asset.rel}`);
+  }
+
   console.log();
   console.log(
     `prune: deleted ${deleteChartDirs.length} chart dir(s), ${deletePreviewDirs.length} preview dir(s), ` +
-      `${deleteThumbs.length} stale thumbnail(s); kept ${keep.length} path(s) and ${keepThumbs.length} thumbnail(s)`,
+      `${deleteThumbs.length} stale thumbnail(s), ${deleteAssets.length} superseded engine asset(s); ` +
+      `kept ${keep.length} path(s), ${keepThumbs.length} thumbnail(s) and ${keepAssets.length} engine asset(s)`,
   );
 }
 
