@@ -1,6 +1,6 @@
 # Reshaping input data into the engine's CSV contract
 
-Target shape (CONFIG-REFERENCE.md § CSV format): **long/tidy**, header row, one row per
+Target shape (ENGINE-CONFIG-SPEC.md § CSV format): **long/tidy**, header row, one row per
 observation. Any column names — map them in the spec's `columns:` block (`x`, `value`,
 `series`, plus `facet`/`shape`/`section` when used). The x column must parse for the chosen
 `xAxisType` (temporal = strict `YYYY-MM-DD`; quarterly = strict `YYYYQ#`; numeric = plain

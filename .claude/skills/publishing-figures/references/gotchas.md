@@ -13,13 +13,13 @@ Annotation **x-coordinates are strings even on a numeric axis** — write `x: "2
 The schema rejects unknown fields at every level (`additionalProperties: false`). Common
 inventions that do not exist in `chart.yaml`/`table.yaml`: `eyebrow` and `slug` (figure numbers
 live in the collection file's `figures:` map; identity is the folder name), `date`, and any
-misspelling of a real field. Check CONFIG-REFERENCE.md rather than guessing a fix.
+misspelling of a real field. Check ENGINE-CONFIG-SPEC.md rather than guessing a fix.
 
 ## Legacy annotation syntax in older examples
 
 Some existing charts use `xAxisPolicy.markers` / `xAxisPolicy.bands` / `yAxisPolicy.markers`.
 Those are deprecated aliases — even though committed examples contain them, write the modern
-`annotations:` block (CONFIG-REFERENCE.md § Annotations) in new charts.
+`annotations:` block (ENGINE-CONFIG-SPEC.md § Annotations) in new charts.
 
 ## `columns.section requires chartType "bar" with orientation "horizontal"`
 

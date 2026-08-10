@@ -1,10 +1,11 @@
 /**
  * validate-all.mjs — validate every chart in charts/.
  *
- * Three stages:
+ * Four stages:
  *   1. Structural / identity checks (this repo's organization rules).
  *   2. `tbl-chart validate` on every chart.yaml (the engine's spec schema).
  *   3. The committed catalog/index.json is current.
+ *   4. The vendored ENGINE-CONFIG-SPEC.md matches the pinned engine.
  *
  * Exit 0 if all pass. Exit 1 if any fail. Stage 1 fails fast before stage 2.
  *
@@ -21,6 +22,13 @@ import os from "node:os";
 import { listCharts, buildTblChartCmd } from "./lib.mjs";
 import { runPool } from "./pool.mjs";
 import { buildCatalog, serializeCatalog, CATALOG_PATH } from "./build-catalog.mjs";
+import { readEngineSemver } from "./incremental.mjs";
+import {
+  buildVendoredSpec,
+  normalizeEol,
+  readEngineSpec,
+  VENDORED_SPEC_PATH,
+} from "./vendor-spec.mjs";
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const COLLECTION_FILE_BY_KIND = { oneoff: "article.yaml", tracker: "tracker.yaml" };
@@ -167,5 +175,38 @@ if (committedCatalog !== expectedCatalog) {
   process.exit(1);
 }
 console.log("Catalog is current.\n");
+
+// --- Stage 4: vendored engine spec is current ---
+// The figure schema is documented by a verbatim copy of the pinned engine's CONFIG-SPEC.md so an
+// author never has to open the engine repo. The previous hand-maintained copy drifted 45 fields
+// behind over eight repins, which is why this is a gate rather than a checklist item.
+console.log("Checking vendored ENGINE-CONFIG-SPEC.md...\n");
+
+const engineSemver = readEngineSemver();
+let vendorError = null;
+try {
+  const expectedSpec = normalizeEol(
+    buildVendoredSpec({ specText: readEngineSpec(), version: engineSemver }),
+  );
+  const committedSpec = existsSync(VENDORED_SPEC_PATH)
+    ? normalizeEol(readFileSync(VENDORED_SPEC_PATH, "utf-8"))
+    : null;
+
+  if (committedSpec === null) {
+    vendorError = "ENGINE-CONFIG-SPEC.md is missing — run `npm run vendor-spec` and commit it.";
+  } else if (committedSpec !== expectedSpec) {
+    vendorError =
+      `ENGINE-CONFIG-SPEC.md does not match the pinned engine (v${engineSemver}) — ` +
+      "run `npm run vendor-spec` and commit the result.";
+  }
+} catch (err) {
+  vendorError = err.message;
+}
+
+if (vendorError) {
+  console.error(vendorError);
+  process.exit(1);
+}
+console.log(`Vendored spec matches engine v${engineSemver}.\n`);
 
 console.log(`All ${charts.length} chart(s) validated successfully.`);

@@ -1,7 +1,7 @@
 # Figure design decisions
 
 Use this when the user hasn't specified a chart type, colors, or annotations, or when you need
-to recommend one. Full field reference: `CONFIG-REFERENCE.md` (repo root) — this file only
+to recommend one. Full field reference: `ENGINE-CONFIG-SPEC.md` (repo root) — this file only
 helps choose; it is not the schema.
 
 ## Choosing `chartType`
@@ -57,7 +57,7 @@ and never leave a color the engine assigned as hex when a palette name is availa
 
 ## Annotations — offer these when the story needs them
 
-All four kinds live under one `annotations:` block (see CONFIG-REFERENCE.md § Annotations):
+All four kinds live under one `annotations:` block (see ENGINE-CONFIG-SPEC.md § Annotations):
 
 | Kind | Use for | Shape |
 |---|---|---|
@@ -70,7 +70,7 @@ All four kinds live under one `annotations:` block (see CONFIG-REFERENCE.md § A
 (`x: "2017"`, not `x: 2017`), or validation fails with `must be string`. `y` is a **number**.
 A zero line reads best as `{y: 0, style: solid}` with no label.
 
-## Series options (one-liners; details in CONFIG-REFERENCE.md § Series)
+## Series options (one-liners; details in ENGINE-CONFIG-SPEC.md § Series)
 
 - `series_order` — sets order **and filters**: a series omitted from the list is dropped from
   the chart. List all of them or none.
@@ -86,4 +86,4 @@ Data is tidy, **one CSV row per cell**. Required: `title`, `data`, `stub` (row n
 `header` (column nesting), `value`. Number formats via `format:` rules (`number`/`percent`/
 `currency`, `decimals`). Math in any table text uses MathJax `\(...\)` — put it in a
 **single-quoted** YAML string (`'\(\Delta\)'`); linear subset only, no `\frac`/`\sqrt`.
-Read CONFIG-REFERENCE.md § table.yaml before writing one.
+Read ENGINE-CONFIG-SPEC.md § table.yaml before writing one.
