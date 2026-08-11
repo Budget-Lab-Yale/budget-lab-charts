@@ -21,3 +21,10 @@ CI. The chart engine is a pinned dependency; this repo is content only.
   handles the order. Asset filenames carry the engine version, so an engine repin needs no other
   change — but never delete a published version's assets by hand; `prune.mjs` handles retention.
 - PRs get an automatic live preview URL from CI; merging to `main` publishes.
+- **No design docs or plans in this repo.** There is no `docs/` folder and adding one back for a
+  spec or an implementation plan is wrong — a `docs/superpowers/` pair describing the (already
+  shipped) incremental-build pipeline sat here for weeks with 36 unchecked task boxes, telling any
+  agent that found it to re-implement working infrastructure. Rationale for a change goes in the PR
+  description, transient plans stay in the session scratchpad, invariants go in a comment where they
+  apply, and anything that must not drift gets a gate in `npm run validate` (as the catalog and the
+  vendored engine spec do). See the global policy in `~/.claude/CLAUDE.md`.
