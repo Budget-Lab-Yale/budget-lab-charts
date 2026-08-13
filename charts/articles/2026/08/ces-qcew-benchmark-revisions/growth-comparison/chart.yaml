@@ -1,5 +1,5 @@
 chartType: stacked
-title: "QCEW shows more job growth from March to December 2025 than CES captured"
+title: "CES vs. QCEW Job Growth"
 subtitle: "Employment growth, March – December 2025, thousands of jobs"
 xAxisType: categorical
 
@@ -21,8 +21,5 @@ barStack:
   netDisplay: none
 
 y_axis_title: "Employment growth, March – December 2025 (thousands)"
-source: "U.S. Bureau of Labor Statistics, Current Employment Statistics and Quarterly Census of Employment and Wages, and authors' calculations."
-note: >-
-  The gap segment is shown only for CES; QCEW growth over the same period is
-  taken as reported, with no additional gap on top of it.
+source: "U.S. Bureau of Labor Statistics: Current Employment Statistics and Quarterly Census of Employment and Wages."
 data: data.csv
