@@ -1,6 +1,6 @@
 chartType: bar
-title: "CES final benchmark revisions have been negative in most years since 2015"
-subtitle: "Total nonfarm employment, final benchmark revision, thousands of jobs (NSA)"
+title: "CES Benchmark Revisions since 2015"
+subtitle: "Total nonfarm employment, benchmark revision, thousands of jobs (NSA)"
 xAxisType: categorical
 orientation: vertical
 x_axis_title: Year
