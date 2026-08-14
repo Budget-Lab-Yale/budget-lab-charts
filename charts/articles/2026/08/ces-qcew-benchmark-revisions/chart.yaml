@@ -1,0 +1,17 @@
+chartType: scatter
+title: "CES Benchmark Revisions: Preliminary vs. Final"
+subtitle: "Total nonfarm employment, benchmark revision level, thousands of jobs (NSA), 2000–2025"
+xAxisType: numeric
+x_axis_title: "Preliminary benchmark revision (thousands)"
+y_axis_title: "Final benchmark revision (thousands)"
+
+columns:
+  x: preliminary_revision_level
+  value: final_revision_level
+
+yAxisPolicy:
+  includeZero: true
+
+source: "U.S. Bureau of Labor Statistics, CES National Benchmark Article, Table 4 (https://www.bls.gov/web/empsit/cesbmart.htm)."
+note: "Each point is one benchmark year, 2000–2025. Preliminary is the estimate published each August/September; final is the subsequent year's revision."
+data: data.csv
