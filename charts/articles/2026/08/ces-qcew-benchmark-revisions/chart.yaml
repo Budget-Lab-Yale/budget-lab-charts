@@ -1,0 +1,26 @@
+chartType: scatter
+title: "Preliminary Benchmark Revisions and Subsequent Employment Growth"
+subtitle: "July–January employment growth vs. preliminary CES benchmark revision, thousands of jobs (NSA), 2000–2025"
+xAxisType: numeric
+x_axis_title: "Preliminary benchmark revision (thousands)"
+y_axis_title: "Growth, July–January (thousands)"
+
+columns:
+  x: preliminary_revision_level
+  value: growth
+  series: group
+
+series_order: ["Other", "2020"]
+series_labels:
+  Other: "Observed"
+  "2020": "2020"
+series_colors:
+  Other: navy
+  "2020": red
+
+yAxisPolicy:
+  includeZero: true
+
+source: "U.S. Bureau of Labor Statistics, Current Employment Statistics."
+note: "2020 shown separately given the outsized COVID-era employment growth."
+data: data.csv
