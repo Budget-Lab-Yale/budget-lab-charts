@@ -18,9 +18,34 @@ series_colors:
   Other: navy
   "2020": red
 
+overlays:
+  # Stata: lfit growth preliminary_revision_level if year != 2020
+  # "2020" series has 1 point, so a per-series lm fit is auto-dropped there —
+  # this naturally reproduces the "if year != 2020" filter without needing `by`.
+  - method: lm
+    domain: axis
+    color: blue
+    label: "Linear fit (excl. 2020)"
+    legend: true
+    tooltip: true
+
+  # Stata: function y = `b0' + `b1'*x, range(-1000 1000), dashed green
+  - fun: "b0 + b1*x"
+    params:
+      b0: 0        # <-- plug in your actual coefficient
+      b1: 0        # <-- plug in your actual coefficient
+    domain: [-1000, 1000]
+    color: green
+    style: dashed
+    label: "SAHM-adjusted"
+    legend: true
+
 yAxisPolicy:
   includeZero: true
+  min: -4000
+  max: 4000
+  tickCount: 9   # approximates ylabel(-4000(1000)4000)
 
 source: "U.S. Bureau of Labor Statistics, Current Employment Statistics."
-note: "2020 shown separately given the outsized COVID-era employment growth."
+note: "2020 shown separately given the outsized COVID-era employment growth. Linear fit excludes 2020."
 data: data.csv
