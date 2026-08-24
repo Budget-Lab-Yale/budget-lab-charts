@@ -14,6 +14,10 @@ name: CI
 #     forward from gh-pages, so a PR renders them once and its merge reuses them.
 #   * setup-node pins no version: the runner image's Node (>= 20) is already in place, while
 #     requesting an exact version downloads a second copy every job.
+#
+# catalog/index.json is generated, not committed: both build jobs run `npm run catalog` before
+# `npm run site`, which copies it into _site/. Committing it instead made every figure retitle a
+# two-step change a web-UI contributor could not complete (see validate-all.mjs stage 3).
 on:
   workflow_dispatch:
   push:
@@ -32,7 +36,7 @@ concurrency:
 
 jobs:
   # ── Merge gate ────────────────────────────────────────────────────────────
-  # Spec/structure/data validation + committed-catalog freshness. No rendering, no Chromium. Make
+  # Spec/structure/data validation + catalog and vendored-spec checks. No rendering, no Chromium. Make
   # this a required status check in branch protection so a malformed chart.yaml can't merge.
   # PR-only: the deploy job runs the same validation inline rather than paying a second cold start.
   validate:
@@ -88,6 +92,7 @@ jobs:
       - name: Build site
         if: github.event.action != 'closed'
         run: |
+          npm run catalog
           npm run build
           npm run site
           npm run assets
@@ -162,6 +167,7 @@ jobs:
         run: npm run validate
       - name: Build site
         run: |
+          npm run catalog
           npm run build
           npm run site
           npm run assets

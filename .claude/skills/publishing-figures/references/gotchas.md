@@ -45,14 +45,6 @@ dates.
 Either the `columns:` block doesn't match the CSV header, or the header's first cell carries an
 invisible UTF-8 BOM. Rewrite the CSV without BOM.
 
-## Stale `catalog/index.json`
-
-`catalog/index.json` is a **committed generated file**, and the committed copy is the one that
-ships — the build no longer regenerates it. Adding, retitling, or renumbering any figure makes it
-stale. `npm run validate` fails on a stale catalog (stage 3), so run `npm run catalog` and commit
-the result together with the content change. `npm run all` regenerates it first, so it never
-trips there.
-
 ## Table YAML breaks on math
 
 MathJax must sit in **single-quoted** YAML strings: `column_labels: {Change: '\(\Delta\)'}`.
