@@ -74,6 +74,15 @@
     "atus-childcare/work-by-youngest-child-age": {
       "hash": "c100dad00e63bfe82269a1470c683e505f230ea0a5ff27699508f70822324d97"
     },
+    "ces-qcew-benchmark-revisions/final-v-prelim": {
+      "hash": "26cad39318ca3730e113a12bdf59220cfab1762d0f3899253d90b6c7c0703e71"
+    },
+    "ces-qcew-benchmark-revisions/regressions": {
+      "hash": "f754c651b0145d447d074cff238c11a5f5fcacf3727cdccc076b3aa728d46468"
+    },
+    "ces-qcew-benchmark-revisions/revisions-since-2015": {
+      "hash": "3794172f99d8682dec92d7465ae8d70e7c6964408eb73acca731d5cc98ae18a3"
+    },
     "recession-indicators/cfnai": {
       "hash": "0ca9cfbfd7dbf2907368eb43908c0c9e98e3f3b2d5f1959352694dbfc2e657db"
     },
