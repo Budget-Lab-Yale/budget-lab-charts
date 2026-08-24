@@ -1,0 +1,17 @@
+scenario,group,metric,value
+"Without new Sec. 301 \\(Sec. 122 expires, not replaced)",Effective tariff rate (%),statutory,9.41
+"Without new Sec. 301 \\(Sec. 122 expires, not replaced)",Effective tariff rate (%),pre_sub_etr,7.96
+"Without new Sec. 301 \\(Sec. 122 expires, not replaced)",Effective tariff rate (%),post_sub_etr,6.58
+"Without new Sec. 301 \\(Sec. 122 expires, not replaced)",Price effect (%),pre_sub_price,0.38
+"Without new Sec. 301 \\(Sec. 122 expires, not replaced)",Price effect (%),post_sub_price,0.32
+"Without new Sec. 301 \\(Sec. 122 expires, not replaced)",,hh_cost,436
+"Without new Sec. 301 \\(Sec. 122 expires, not replaced)",10-yr revenue ($B),conventional,1211
+"Without new Sec. 301 \\(Sec. 122 expires, not replaced)",10-yr revenue ($B),dynamic,1142
+With new Sec. 301 actions \\(replacing Sec. 122),Effective tariff rate (%),statutory,12.52
+With new Sec. 301 actions \\(replacing Sec. 122),Effective tariff rate (%),pre_sub_etr,10.85
+With new Sec. 301 actions \\(replacing Sec. 122),Effective tariff rate (%),post_sub_etr,9.05
+With new Sec. 301 actions \\(replacing Sec. 122),Price effect (%),pre_sub_price,0.81
+With new Sec. 301 actions \\(replacing Sec. 122),Price effect (%),post_sub_price,0.70
+With new Sec. 301 actions \\(replacing Sec. 122),,hh_cost,942
+With new Sec. 301 actions \\(replacing Sec. 122),10-yr revenue ($B),conventional,1932
+With new Sec. 301 actions \\(replacing Sec. 122),10-yr revenue ($B),dynamic,1803
