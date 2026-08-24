@@ -13,11 +13,12 @@
 <script>
 var el = document.getElementById("chart");
 if (typeof BudgetLabChart === "undefined") {
-  renderUnavailable(el, "CES Benchmark Revisions since 2015", "");
+  renderUnavailable(el, "CES Benchmark Revisions since 2015", "Figure 1");
 } else {
 BudgetLabChart.mountChart(el, {
   spec: {"chartType":"bar","title":"CES Benchmark Revisions since 2015","subtitle":"Total nonfarm employment, benchmark revision, thousands of jobs (NSA)","xAxisType":"categorical","orientation":"vertical","x_axis_title":"Year","y_axis_title":"Revision (thousands)","columns":{"x":"year","value":"revision"},"valueLabels":{"show":false},"category_colors":{"2015":"red","2016":"red","2017":"blue","2018":"red","2019":"red","2020":"red","2021":"red","2022":"blue","2023":"red","2024":"red","2025":"red"},"source":"U.S. Bureau of Labor Statistics, CES National Benchmark Article, Table 4 (https://www.bls.gov/web/empsit/cesbmart.htm).","note":"Final revision level, not seasonally adjusted.","data":"data.csv"},
   rows: [{"year":"2015","revision":"-172"},{"year":"2016","revision":"-81"},{"year":"2017","revision":"135"},{"year":"2018","revision":"-16"},{"year":"2019","revision":"-489"},{"year":"2020","revision":"-121"},{"year":"2021","revision":"-7"},{"year":"2022","revision":"506"},{"year":"2023","revision":"-187"},{"year":"2024","revision":"-598"},{"year":"2025","revision":"-861"}],
+  eyebrow: /[?&]eyebrow=(off|0|false|none|hide)\b/i.test(location.search) ? undefined : "Figure 1",
 });
 }
 function renderUnavailable(el, title, eyebrow) {
