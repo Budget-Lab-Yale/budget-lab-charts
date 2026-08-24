@@ -18,6 +18,9 @@ helps choose; it is not the schema.
 Hard constraints the engine enforces:
 
 - `scatter` requires `xAxisType: numeric`; `dotplot` requires `xAxisType: categorical`.
+- **`bar` and `stacked` require `xAxisType: categorical`** (v1.12.0+). A continuous axis silently
+  dropped rows or drew an empty frame, so the engine now refuses it outright.
+- `waterfall` requires `categorical` and vertical.
 - `columns.section` (grouped category axis) works only on **horizontal** bar charts.
 - Horizontal `stacked` cannot combine with `small_multiples`.
 
@@ -27,6 +30,11 @@ Hard constraints the engine enforces:
 ages, percentiles) → `numeric` · anything else → `categorical`. Monthly data: convert to
 first-of-month `YYYY-MM-DD` and use `temporal`. Ask the user only when genuinely ambiguous
 (e.g. integer bins that could be ordered categories).
+
+**The chart type overrides this.** The rules above read the x *column*; the constraints above read the
+chart *type*, and the type wins. A `bar` or `stacked` chart of values by year is `categorical` with the
+years as category labels — **not** `numeric`, even though the column is plain numbers. Following the
+column rule there is a load-time validation error, not a bad-looking chart.
 
 ## Titles
 
