@@ -15,7 +15,7 @@ series_labels:
   Other: "Observed"
   "2020": "2020"
 series_colors:
-  Other: navy
+  Other: blue
   "2020": red
 
 overlays:
