@@ -1,0 +1,49 @@
+chartType: scatter
+title: "Preliminary Benchmark Revisions and Subsequent Employment Growth"
+subtitle: "July–January employment growth vs. preliminary CES benchmark revision, thousands of jobs (NSA), 2004–2025"
+xAxisType: numeric
+x_axis_title: "Preliminary benchmark revision (thousands)"
+y_axis_title: "Growth, July–January (thousands)"
+
+columns:
+  x: preliminary_revision_level
+  value: growth
+  series: group
+
+series_order: ["Other", "2020"]
+series_labels:
+  Other: "Observed"
+  "2020": "2020"
+series_colors:
+  Other: blue
+  "2020": red
+
+overlays:
+  # Stata: lfit growth preliminary_revision_level if year != 2020
+  - method: lm
+    domain: axis
+    color: blue
+    label: "Linear fit (excl. 2020)"
+    legend: true
+    tooltip: true
+
+  # Stata: function y = 789.17603 + .078694*x, range(-1000 1000), dashed green
+  - fun: "b0 + b1*x"
+    params:
+      b0: 789.17603
+      b1: 0.078694
+    domain: [-1000, 1000]
+    color: green
+    style: dashed
+    label: "SAHM-adjusted"
+    legend: true
+
+yAxisPolicy:
+  includeZero: true
+  min: -4000
+  max: 4000
+  tickCount: 9
+
+source: "U.S. Bureau of Labor Statistics, Current Employment Statistics."
+note: "2020 shown separately given the outsized COVID-era employment growth. Linear fit excludes 2020."
+data: data.csv
