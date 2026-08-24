@@ -103,11 +103,12 @@ sorts last.
 ## Verifying
 
 ```sh
-npm run catalog      # regenerate the committed catalog/index.json
 npm run vendor-spec  # only after changing the engine pin
-npm run validate     # the merge gate: structure, engine schema, catalog, vendored spec
+npm run validate     # the merge gate: structure, engine schema, catalog build, vendored spec
 npm run dev          # live preview at localhost:5173
 ```
 
-`npm run all` runs the generators before the gate, so it self-heals a stale catalog or vendored
-spec; `npm run validate` on its own reports them as failures, which is what CI does.
+`catalog/index.json` is generated rather than committed — CI rebuilds it on every publish, so
+retitling or renumbering a figure is a one-file change. `npm run all` regenerates the vendored spec
+before the gate, so it self-heals a stale one; `npm run validate` on its own reports it as a
+failure, which is what CI does.
