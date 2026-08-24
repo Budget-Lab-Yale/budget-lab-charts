@@ -24,7 +24,7 @@ overlays:
   - method: lm
     domain: axis
     color: blue
-    label: "Linear fit (excl. 2020)"
+    label: "Linear fit"
     legend: true
 
   # Stata: function y = 789.17603 + .078694*x, range(-1000 1000), dashed green
@@ -35,7 +35,7 @@ overlays:
     domain: [-1000, 1000]
     color: green
     style: dashed
-    label: "SAHM-adjusted"
+    label: "SAHM-adjusted fit"
     legend: true
 
 yAxisPolicy:
