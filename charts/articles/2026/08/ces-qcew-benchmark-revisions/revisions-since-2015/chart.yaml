@@ -5,6 +5,7 @@ xAxisType: categorical
 orientation: vertical
 x_axis_title: Year
 y_axis_title: Revision (thousands)
+tooltip_decimals: 0
 
 columns:
   x: year

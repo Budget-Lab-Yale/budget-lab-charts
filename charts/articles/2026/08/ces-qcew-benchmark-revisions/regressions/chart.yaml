@@ -4,6 +4,7 @@ subtitle: "July–January employment growth vs. preliminary CES benchmark revisi
 xAxisType: numeric
 x_axis_title: "Preliminary benchmark revision (thousands)"
 y_axis_title: "Growth, July–January (thousands)"
+tooltip_decimals: 0
 
 columns:
   x: preliminary_revision_level
@@ -23,9 +24,8 @@ overlays:
   - method: lm
     domain: axis
     color: blue
-    label: "Linear fit (excl. 2020)"
+    label: "Linear fit"
     legend: true
-    tooltip: true
 
   # Stata: function y = 789.17603 + .078694*x, range(-1000 1000), dashed green
   - fun: "b0 + b1*x"
@@ -35,7 +35,7 @@ overlays:
     domain: [-1000, 1000]
     color: green
     style: dashed
-    label: "SAHM-adjusted"
+    label: "SAHM-adjusted fit"
     legend: true
 
 yAxisPolicy:

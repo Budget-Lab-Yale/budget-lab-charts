@@ -4,6 +4,7 @@ subtitle: "Total nonfarm employment, benchmark revision level, thousands of jobs
 xAxisType: numeric
 x_axis_title: "Preliminary benchmark revision (thousands)"
 y_axis_title: "Final benchmark revision (thousands)"
+tooltip_decimals: 0
 
 columns:
   x: preliminary_revision_level
