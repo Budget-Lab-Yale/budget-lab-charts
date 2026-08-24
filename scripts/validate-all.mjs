@@ -4,7 +4,7 @@
  * Four stages:
  *   1. Structural / identity checks (this repo's organization rules).
  *   2. `tbl-chart validate` on every chart.yaml (the engine's spec schema).
- *   3. The committed catalog/index.json is current.
+ *   3. catalog/index.json builds from every chart's spec.
  *   4. The vendored ENGINE-CONFIG-SPEC.md matches the pinned engine.
  *
  * Exit 0 if all pass. Exit 1 if any fail. Stage 1 fails fast before stage 2.
@@ -21,7 +21,7 @@ import { join } from "node:path";
 import os from "node:os";
 import { listCharts, buildTblChartCmd } from "./lib.mjs";
 import { runPool } from "./pool.mjs";
-import { buildCatalog, serializeCatalog, CATALOG_PATH } from "./build-catalog.mjs";
+import { buildCatalog, serializeCatalog } from "./build-catalog.mjs";
 import { readEngineSemver } from "./incremental.mjs";
 import {
   buildVendoredSpec,
@@ -153,28 +153,36 @@ if (!allPassed) {
   process.exit(1);
 }
 
-// --- Stage 3: committed catalog is current ---
-// The build no longer regenerates the catalog, so the committed copy is what ships: a stale commit
-// would publish stale figure metadata.
+// --- Stage 3: the catalog builds ---
+// catalog/index.json is a build artifact — CI regenerates it immediately before `npm run site`, so
+// there is no committed copy to go stale and nothing here to compare against. (It was committed and
+// byte-compared until Aug 2026; a contributor retitling a figure through the GitHub web UI then had
+// no way to satisfy that gate.) What is still worth gating is that the catalog *constructs*:
+// buildCatalog reads every spec and collection file, so a chart.yaml or article.yaml that passes the
+// engine's schema but breaks catalog assembly fails the merge gate rather than the deploy.
 console.log();
-console.log("Checking committed catalog/index.json...\n");
+console.log("Building catalog/index.json in memory...\n");
 
-// Newline-insensitive: the blob is LF, but a Windows checkout under core.autocrlf=true holds CRLF,
-// and a byte comparison would then call a perfectly current catalog stale.
-const lf = (text) => text.replace(/\r\n/g, "\n");
+let catalogError = null;
+try {
+  const catalog = buildCatalog(charts);
+  if (catalog.length !== charts.length) {
+    catalogError = `Catalog built ${catalog.length} entries for ${charts.length} chart(s).`;
+  }
+  // Serialize as well, because JSON.stringify is where the artifact actually fails: a
+  // self-referential YAML anchor in a collection file (`title: &a { self: *a }`) is parsed into a
+  // circular object that survives buildCatalog untouched and throws only here. Building without
+  // serializing would pass the merge gate and then break `npm run catalog` in both CI build jobs.
+  serializeCatalog(catalog);
+} catch (err) {
+  catalogError = `catalog/index.json failed to build: ${err.message}`;
+}
 
-const expectedCatalog = lf(serializeCatalog(buildCatalog(charts)));
-const committedCatalog = existsSync(CATALOG_PATH) ? lf(readFileSync(CATALOG_PATH, "utf-8")) : null;
-
-if (committedCatalog !== expectedCatalog) {
-  console.error(
-    committedCatalog === null
-      ? "catalog/index.json is missing — run `npm run catalog` and commit it."
-      : "catalog/index.json is stale — run `npm run catalog` and commit the result.",
-  );
+if (catalogError) {
+  console.error(catalogError);
   process.exit(1);
 }
-console.log("Catalog is current.\n");
+console.log(`Catalog builds cleanly (${charts.length} entries).\n`);
 
 // --- Stage 4: vendored engine spec is current ---
 // The figure schema is documented by a verbatim copy of the pinned engine's CONFIG-SPEC.md so an

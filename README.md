@@ -141,7 +141,7 @@ workflows, embedding, and CI.
 - Stores one `chart.yaml` + `data.csv` per figure, in a dated folder hierarchy.
 - Validates every chart against the engine's spec/data schema (the merge gate).
 - Renders each chart to a self-contained interactive page and assembles a searchable gallery.
-- Generates `catalog/index.json` for downstream consumers (embeds, site templates).
+- Generates `catalog/index.json` at build time for downstream consumers (embeds, site templates).
 - Publishes the gallery to **GitHub Pages**, with a **live per-PR preview URL** for review.
 
 There are **no committed visual baselines** — charts are reviewed by looking at the rendered
@@ -173,14 +173,14 @@ charts/
 
 `<year>/<month>` exists only under `articles/`. `trackers/` is dateless.
 
-Generated outputs (not committed except catalog):
+Generated outputs (none committed):
 
 ```
 dist/<collection-slug>/<chart-folder>/
   index.html                    # chart page (~29 KB; links the shared engine assets)
   data.csv                      # copy of the chart's data
 
-catalog/index.json              # array of chart metadata; committed
+catalog/index.json              # array of chart metadata; built by `npm run catalog`
 _site/                          # the assembled gallery published to Pages (incl. per-chart thumb.png)
 _site/embed/v1/engine-<v>.js    # the shared engine runtime, one copy per engine version
 _site/embed/v1/chart-<v>.css    # the shared stylesheet (carries the base64 font)
@@ -210,7 +210,7 @@ e.g. `ai-labor-market/augmented-occupations`. It carries **no date and no tree**
 |---|---|
 | `npm run validate` | Structural/identity checks, then `tbl-chart validate` on every `chart.yaml`; exit 1 if any fail. |
 | `npm run build` | Render every chart to `dist/<id>/index.html`; copy `data.csv`. |
-| `npm run catalog` | Write `catalog/index.json` from all `chart.yaml` + collection files. Commit the result — it is what CI publishes. |
+| `npm run catalog` | Write `catalog/index.json` from all `chart.yaml` + collection files. Generated, not committed — CI runs this on every build. |
 | `npm run vendor-spec` | Re-copy the pinned engine's `CONFIG-SPEC.md` to `ENGINE-CONFIG-SPEC.md`. Only needed after changing the engine pin. |
 | `npm run site` | Assemble the publishable gallery into `_site/` (landing page + chart pages + catalog). |
 | `npm run assets` | Write the engine's shared runtime + stylesheet into `_site/embed/v1/`. |
@@ -219,9 +219,9 @@ e.g. `ai-labor-market/augmented-occupations`. It carries **no date and no tree**
 
 Run order: catalog → validate → build → site → assets → thumbs (`npm run all` does this). `assets`
 must precede `thumbs`, which screenshots the assembled pages and cannot render a chart whose
-runtime is missing. The catalog comes
-first because `npm run validate` fails on a stale committed `catalog/index.json`, and CI publishes
-that committed copy rather than regenerating it.
+runtime is missing. `catalog` must precede `site`, which copies `catalog/index.json` into `_site/`
+and errors if it is absent. The catalog is not committed — both CI build jobs generate it, so no
+content change ever needs a matching catalog commit.
 
 ### Incremental builds
 

@@ -110,17 +110,15 @@ wide, Excel, multiple files, formatted numbers — follow
 write the modern `annotations:` block per ENGINE-CONFIG-SPEC.md instead of copying
 `xAxisPolicy.markers`/`bands` or `yAxisPolicy.markers`).
 
-## Step 5 — Verify and finish (all four, in order)
+## Step 5 — Verify and finish (all three, in order)
 
-1. **`npm run catalog`** — regenerates `catalog/index.json`, a **committed** file that downstream
-   embeds read and that CI publishes as-is. Any content add/retitle/renumber makes it stale;
-   commit the updated catalog together with the content.
-2. **`npm run validate`** — must pass with zero errors. Engine errors are pointed; fix and re-run.
-   Stage 3 fails if the committed catalog is stale, which is why step 1 comes first.
-3. **Preview** — `npm run dev` serves a live preview at `http://localhost:5173` (auto-reloads on
+1. **`npm run validate`** — must pass with zero errors. Engine errors are pointed; fix and re-run.
+   There is no catalog step to remember: `catalog/index.json` is gitignored and CI regenerates it on
+   every build, so an add, retitle, or renumber is a content-only commit.
+2. **Preview** — `npm run dev` serves a live preview at `http://localhost:5173` (auto-reloads on
    save, shows engine errors inline). Tell the user to look at the rendered figure before the
    PR; charts are reviewed visually, there are no image baselines.
-4. **Report** — restate every decision made on the user's behalf (data cleaning, inferred
+3. **Report** — restate every decision made on the user's behalf (data cleaning, inferred
    types, mappings) in your final summary, then follow the PR flow in `README.md` (CI comments
    a live preview URL on every PR; merging publishes).
 
