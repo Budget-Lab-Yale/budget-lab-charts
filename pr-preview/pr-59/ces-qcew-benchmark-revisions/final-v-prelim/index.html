@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The preliminary estimate is rarely much different from the final benchmark revision</title>
+<link rel="stylesheet" href="../../embed/v1/chart-1.12.0.css">
+<style>html.tbl-embedded body{margin:0 !important}html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style><script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}catch(e){document.documentElement.classList.add("tbl-embedded")}</script>
+</head>
+<body>
+<div id="chart" style="max-width:760px;margin:32px auto;padding:0 16px"></div>
+<script src="../../embed/v1/engine-1.12.0.js"></script>
+<script>
+var el = document.getElementById("chart");
+if (typeof BudgetLabChart === "undefined") {
+  renderUnavailable(el, "The preliminary estimate is rarely much different from the final benchmark revision", "Figure 2");
+} else {
+BudgetLabChart.mountChart(el, {
+  spec: {"chartType":"scatter","title":"The preliminary estimate is rarely much different from the final benchmark revision","subtitle":"Total nonfarm employment, benchmark revision level, thousands of jobs (NSA), 2000–2025","xAxisType":"numeric","x_axis_title":"Preliminary benchmark revision (thousands)","y_axis_title":"Final benchmark revision (thousands)","tooltip_decimals":0,"columns":{"x":"preliminary_revision_level","value":"final_revision_level"},"yAxisPolicy":{"includeZero":true},"source":"U.S. Bureau of Labor Statistics, CES National Benchmark Article, Table 4 (https://www.bls.gov/web/empsit/cesbmart.htm).","note":"Each point is one benchmark year, 2000–2025. Preliminary is the estimate published each August/September; final is the subsequent year's revision.","data":"data.csv"},
+  rows: [{"year":"2000","preliminary_revision_level":"392","final_revision_level":"468"},{"year":"2001","preliminary_revision_level":"-76","final_revision_level":"-123"},{"year":"2002","preliminary_revision_level":"-284","final_revision_level":"-203"},{"year":"2003","preliminary_revision_level":"-145","final_revision_level":"-122"},{"year":"2004","preliminary_revision_level":"236","final_revision_level":"203"},{"year":"2005","preliminary_revision_level":"-191","final_revision_level":"-158"},{"year":"2006","preliminary_revision_level":"810","final_revision_level":"752"},{"year":"2007","preliminary_revision_level":"-297","final_revision_level":"-293"},{"year":"2008","preliminary_revision_level":"-21","final_revision_level":"-89"},{"year":"2009","preliminary_revision_level":"-824","final_revision_level":"-902"},{"year":"2010","preliminary_revision_level":"-366","final_revision_level":"-378"},{"year":"2011","preliminary_revision_level":"192","final_revision_level":"162"},{"year":"2012","preliminary_revision_level":"386","final_revision_level":"424"},{"year":"2013","preliminary_revision_level":"-124","final_revision_level":"-119"},{"year":"2014","preliminary_revision_level":"7","final_revision_level":"67"},{"year":"2015","preliminary_revision_level":"-208","final_revision_level":"-172"},{"year":"2016","preliminary_revision_level":"-150","final_revision_level":"-81"},{"year":"2017","preliminary_revision_level":"95","final_revision_level":"135"},{"year":"2018","preliminary_revision_level":"43","final_revision_level":"-16"},{"year":"2019","preliminary_revision_level":"-501","final_revision_level":"-489"},{"year":"2020","preliminary_revision_level":"-173","final_revision_level":"-121"},{"year":"2021","preliminary_revision_level":"-166","final_revision_level":"-7"},{"year":"2022","preliminary_revision_level":"462","final_revision_level":"506"},{"year":"2023","preliminary_revision_level":"-306","final_revision_level":"-187"},{"year":"2024","preliminary_revision_level":"-818","final_revision_level":"-598"},{"year":"2025","preliminary_revision_level":"-911","final_revision_level":"-861"}],
+  eyebrow: /[?&]eyebrow=(off|0|false|none|hide)\b/i.test(location.search) ? undefined : "Figure 2",
+});
+}
+function renderUnavailable(el, title, eyebrow) {
+  var box = document.createElement("div");
+  box.setAttribute("role", "note");
+  box.style.cssText = "font:16px/1.5 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1c1c1c;border:1px solid #d9dce3;border-radius:4px;padding:20px";
+  if (eyebrow) {
+    var e = document.createElement("p");
+    e.textContent = eyebrow;
+    e.style.cssText = "margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a5f6b";
+    box.appendChild(e);
+  }
+  var h = document.createElement("p");
+  h.textContent = title;
+  h.style.cssText = "margin:0 0 12px;font-weight:600";
+  box.appendChild(h);
+  var p = document.createElement("p");
+  p.style.cssText = "margin:0;color:#5a5f6b";
+  p.appendChild(document.createTextNode("An error occurred, please try reloading this page. If this problem persists please contact "));
+  var a = document.createElement("a");
+  a.href = "mailto:budgetlab@yale.edu";
+  a.textContent = "budgetlab@yale.edu";
+  a.style.color = "inherit";
+  p.appendChild(a);
+  p.appendChild(document.createTextNode("."));
+  box.appendChild(p);
+  el.appendChild(box);
+}
+</script>
+<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script><script>(function(){if(window.self===window.top)return;function fit(){try{if(window.parentIFrame&&window.parentIFrame.size)window.parentIFrame.size();}catch(e){}}var t;function soon(){clearTimeout(t);t=setTimeout(fit,60);}if(window.ResizeObserver){try{new ResizeObserver(soon).observe(document.body);}catch(e){}}window.addEventListener("load",function(){setTimeout(fit,200);setTimeout(fit,800);});if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}})();</script>
+</body>
+</html>
