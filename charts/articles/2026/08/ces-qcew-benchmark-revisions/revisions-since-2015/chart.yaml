@@ -27,6 +27,6 @@ category_colors:
   "2024": red
   "2025": red
 
-source: "U.S. Bureau of Labor Statistics, CES National Benchmark Article, Table 4 (https://www.bls.gov/web/empsit/cesbmart.htm)."
+source: "U.S. Bureau of Labor Statistics, [CES National Benchmark Article, Table 4](https://www.bls.gov/web/empsit/cesbmart.htm)."
 note: "Final revision level, not seasonally adjusted."
 data: data.csv
