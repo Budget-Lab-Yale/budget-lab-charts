@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The gap between statutory and effective tariff rates varies substantially by country and product</title>
+<link rel="stylesheet" href="../../embed/v1/chart-1.13.0.css">
+<style>html.tbl-embedded body{margin:0 !important}html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style><script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}catch(e){document.documentElement.classList.add("tbl-embedded")}</script>
+</head>
+<body>
+<div id="chart" style="max-width:760px;margin:32px auto;padding:0 16px"></div>
+<script src="../../embed/v1/engine-1.13.0.js"></script>
+<script>
+var el = document.getElementById("chart");
+if (typeof BudgetLabChart === "undefined") {
+  renderUnavailable(el, "The gap between statutory and effective tariff rates varies substantially by country and product", "Figure 2");
+} else {
+BudgetLabChart.mountChart(el, {
+  spec: {"chartType":"bar","orientation":"horizontal","columns":{"x":"category","value":"value","section":"panel"},"title":"The gap between statutory and effective tariff rates varies substantially by country and product","subtitle":"Gap between the statutory effective tariff rate and the eta-adjusted (realized) rate, in pp. Bars use each category's own import weights.","source":"The Budget Lab Tariff Model.","note":"Computed from the eta diagnostic grid (partner x GTAP trade values and statutory revenue), model results vintage 202607071520 (tracker calibration 2026-06-25-14). Eta applied as realized = statutory x (1 - eta). Amber bars: realized rate above statutory. 'Other FTA partners' includes South Korea. Product section omits sectors with under $1B of imports each; the average line uses all sectors. See docs/FIG2B_OUTLIERS.md.","xAxisType":"categorical","x_axis_title":"Reduction in effective tariff rate (pp)","section_order":["By trading partner","By product (GTAP sector)"],"category_colors":{"Apparel":"amber","Leather & footwear":"amber","Rubber & plastics":"amber","Other food":"amber","Textiles":"amber","Bovine meat":"amber"},"annotations":{"xAxis":[{"x":"1.453","label":"Import-weighted average effect (1.5pp)","labelDy":12}]},"data":"data.csv"},
+  rows: [{"category":"Other FTA partners","panel":"By trading partner","value":"3.0143586555066264"},{"category":"European Union","panel":"By trading partner","value":"2.0086512566578483"},{"category":"Canada","panel":"By trading partner","value":"1.8874551160091655"},{"category":"Mexico","panel":"By trading partner","value":"1.4855031202977598"},{"category":"United Kingdom","panel":"By trading partner","value":"1.309999191895085"},{"category":"Rest of world","panel":"By trading partner","value":"1.1316405631324118"},{"category":"Japan","panel":"By trading partner","value":"0.2647995695720393"},{"category":"China","panel":"By trading partner","value":"0.20412586865378657"},{"category":"Pharma & basic chem.","panel":"By product (GTAP sector)","value":"10.76247570865202"},{"category":"Iron & steel","panel":"By product (GTAP sector)","value":"8.4547086823824"},{"category":"Metal products","panel":"By product (GTAP sector)","value":"5.2560972682017955"},{"category":"Non-ferrous metals","panel":"By product (GTAP sector)","value":"2.557389823212958"},{"category":"Petroleum & coal prod.","panel":"By product (GTAP sector)","value":"1.5030545632429662"},{"category":"Motor vehicles & parts","panel":"By product (GTAP sector)","value":"0.9636514821145035"},{"category":"Wood products","panel":"By product (GTAP sector)","value":"0.7075302897666571"},{"category":"Electrical equip.","panel":"By product (GTAP sector)","value":"0.5518471384318211"},{"category":"Other transport eq.","panel":"By product (GTAP sector)","value":"0.5337488406655755"},{"category":"Other manufactures","panel":"By product (GTAP sector)","value":"0.3934422190518978"},{"category":"Machinery & equip.","panel":"By product (GTAP sector)","value":"0.29608148923583144"},{"category":"Electronics","panel":"By product (GTAP sector)","value":"0.2601142105726373"},{"category":"Other mining extraction","panel":"By product (GTAP sector)","value":"0.09037269397977654"},{"category":"Chemicals","panel":"By product (GTAP sector)","value":"0.03681746686083098"},{"category":"Beverages & tobacco","panel":"By product (GTAP sector)","value":"0.013173188171795025"},{"category":"Mineral products","panel":"By product (GTAP sector)","value":"0.008334707188438095"},{"category":"Other animal prod.","panel":"By product (GTAP sector)","value":"0.0034381563966969786"},{"category":"Vegetables & fruit","panel":"By product (GTAP sector)","value":"8.329223760111804e-4"},{"category":"Vegetable oils","panel":"By product (GTAP sector)","value":"8.838751023532154e-6"},{"category":"Cattle & sheep","panel":"By product (GTAP sector)","value":"0"},{"category":"Electricity","panel":"By product (GTAP sector)","value":"0"},{"category":"Fishing","panel":"By product (GTAP sector)","value":"0"},{"category":"Gas","panel":"By product (GTAP sector)","value":"0"},{"category":"Dairy","panel":"By product (GTAP sector)","value":"0"},{"category":"Other crops","panel":"By product (GTAP sector)","value":"0"},{"category":"Oil","panel":"By product (GTAP sector)","value":"0"},{"category":"Other meat","panel":"By product (GTAP sector)","value":"0"},{"category":"Oilseeds","panel":"By product (GTAP sector)","value":"0"},{"category":"Processed rice","panel":"By product (GTAP sector)","value":"0"},{"category":"Paper & publishing","panel":"By product (GTAP sector)","value":"0"},{"category":"Sugar","panel":"By product (GTAP sector)","value":"0"},{"category":"Apparel","panel":"By product (GTAP sector)","value":"-1.8642944993096933e-4"},{"category":"Leather & footwear","panel":"By product (GTAP sector)","value":"-0.0031179181258274014"},{"category":"Rubber & plastics","panel":"By product (GTAP sector)","value":"-0.026779375839765862"},{"category":"Other food","panel":"By product (GTAP sector)","value":"-0.046582318936328804"},{"category":"Textiles","panel":"By product (GTAP sector)","value":"-0.060244879816018226"},{"category":"Bovine meat","panel":"By product (GTAP sector)","value":"-0.11671445259153579"}],
+  eyebrow: /[?&]eyebrow=(off|0|false|none|hide)\b/i.test(location.search) ? undefined : "Figure 2",
+});
+}
+function renderUnavailable(el, title, eyebrow) {
+  var box = document.createElement("div");
+  box.setAttribute("role", "note");
+  box.style.cssText = "font:16px/1.5 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1c1c1c;border:1px solid #d9dce3;border-radius:4px;padding:20px";
+  if (eyebrow) {
+    var e = document.createElement("p");
+    e.textContent = eyebrow;
+    e.style.cssText = "margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a5f6b";
+    box.appendChild(e);
+  }
+  var h = document.createElement("p");
+  h.textContent = title;
+  h.style.cssText = "margin:0 0 12px;font-weight:600";
+  box.appendChild(h);
+  var p = document.createElement("p");
+  p.style.cssText = "margin:0;color:#5a5f6b";
+  p.appendChild(document.createTextNode("An error occurred, please try reloading this page. If this problem persists please contact "));
+  var a = document.createElement("a");
+  a.href = "mailto:budgetlab@yale.edu";
+  a.textContent = "budgetlab@yale.edu";
+  a.style.color = "inherit";
+  p.appendChild(a);
+  p.appendChild(document.createTextNode("."));
+  box.appendChild(p);
+  el.appendChild(box);
+}
+</script>
+<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script><script>(function(){if(window.self===window.top)return;function fit(){try{if(window.parentIFrame&&window.parentIFrame.size)window.parentIFrame.size();}catch(e){}}var t;function soon(){clearTimeout(t);t=setTimeout(fit,60);}if(window.ResizeObserver){try{new ResizeObserver(soon).observe(document.body);}catch(e){}}window.addEventListener("load",function(){setTimeout(fit,200);setTimeout(fit,800);});if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}})();</script>
+</body>
+</html>
