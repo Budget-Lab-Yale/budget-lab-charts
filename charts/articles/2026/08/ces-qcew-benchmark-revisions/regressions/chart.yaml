@@ -5,11 +5,14 @@ xAxisType: numeric
 x_axis_title: "Preliminary benchmark revision (thousands)"
 y_axis_title: "Growth, July–January (thousands)"
 tooltip_decimals: 0
+legend: false
+tooltip_series_name: false
 
 columns:
   x: preliminary_revision_level
   value: growth
   series: group
+  point_label: year
 
 series_order: ["Other", "2020"]
 series_labels:
@@ -25,7 +28,6 @@ overlays:
     domain: axis
     color: blue
     label: "Linear fit"
-    legend: true
 
   # Stata: function y = 789.17603 + .078694*x, range(-1000 1000), dashed green
   - fun: "b0 + b1*x"
@@ -36,7 +38,7 @@ overlays:
     color: green
     style: dashed
     label: "SAHM-adjusted fit"
-    legend: true
+    labelSide: bottom
 
 yAxisPolicy:
   includeZero: true
@@ -44,6 +46,6 @@ yAxisPolicy:
   max: 4000
   tickCount: 9
 
-source: "U.S. Bureau of Labor Statistics, Current Employment Statistics."
-note: "2020 shown separately given the outsized COVID-era employment growth. Linear fit excludes 2020."
+source: "U.S. Bureau of Labor Statistics, [Current Employment Statistics](https://www.bls.gov/ces/)."
+note: "2020, shown in red, is separated given the outsized COVID-era employment growth. The linear fit excludes it."
 data: data.csv
