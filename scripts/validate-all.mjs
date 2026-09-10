@@ -1,13 +1,18 @@
 /**
  * validate-all.mjs — validate every chart in charts/.
  *
- * Four stages:
+ * Five stages:
  *   1. Structural / identity checks (this repo's organization rules).
  *   2. `tbl-chart validate` on every chart.yaml (the engine's spec schema).
- *   3. catalog/index.json builds from every chart's spec.
- *   4. The vendored ENGINE-CONFIG-SPEC.md matches the pinned engine.
+ *   3. House palette: series colors come from the categorical ramp (scripts/palette-lint.mjs).
+ *   4. catalog/index.json builds from every chart's spec.
+ *   5. The vendored ENGINE-CONFIG-SPEC.md matches the pinned engine.
  *
  * Exit 0 if all pass. Exit 1 if any fail. Stage 1 fails fast before stage 2.
+ *
+ * Stage 3 runs AFTER stage 2 on purpose. It is a STYLE gate, and stage 2 is a correctness gate: a
+ * spec with both a broken schema and an off-palette color should be told about the schema first.
+ * Putting the palette check in stage 1 (which fails fast) would hide the real error behind it.
  *
  * Stage 2 is one `tbl-chart` process per chart and the cost is almost entirely Node startup, so
  * the spawns run through a bounded pool (VALIDATE_CONCURRENCY, default = cores capped at 4).
@@ -17,12 +22,15 @@
 
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, relative, sep } from "node:path";
+import { fileURLToPath } from "node:url";
+import { parse as parseYaml } from "yaml";
 import os from "node:os";
 import { listCharts, buildTblChartCmd } from "./lib.mjs";
 import { runPool } from "./pool.mjs";
 import { buildCatalog, serializeCatalog } from "./build-catalog.mjs";
 import { readEngineSemver } from "./incremental.mjs";
+import { buildPalette, lintPaletteUse } from "./palette-lint.mjs";
 import {
   buildVendoredSpec,
   normalizeEol,
@@ -30,6 +38,7 @@ import {
   VENDORED_SPEC_PATH,
 } from "./vendor-spec.mjs";
 
+const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const COLLECTION_FILE_BY_KIND = { oneoff: "article.yaml", tracker: "tracker.yaml" };
 
@@ -153,7 +162,51 @@ if (!allPassed) {
   process.exit(1);
 }
 
-// --- Stage 3: the catalog builds ---
+// --- Stage 3: house palette on data-series colors ---
+// The engine accepts any resolvable color, so `navy` on a series validates cleanly there. This is
+// the house-style half. Errors fail the build; warnings print and do not.
+console.log();
+console.log("Checking series colors against the house palette...\n");
+
+const paletteErrors = [];
+const paletteWarnings = [];
+try {
+  const palette = buildPalette(REPO_ROOT);
+  for (const { specPath } of charts) {
+    const specRel = relative(REPO_ROOT, specPath).split(sep).join("/");
+    let spec;
+    try {
+      spec = parseYaml(readFileSync(specPath, "utf-8"));
+    } catch {
+      continue; // stage 2 already reported the parse failure
+    }
+    const { errors, warnings } = lintPaletteUse(spec, specRel, palette);
+    paletteErrors.push(...errors);
+    paletteWarnings.push(...warnings);
+  }
+} catch (err) {
+  paletteErrors.push(`palette lint could not run: ${err.message}`);
+}
+
+for (const w of paletteWarnings) console.log(`  warning: ${w}`);
+
+if (paletteErrors.length > 0) {
+  console.error("\nHouse palette check failed:");
+  for (const e of paletteErrors) console.error(`  - ${e}`);
+  console.error(
+    "\nSeries colors must come from the categorical ramp. The default is to omit the field" +
+      " entirely and let the engine apply the ramp in order. A genuinely necessary exception goes" +
+      " in PALETTE_EXCEPTIONS in scripts/palette-lint.mjs, with a reason."
+  );
+  process.exit(1);
+}
+console.log(
+  paletteWarnings.length > 0
+    ? `\nHouse palette OK (${paletteWarnings.length} warning(s)).`
+    : "House palette OK."
+);
+
+// --- Stage 4: the catalog builds ---
 // catalog/index.json is a build artifact — CI regenerates it immediately before `npm run site`, so
 // there is no committed copy to go stale and nothing here to compare against. (It was committed and
 // byte-compared until Aug 2026; a contributor retitling a figure through the GitHub web UI then had
@@ -184,7 +237,7 @@ if (catalogError) {
 }
 console.log(`Catalog builds cleanly (${charts.length} entries).\n`);
 
-// --- Stage 4: vendored engine spec is current ---
+// --- Stage 5: vendored engine spec is current ---
 // The figure schema is documented by a verbatim copy of the pinned engine's CONFIG-SPEC.md so an
 // author never has to open the engine repo. The previous hand-maintained copy drifted 45 fields
 // behind over eight repins, which is why this is a gate rather than a checklist item.
