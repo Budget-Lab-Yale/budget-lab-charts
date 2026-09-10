@@ -17,6 +17,8 @@ import { listCharts } from "./lib.mjs";
 import {
   buildPalette,
   classifyColor,
+  exceptionIsWellFormed,
+  exceptionListErrors,
   lintPaletteUse,
   PALETTE_EXCEPTIONS,
   SERIES_COLOR_FIELDS,
@@ -319,7 +321,7 @@ test("an allowlisted value passes; the same value unlisted fails", () => {
   assert.equal(lintPaletteUse(spec, rel, palette, []).errors.length, 1);
 
   const allowed = [
-    { spec: rel, field: "series_colors", key: "Recent", value: "navy", reason: "test" },
+    { spec: rel, field: "series_colors", key: "Recent", value: "navy", reason: "brand-matched inset requested by comms" },
   ];
   assert.deepEqual(lintPaletteUse(spec, rel, palette, allowed).errors, []);
 });
@@ -327,7 +329,7 @@ test("an allowlisted value passes; the same value unlisted fails", () => {
 test("an exception is scoped to its exact spec, field, key and value", () => {
   const rel = "charts/trackers/t/f/chart.yaml";
   const allowed = [
-    { spec: rel, field: "series_colors", key: "Recent", value: "navy", reason: "test" },
+    { spec: rel, field: "series_colors", key: "Recent", value: "navy", reason: "brand-matched inset requested by comms" },
   ];
   // different key
   assert.equal(
@@ -346,8 +348,53 @@ test("an exception is scoped to its exact spec, field, key and value", () => {
   );
 });
 
-test("the shipped exception list is empty — the archive is fully on-ramp", () => {
-  assert.deepEqual(PALETTE_EXCEPTIONS, []);
+test("every shipped exception is well-formed and carries a reason", () => {
+  // NOT an assertion that the list is empty: that would make the documented mechanism unusable —
+  // the first legitimate exception would fail the required CI job, forcing whoever added it to
+  // rewrite this test. What must hold is that anything shipped is usable and justified.
+  assert.deepEqual(exceptionListErrors(PALETTE_EXCEPTIONS), []);
+  for (const e of PALETTE_EXCEPTIONS) {
+    assert.ok(exceptionIsWellFormed(e), `malformed exception: ${JSON.stringify(e)}`);
+  }
+});
+
+test("an exception with no reason does not apply, and is reported", () => {
+  const rel = "charts/a/b/chart.yaml";
+  const spec = { series_colors: { A: "navy" } };
+  for (const bad of [
+    { spec: rel, field: "series_colors", key: "A", value: "navy" },
+    { spec: rel, field: "series_colors", key: "A", value: "navy", reason: "" },
+    { spec: rel, field: "series_colors", key: "A", value: "navy", reason: "because" },
+    { spec: rel, field: "not_a_field", key: "A", value: "navy", reason: "a perfectly good reason" },
+  ]) {
+    assert.equal(
+      lintPaletteUse(spec, rel, palette, [bad]).errors.length,
+      1,
+      `must not honour ${JSON.stringify(bad)}`,
+    );
+    assert.equal(exceptionListErrors([bad]).length, 1, "the malformed entry must be reported");
+  }
+  // A substantive reason makes it apply.
+  const good = [
+    { spec: rel, field: "series_colors", key: "A", value: "navy", reason: "brand-matched inset requested by comms" },
+  ];
+  assert.deepEqual(lintPaletteUse(spec, rel, palette, good).errors, []);
+  assert.deepEqual(exceptionListErrors(good), []);
+});
+
+test("a barStack.mono block only makes colors inert on an actual stack", () => {
+  // barStack.mono.base is read only by engine/marks/stacked.ts and monoBaseError is not chart-type
+  // gated, so a line spec can carry the block while series_colors still paints. Downgrading there
+  // would let any chart bypass the gate with three lines of dead config.
+  const mono = { mono: { base: "blue" } };
+  const stacked = lint({ chartType: "stacked", barStack: mono, series_colors: { A: "navy" } });
+  assert.deepEqual(stacked.errors, [], "on a real stack the field is inert");
+  assert.equal(stacked.warnings.length, 1);
+
+  for (const ct of ["line", "bar", "scatter", "area", undefined]) {
+    const { errors } = lint({ chartType: ct, barStack: mono, series_colors: { A: "navy" } });
+    assert.equal(errors.length, 1, `chartType ${ct} must still fail — mono paints nothing there`);
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -412,7 +459,11 @@ test("a mono stack makes series_colors inert, so an off-ramp value warns instead
   // stacked.ts builds every segment fill from the mono hue's tonal scale and the mono tier wins
   // downstream, so series_colors paints nothing. Dead config is worth saying; it must not block a
   // merge.
-  const spec = { barStack: { mono: { base: "blue" } }, series_colors: { A: "navy" } };
+  const spec = {
+    chartType: "stacked",
+    barStack: { mono: { base: "blue" } },
+    series_colors: { A: "navy" },
+  };
   const { errors, warnings } = lint(spec);
   assert.deepEqual(errors, [], "an inert field must not fail the merge gate");
   assert.equal(warnings.length, 1);

@@ -62,6 +62,25 @@ export const SERIES_COLOR_FIELDS = ["series_colors", "category_colors", "bar_col
  */
 export const PALETTE_EXCEPTIONS = [];
 
+/**
+ * Problems with the exception LIST itself, checked once per run rather than per spec.
+ * A malformed entry does not silently fail to apply — it is reported, because a contributor who
+ * added it believes a colour is allowed.
+ */
+export function exceptionListErrors(exceptions = PALETTE_EXCEPTIONS) {
+  const out = [];
+  for (const [i, e] of exceptions.entries()) {
+    if (!exceptionIsWellFormed(e)) {
+      out.push(
+        `PALETTE_EXCEPTIONS[${i}] is not a usable exception: it needs \`spec\`, \`field\` (one of ` +
+          `${SERIES_COLOR_FIELDS.join("/")}), \`value\`, and a \`reason\` of at least 10 characters. ` +
+          `An exception with no stated reason is the thing this mechanism exists to prevent.`,
+      );
+    }
+  }
+  return out;
+}
+
 /** Locate the pinned engine's canonical palette file. */
 function paletteJsonPath(repoRoot) {
   const require = createRequire(import.meta.url);
@@ -211,9 +230,26 @@ function seriesColorEntries(spec) {
   return out;
 }
 
+/** An exception must be well-formed AND carry a real reason — the reason is the whole point of the
+ *  mechanism, so an entry without one is not a documented exception and does not apply. */
+export function exceptionIsWellFormed(e) {
+  return (
+    e != null &&
+    typeof e.spec === "string" && e.spec !== "" &&
+    SERIES_COLOR_FIELDS.includes(e.field) &&
+    typeof e.value === "string" && e.value !== "" &&
+    typeof e.reason === "string" && e.reason.trim().length >= 10
+  );
+}
+
 function isExcepted(exceptions, specRel, field, key, value) {
   return exceptions.some(
-    (e) => e.spec === specRel && e.field === field && (e.key ?? null) === (key ?? null) && e.value === value,
+    (e) =>
+      exceptionIsWellFormed(e) &&
+      e.spec === specRel &&
+      e.field === field &&
+      (e.key ?? null) === (key ?? null) &&
+      e.value === value,
   );
 }
 
@@ -233,7 +269,13 @@ export function lintPaletteUse(spec, specRel, palette, exceptions = PALETTE_EXCE
   // the mono tier wins over the series map downstream, so `series_colors` paints nothing at all
   // there. An off-ramp value is still worth saying out loud — it is dead config — but failing the
   // merge gate over a field that colours no mark would be a false positive.
-  const inert = spec.barStack?.mono != null;
+  // Gated on chartType, not just the presence of the block: `barStack.mono.base` is read ONLY by
+  // engine/marks/stacked.ts, and `monoBaseError` is not chart-type gated, so a line or bar spec can
+  // carry a `barStack.mono` block that paints nothing while `series_colors` still renders normally.
+  // Treating that as inert would let any chart bypass this gate by adding three lines of dead
+  // config. Narrow is the safe direction: if a chart type ever does honour mono, it errors here
+  // rather than being waved through.
+  const inert = spec.barStack?.mono != null && spec.chartType === "stacked";
   const sink = inert ? warnings : errors;
   const inertNote = inert
     ? " (barStack.mono paints every segment from one hue's tonal scale, so this field colours" +

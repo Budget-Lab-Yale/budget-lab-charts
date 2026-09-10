@@ -30,7 +30,7 @@ import { listCharts, buildTblChartCmd } from "./lib.mjs";
 import { runPool } from "./pool.mjs";
 import { buildCatalog, serializeCatalog } from "./build-catalog.mjs";
 import { readEngineSemver } from "./incremental.mjs";
-import { buildPalette, lintPaletteUse } from "./palette-lint.mjs";
+import { buildPalette, exceptionListErrors, lintPaletteUse } from "./palette-lint.mjs";
 import {
   buildVendoredSpec,
   normalizeEol,
@@ -172,6 +172,7 @@ const paletteErrors = [];
 const paletteWarnings = [];
 try {
   const palette = buildPalette(REPO_ROOT);
+  paletteErrors.push(...exceptionListErrors());
   for (const { specPath } of charts) {
     const specRel = relative(REPO_ROOT, specPath).split(sep).join("/");
     let spec;
