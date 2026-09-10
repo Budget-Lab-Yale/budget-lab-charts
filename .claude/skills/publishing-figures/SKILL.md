@@ -76,8 +76,10 @@ Two fixed conventions:
   scheme — `"Figure 1"`, `"Appendix Figure 1"`, `"Table 1"` labels live in the collection
   file's `figures:` map, keyed by figure folder name.
 - **Stage 3 — per-figure design**: chart type (recommend one from
-  [references/chart-decisions.md](references/chart-decisions.md)), colors (palette names only —
-  never raw hex; push back on off-palette requests, see chart-decisions.md), annotations (none is
+  [references/chart-decisions.md](references/chart-decisions.md)), colors (**default: specify none**
+  — the engine applies the house ramp in order; do NOT ask what colors they want, and if the user
+  specifies colors anyway, ask them to confirm they mean to override the default, see
+  chart-decisions.md), annotations (none is
   the default), source (default
   `The Budget Lab`) and note text. For several similar figures, ask once whether the choices
   apply to all.

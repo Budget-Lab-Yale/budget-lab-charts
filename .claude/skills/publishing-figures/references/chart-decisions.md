@@ -54,22 +54,67 @@ do not draft titles for them unless they ask for help. Units belong in `subtitle
 
 ## Colors
 
-**Always use palette names — never a raw `"#hex"`.** Every color in this archive is a palette
-token so published figures stay on-brand and consistent with each other; a hardcoded hex breaks
-that even when it looks right in one figure. The engine accepts hex, but that is not a licence to
-use it here.
+**The default is to specify no colors at all.** Omit `series_colors` and the engine applies the
+house categorical ramp in declaration order. That is what makes figures across different
+publications look like they belong to the same organization, so it is the recommendation, not
+merely the fallback — a spec that sets `series_colors` is opting out of a shared system and needs a
+reason that names a semantic, not a preference.
 
-Default: omit `series_colors` entirely — the engine assigns the house palette in series order.
-When you need control, use the named hues: `blue`, `amber`, `violet`, `green`, `red`, `rose`,
-`russet` (each with a `-light` variant; aliases `purple`→violet, `pink`→rose, `yellow`→amber,
-`brown`→russet; neutrals `black`, `grey`, `navy`). Semantic conventions worth offering: red for
-deficits/costs, blue as the lead series.
+**Do not ask the user what colors they want.** State the default as part of the design summary. Ask
+only when a series has a semantic that the ramp cannot express (below).
 
-If the user asks for a particular color, map it to the nearest palette name rather than writing
-its hex. If they ask for a color with no palette equivalent, **push back**: explain that figures
-use the fixed house palette for cross-publication consistency, and offer the closest token. Write
-a raw hex only if the user explicitly insists after that pushback — never reach for one yourself,
-and never leave a color the engine assigned as hex when a palette name is available.
+### The palette is three separate things — do not treat it as one menu
+
+The Style-Guide's `colors.json` gives each group a distinct job, and the grouping *is* the house
+style:
+
+| Group | Tokens | Use for |
+|---|---|---|
+| **Categorical ramp** (positions 1-7, applied in order) | `blue`, `amber`, `violet`, `green`, `red`, `rose`, `russet` | Series. **The only tokens eligible for `series_colors` / `category_colors`.** Each has a `-light` variant and a full tonal tier set (`blue-500`). Aliases: `purple`→violet, `pink`→rose, `yellow`→amber, `brown`→russet. |
+| **Role colors** | `grey`, `black` | Chrome, not data. `grey` is annotations and reference lines; `black` is a baseline/total/threshold line. **Never a series color.** |
+| **Brand** | `navy`, `sky` | Organizational identity — logo, chrome. **Not data, and never a series color.** `navy` is not in the categorical ramp and has no ramp position. |
+
+The ramp order is meaningful: position 1 (`blue`) is the lead series, position 2 (`amber`) the
+second, and so on. Naming colors ad hoc overrides that ordering, which is why the default is to
+leave it alone.
+
+Note that CONFIG-SPEC.md lists `black`, `grey`, `navy`, `sky` together under "Neutrals and brand."
+That is a statement of what the engine *accepts*, not of what a figure *should* use. The engine
+resolves all of them; only the ramp belongs in `series_colors`.
+
+### When an override is legitimate
+
+A closed list. If the request is not one of these, it is a preference — offer the default instead.
+
+- **A semantic the ramp cannot express**: `red` for deficits, costs, or losses.
+- **Continuity within a publication**: holding one series' color fixed across the figures of one
+  article or tracker, where the ramp would otherwise assign it differently per figure.
+- **Continuity with an earlier figure** the reader has already learned to read.
+- **Pairing with an annotation or overlay** that refers to a specific series.
+
+### If the user specifies colors anyway
+
+**Ask them to confirm, explicitly, before writing it.** They are overriding the preferred default,
+and most people asking for a color do not know a shared ramp exists. Say what the default would do,
+say what their choice changes, and ask whether to proceed. For example:
+
+> Omitting colors would give these three series blue, amber, and violet — the house ramp, matching
+> every other Budget Lab figure. You've asked for green and navy. Navy is a brand color rather than
+> a series color, so it isn't in the ramp at all. Do you want to override the default here?
+
+Honor a clear yes and move on — do not ask twice, and do not re-litigate it later in the session.
+Record nothing special in the spec; the confirmation is a conversation, not a comment.
+
+Two further rules that hold regardless:
+
+- **Never a raw `"#hex"`.** Every color in this archive is a palette token, so published figures
+  stay on-brand; a hardcoded hex breaks that even when it looks right in one figure. The engine
+  accepts hex — that is not a licence to use it here. Map a requested color to the nearest token.
+  Write a hex only if the user insists after being told why, never reach for one yourself, and
+  never leave a hex the engine assigned when a token is available.
+- **Never a role or brand token in `series_colors`** (`grey`, `black`, `navy`, `sky`). If a user
+  asks for one, say what it is for and offer the nearest ramp hue — `navy` → `blue`, and note that
+  the two are close enough that the difference reads as inconsistency rather than intent.
 
 ## Annotations — offer these when the story needs them
 
