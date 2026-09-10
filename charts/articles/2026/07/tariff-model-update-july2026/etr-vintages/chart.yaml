@@ -15,9 +15,9 @@ series_order:
   - "July 2026 (current, incl. new Sec. 301)"
   - "Without new Sec. 301 (counterfactual)"
 series_colors:
-  "April 2026 release": "#0072B2"
-  "July 2026 (current, incl. new Sec. 301)": "#E69F00"
-  "Without new Sec. 301 (counterfactual)": "#E69F00"
+  "April 2026 release": blue
+  "July 2026 (current, incl. new Sec. 301)": amber
+  "Without new Sec. 301 (counterfactual)": amber
 series_styles:
   "Without new Sec. 301 (counterfactual)":
     dashed: true
