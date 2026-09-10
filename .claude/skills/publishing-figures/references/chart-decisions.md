@@ -26,10 +26,18 @@ Hard constraints the engine enforces:
 
 ## Inferring `xAxisType` from the x column
 
-`YYYY-MM-DD` → `temporal` · `YYYYQ#` (e.g. `2025Q1`) → `quarterly` · plain numbers (years,
-ages, percentiles) → `numeric` · anything else → `categorical`. Monthly data: convert to
-first-of-month `YYYY-MM-DD` and use `temporal`. Ask the user only when genuinely ambiguous
-(e.g. integer bins that could be ordered categories).
+`YYYY-MM-DD` → `temporal` · **a bare `YYYY` annual series → `temporal`** (v1.14.0+) ·
+`YYYYQ#` (e.g. `2025Q1`) → `quarterly` · other plain numbers (ages, percentiles, dollar amounts)
+→ `numeric` · anything else → `categorical`. Monthly data: convert to first-of-month
+`YYYY-MM-DD` and use `temporal`. Ask the user only when genuinely ambiguous (e.g. integer bins that
+could be ordered categories).
+
+**A year is not a plain number here.** From v1.14.0 a `numeric` axis groups thousands, so a year
+column left on `numeric` labels its ticks `1,950  1,960  …`. Put an annual series on `temporal`
+instead: `parseDate` reads a bare `YYYY` as local 1 January and the axis renders a year-cadence span
+as a bare `%Y`, so **the data needs no change** — only `xAxisType`. Band and marker bounds written
+as `"1953"` parse the same way. (The two `ai-fiscal` history charts were migrated for exactly this
+reason when the engine was repinned to v1.14.0.)
 
 **The chart type overrides this.** The rules above read the x *column*; the constraints above read the
 chart *type*, and the type wins. A `bar` or `stacked` chart of values by year is `categorical` with the

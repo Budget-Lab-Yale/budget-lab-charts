@@ -2,7 +2,7 @@ chartType: line
 title: How AI scenario labor share assumptions compare to the historical labor share
 subtitle: Labor share of national income
 note: Shaded areas indicate US recessions.
-xAxisType: numeric
+xAxisType: temporal
 
 columns:
   x: Year
