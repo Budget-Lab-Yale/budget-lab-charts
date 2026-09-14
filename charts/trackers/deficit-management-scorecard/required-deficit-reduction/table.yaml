@@ -1,0 +1,47 @@
+title: "Required deficit reduction under the minimum sustainable feedback rule, 2027–2036"
+data: data.csv
+
+stub: [group, row]
+header: [tier, col]
+value: value
+
+group_labels:
+  baseline: "Panel A. CBO baseline levels"
+  reduction: "Panel B. Reductions from baseline under the sustainable feedback rule"
+  resulting: "Panel C. Resulting fiscal-path levels"
+
+row_labels:
+  primary_deficit: "Primary deficit (% of GDP)"
+  deficit: "Deficit (% of GDP)"
+  debt_gdp: "Debt (% of GDP)"
+
+header_labels:
+  annual: "Fiscal year"
+  average: "Average"
+
+column_labels:
+  avg_2027_31: "2027–31"
+  avg_2032_36: "2032–36"
+  avg_2027_36: "2027–36"
+
+group_order: [baseline, reduction, resulting]
+row_order: [primary_deficit, deficit, debt_gdp]
+column_group_order: [annual, average]
+column_order: ["2027", "2028", "2029", "2030", "2031", "2032", "2033", "2034", "2035", "2036", avg_2027_31, avg_2032_36, avg_2027_36]
+
+format:
+  default:
+    decimals: 2
+  rows:
+    debt_gdp:
+      decimals: 1
+
+stub_width: 190
+stub_nowrap: true
+column_width: 72
+header_max_lines: 2
+sticky:
+  firstColumn: true
+
+source: "Congressional Budget Office and Budget Lab calculations."
+notes: "Panel A reports levels in the Congressional Budget Office's February 2026 ten-year baseline, in percent of GDP. Panel B reports reductions from those levels, in percentage points, under the annual fiscal feedback coefficient of 0.19 from Auerbach and Yagan (2026), equivalent to a semiannual coefficient of 0.10. Each year's reduction is permanent, so the reduction shown for any year includes all earlier reductions plus that year's new adjustment. Panel C reports the resulting levels after subtracting Panel B from Panel A."
