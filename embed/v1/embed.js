@@ -1,6 +1,6 @@
 /**
  * Budget Lab Charts — embed loader
- * @version 1.0.0
+ * @version 1.1.0
  * Snippet: <script src=".../budget-lab-charts/embed/v1/embed.js" chart="<collection>/<chart>"></script>
  * Auto-sizes the chart iframe to content height via iframe-resizer v4 (MIT, vendored alongside).
  * Mirrors the budget-lab-interactives embed loader; the only differences are that charts are
@@ -41,7 +41,12 @@
   iframe.id        = 'tbl-chart-' + chart.replace(/[^a-z0-9]+/gi, '-') + '-' + Math.random().toString(36).slice(2, 8);
   iframe.src       = src;
   iframe.scrolling = 'no';
-  iframe.loading   = 'lazy';
+  // MUST stay 'eager'. A non-scrolling renderer — Doppio's PDF builder, a card scraper — never
+  // brings a below-fold iframe near the viewport, so 'lazy' leaves it an empty 100px box forever.
+  // Measured on a 13-figure article: 1 of 13 figures rendered under page.pdf() with 'lazy', 13 of
+  // 13 with 'eager'; a taller viewport is not a workaround (3 of 13 at 1280x4000). It also makes
+  // `networkidle` useless to a PDF builder, which fires while most figures never requested a thing.
+  iframe.loading   = 'eager';
   iframe.style.cssText = 'position:absolute !important;top:0 !important;left:0 !important;width:100% !important;height:100% !important;border:0 !important;display:block !important;';
 
   // Accessible title: an explicit data-title wins; otherwise derive it from the published catalog
