@@ -1,0 +1,54 @@
+chartType: scatter
+title: "The scorecard: How Congress compares to its pre-2004 predecessors"
+subtitle: "Legislative primary-deficit reduction vs. projected debt-to-GDP ratio change, 1984–2026"
+xAxisType: numeric
+x_axis_title: "Projected annual debt-to-GDP ratio change, output-gap adjusted (percentage points)"
+y_axis_title: "Primary-deficit reduction, output-gap adjusted (percentage points of potential GDP)"
+tooltip_decimals: 2
+tooltip_series_name: false
+tooltip_x_label: "Adjusted debt/GDP change"
+tooltip_y_label: "Adjusted primary-deficit reduction"
+
+columns:
+  x: projected_debt_gdp_change_adjusted_pp
+  value: deficit_reduction_adjusted_pct_gdp
+  series: era
+  point_label: period
+
+series_order: [pre_2004, post_2004, recent]
+series_labels:
+  pre_2004: "1984–2003"
+  post_2004: "2004–2024"
+  recent: "2025–2026"
+
+overlays:
+  - column: pre_2004_rule_adjusted_pct_gdp
+    by: none
+    domain: axis
+    color: blue
+    style: solid
+    strokeWidth: 2
+    label: "Pre-2004 rule"
+    legend: true
+    tooltip: true
+
+annotations:
+  xAxis:
+    - { x: "0", style: solid, color: grey, strokeWidth: 1 }
+  yAxis:
+    - { y: 0, style: dashed, color: grey, strokeWidth: 1 }
+  points:
+    - { point: "2025a", label: "{point_label}", connector: true }
+    - { point: "2025b", label: "{point_label}", connector: true }
+    - { point: "2025b*", label: "{point_label}", dy: -20, connector: true }
+    - { point: "2026a", label: "{point_label}", connector: true }
+
+yAxisPolicy:
+  min: -1.75
+  max: 1
+  tickCount: 6
+
+note: >-
+  The 1984–2003 points are the benchmark era used to estimate the pre-2004 rule, and the 2004–2024 points are the comparison era. Each point represents one half-year, built from the CBO budget outlooks released in that half; "a" denotes the first half-year of a year and "b" the second. The horizontal axis measures CBO's projected average annual change in the debt-to-GDP ratio over the next five years, as of the start of that half-year. The vertical axis measures how much legislation enacted during the half-year reduced the primary deficit over those five years, as a share of potential GDP. Both axes are adjusted for the business cycle using the pre-2004 relationship with the output gap. Points below the line indicate that Congress enacted less deficit reduction than the pre-2004 rule predicts, while points above it indicate that Congress enacted more. Periods of constrained monetary policy (2008b–2016a and 2020b–2022a) are omitted. The 2025b* observation treats projected tariff revenue from executive action as if it were legislated.
+source: "Congressional Budget Office and Budget Lab calculations based on Auerbach and Yagan (2026)."
+data: data.csv

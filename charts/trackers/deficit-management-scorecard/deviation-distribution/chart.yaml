@@ -1,0 +1,40 @@
+chartType: histogram
+title: "The lack of deficit reduction in 2025–2026 was historically unusual"
+subtitle: "Distribution of deficit deviations from the pre-2004 fiscal feedback rule, pre- and post-2004"
+xAxisType: numeric
+x_axis_title: "Shortfall vs. pre-2004 rule (percentage points of potential GDP)"
+y_axis_title: "Share of observations per 0.25-percentage-point bin"
+value_suffix: "%"
+tooltip_decimals: 1
+
+columns:
+  x: deviation_pct_gdp
+  series: era
+
+series_order: [pre_2004, post_2004]
+series_labels:
+  pre_2004: "1984–2003"
+  post_2004: "2004–2024"
+
+histogram:
+  binWidth: 0.25
+  domain: [-1, 2.25]
+  weight: weight_pct
+
+annotations:
+  xAxis:
+    - { x: "0", style: solid, color: grey, strokeWidth: 1 }
+    - { x: "0.50130021857983487", label: "2026a", labelSide: left, style: dashed, color: violet, strokeWidth: 1.5 }
+    - { x: "0.62216576364663156", label: "2025a", labelSide: right, style: dashed, color: violet, strokeWidth: 1.5 }
+    - { x: "0.85326085705487609", label: "2025b*", style: dashed, color: violet, strokeWidth: 1.5 }
+    - { x: "1.959553771537252", label: "2025b", style: dashed, color: violet, strokeWidth: 1.5 }
+
+yAxisPolicy:
+  min: 0
+  max: 40
+  tickCount: 5
+
+note: >-
+  The 1984–2003 bars cover the benchmark era used to estimate the pre-2004 rule, and the 2004–2024 bars cover the comparison era. Each bar reports the share of that era's observations in a 0.25 percentage point interval. Each observation's deviation is the deficit reduction the pre-2004 rule predicted minus the deficit reduction Congress enacted, in percentage points of potential GDP. Positive values mean Congress enacted less deficit reduction than the rule predicts, while negative values mean Congress enacted more. Violet dashed lines mark the four recent observations, where "a" denotes the first half-year of a year and "b" the second. Periods of constrained monetary policy (2008b–2016a and 2020b–2022a) are omitted. The 2025b* observation treats projected tariff revenue from executive action as if it were legislated.
+source: "Congressional Budget Office and Budget Lab calculations based on Auerbach and Yagan (2026)."
+data: data.csv
