@@ -83,6 +83,15 @@
     "ces-qcew-benchmark-revisions/revisions-since-2015": {
       "hash": "b698ee58879e793a83ec2a0a7a2a8497d92f71c385cc50fa613af1afce79c683"
     },
+    "deficit-management-scorecard/deviation-distribution": {
+      "hash": "6b4a72d4066dd29db61db712b6933a6da7a2667cff4eda8bb83fbd724e004b3e"
+    },
+    "deficit-management-scorecard/required-deficit-reduction": {
+      "hash": "752edf23e6cd9b828b79a322a1bc8fd57b2fc6d78fe68e5eb93c5d191fd369c4"
+    },
+    "deficit-management-scorecard/scorecard-scatter": {
+      "hash": "5c8def4ef129e932181a90745fe197ddb76640bdd5325aedcd00009a27dbc8ac"
+    },
     "recession-indicators/cfnai": {
       "hash": "4a697abaa14607573520eac80cce6ba9c34566978c2da3931f3e94cc876378ec"
     },
