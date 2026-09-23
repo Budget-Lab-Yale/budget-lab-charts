@@ -1,5 +1,5 @@
 chartType: line
-title: "Unemployment by contemporaneous predicted quintile"
+title: "Unemployment rate by propensity quintile, contemporaneous"
 subtitle: "Random forest re-estimated and quintiles recut every quarter, indexed to 2020Q1 = 0"
 xAxisType: quarterly
 columns:
