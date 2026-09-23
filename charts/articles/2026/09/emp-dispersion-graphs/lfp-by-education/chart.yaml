@@ -17,7 +17,7 @@ series_colors:
 y_axis_title: "Percentage points"
 yAxisPolicy:
   includeZero: true
-  annotations:
+annotations:
   xAxis:
     - { x: "2020-01-01", label: "Jan 2020 = 0" }
 note: "Lines are trailing 12-month averages of the labor force participation rate within each education group, additively indexed to January 2020 = 0. Groups are observed education, not predicted propensity: high school or less includes GED holders, and bachelor's degree or more includes advanced degrees. The October 2025 CPS was never collected; any trailing average whose window spans it is taken over the months that exist."
