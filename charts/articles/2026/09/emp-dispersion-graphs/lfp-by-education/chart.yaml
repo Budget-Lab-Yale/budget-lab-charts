@@ -12,7 +12,7 @@ series_order:
   - "Bachelor's degree or more"
 series_colors:
   "High school or less": blue-200
-  "Some college or associate": blue-400
+  "Some college or associate": amber
   "Bachelor's degree or more": blue-600
 y_axis_title: "Percentage points"
 yAxisPolicy:
