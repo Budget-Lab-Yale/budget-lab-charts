@@ -17,6 +17,9 @@ series_colors:
 y_axis_title: "Percentage points"
 yAxisPolicy:
   includeZero: true
+annotations:
+  xAxis:
+    - { x: "2020Q1", label: "2020Q1 = 0" }
 note: "Quarterly. The random forest is re-estimated and the quintiles are recut in every quarter. Quintiles are ordered by predicted unemployment from highest to lowest, so quintile 1 is the disadvantaged end."
 source: "IPUMS CPS basic monthly samples, authors' calculations."
 data: data.csv
