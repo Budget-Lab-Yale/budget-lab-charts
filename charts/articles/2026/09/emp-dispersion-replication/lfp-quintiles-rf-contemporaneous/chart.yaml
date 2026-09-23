@@ -1,0 +1,22 @@
+chartType: line
+title: "Labor force participation by contemporaneous predicted quintile"
+subtitle: "Random forest re-estimated and quintiles recut every quarter, indexed to 2020Q1 = 0"
+xAxisType: quarterly
+columns:
+  x: date
+  value: value
+  series: series
+series_order:
+  - "Quintile 1 (Lowest)"
+  - "Quintile 3"
+  - "Quintile 5 (Highest)"
+series_colors:
+  "Quintile 1 (Lowest)": blue-200
+  "Quintile 3": blue-400
+  "Quintile 5 (Highest)": blue-600
+y_axis_title: "Percentage points"
+yAxisPolicy:
+  includeZero: true
+note: "Quarterly. The random forest is re-estimated and the quintiles are recut in every quarter, so the mapping from characteristics to predicted propensity never ages out of sample. Lines are trailing 4-quarter averages, additively indexed to 2020Q1 = 0. Quintile 1 is the disadvantaged end."
+source: "IPUMS CPS basic monthly samples, authors' calculations."
+data: data.csv

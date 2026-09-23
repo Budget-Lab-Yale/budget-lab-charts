@@ -1,0 +1,22 @@
+chartType: line
+title: "Labor force participation by predicted quintile"
+subtitle: "Random forest quintiles estimated on 2017-18, indexed to January 2020 = 0"
+xAxisType: temporal
+columns:
+  x: date
+  value: value
+  series: series
+series_order:
+  - "Quintile 1 (Lowest)"
+  - "Quintile 3"
+  - "Quintile 5 (Highest)"
+series_colors:
+  "Quintile 1 (Lowest)": blue-200
+  "Quintile 3": blue-400
+  "Quintile 5 (Highest)": blue-600
+y_axis_title: "Percentage points"
+yAxisPolicy:
+  includeZero: true
+note: "Quintiles are cut on predicted values from a random forest estimated on pooled 2017-18 data; the same fixed cutoffs are applied in every month. Lines are trailing 12-month averages, additively indexed to January 2020 = 0. Quintile 1 is the disadvantaged end. The October 2025 CPS was never collected; any trailing average whose window spans it is taken over the months that exist."
+source: "IPUMS CPS basic monthly samples, authors' calculations."
+data: data.csv
