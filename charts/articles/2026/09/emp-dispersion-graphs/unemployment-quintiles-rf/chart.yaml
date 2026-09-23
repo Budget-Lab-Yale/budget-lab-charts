@@ -17,6 +17,9 @@ series_colors:
 y_axis_title: "Percentage points"
 yAxisPolicy:
   includeZero: true
+annotations:
+  xAxis:
+    - { x: "2020-01-01", label: "Jan 2020 = 0" }
 note: "Quintiles are cut on predicted values from a random forest estimated on pooled 2017-18 data; the same fixed cutoffs are applied in every month. Lines are trailing 12-month averages, additively indexed to January 2020 = 0. Quintiles are ordered by predicted unemployment from highest to lowest, so quintile 1 is the disadvantaged end. The October 2025 CPS was never collected; any trailing average whose window spans it is taken over the months that exist."
 source: "IPUMS CPS basic monthly samples, authors' calculations."
 data: data.csv
