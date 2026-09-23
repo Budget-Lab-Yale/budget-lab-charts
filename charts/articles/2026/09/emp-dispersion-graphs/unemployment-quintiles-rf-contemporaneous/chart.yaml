@@ -12,7 +12,7 @@ series_order:
   - "Quintile 5 (Lowest)"
 series_colors:
   "Quintile 1 (Highest)": blue-200
-  "Quintile 3": blue-400
+  "Quintile 3": amber
   "Quintile 5 (Lowest)": blue-600
 y_axis_title: "Percentage points"
 yAxisPolicy:
