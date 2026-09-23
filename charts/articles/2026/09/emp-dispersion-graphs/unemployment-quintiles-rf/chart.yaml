@@ -1,5 +1,5 @@
 chartType: line
-title: "Unemployment by predicted quintile"
+title: "Unemployment inequality fell before the pandemic and rose after it"
 subtitle: "Random forest quintiles estimated on 2017-18, indexed to January 2020 = 0"
 xAxisType: temporal
 columns:
