@@ -1,5 +1,5 @@
 chartType: line
-title: "Labor force participation by predicted quintile"
+title: "Participation inequality has fallen substantially since before the pandemic, when measured with a broader set of variables than education"
 subtitle: "Random forest quintiles estimated on 2017-18, indexed to January 2020 = 0"
 xAxisType: temporal
 columns:
