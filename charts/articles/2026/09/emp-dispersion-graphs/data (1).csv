@@ -1,0 +1,71 @@
+quintile,characteristic,value
+Quintile 1 (Lowest),age,39.88
+Quintile 1 (Lowest),college,0.0900
+Quintile 1 (Lowest),male,0.0500
+Quintile 1 (Lowest),white_non_hispanic,0.4300
+Quintile 1 (Lowest),black_non_hispanic,0.1600
+Quintile 1 (Lowest),hispanic,0.2900
+Quintile 1 (Lowest),married,0.5600
+Quintile 1 (Lowest),veteran,0.0100
+Quintile 1 (Lowest),nchild,1.37
+Quintile 1 (Lowest),nchild_under5,0.28
+Quintile 1 (Lowest),born_us,0.6400
+Quintile 1 (Lowest),not_citizen,0.2600
+Quintile 1 (Lowest),city,0.3200
+Quintile 1 (Lowest),participation_rate,0.6270
+Quintile 2,age,39.27
+Quintile 2,college,0.2100
+Quintile 2,male,0.3400
+Quintile 2,white_non_hispanic,0.5900
+Quintile 2,black_non_hispanic,0.1500
+Quintile 2,hispanic,0.1600
+Quintile 2,married,0.5400
+Quintile 2,veteran,0.0300
+Quintile 2,nchild,1.13
+Quintile 2,nchild_under5,0.24
+Quintile 2,born_us,0.8100
+Quintile 2,not_citizen,0.0300
+Quintile 2,city,0.2700
+Quintile 2,participation_rate,0.7680
+Quintile 3,age,40.08
+Quintile 3,college,0.5800
+Quintile 3,male,0.2100
+Quintile 3,white_non_hispanic,0.6700
+Quintile 3,black_non_hispanic,0.1500
+Quintile 3,hispanic,0.1100
+Quintile 3,married,0.5000
+Quintile 3,veteran,0.0500
+Quintile 3,nchild,0.72
+Quintile 3,nchild_under5,0.11
+Quintile 3,born_us,0.9300
+Quintile 3,not_citizen,0.0200
+Quintile 3,city,0.2900
+Quintile 3,participation_rate,0.8560
+Quintile 4,age,37.3
+Quintile 4,college,0.2800
+Quintile 4,male,0.8600
+Quintile 4,white_non_hispanic,0.5400
+Quintile 4,black_non_hispanic,0.1200
+Quintile 4,hispanic,0.2400
+Quintile 4,married,0.4700
+Quintile 4,veteran,0.0700
+Quintile 4,nchild,0.85
+Quintile 4,nchild_under5,0.16
+Quintile 4,born_us,0.7300
+Quintile 4,not_citizen,0.1700
+Quintile 4,city,0.3600
+Quintile 4,participation_rate,0.9000
+Quintile 5 (Highest),age,39.63
+Quintile 5 (Highest),college,0.7300
+Quintile 5 (Highest),male,1.0000
+Quintile 5 (Highest),white_non_hispanic,0.7000
+Quintile 5 (Highest),black_non_hispanic,0.0600
+Quintile 5 (Highest),hispanic,0.1700
+Quintile 5 (Highest),married,0.8100
+Quintile 5 (Highest),veteran,0.0600
+Quintile 5 (Highest),nchild,1.39
+Quintile 5 (Highest),nchild_under5,0.33
+Quintile 5 (Highest),born_us,0.7900
+Quintile 5 (Highest),not_citizen,0.1100
+Quintile 5 (Highest),city,0.3000
+Quintile 5 (Highest),participation_rate,0.9500
