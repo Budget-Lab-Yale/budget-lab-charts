@@ -1,6 +1,6 @@
 chartType: line
 title: "In terms of labor force participation, less-educated workers have recovered the ground they lost in the pandemic"
-subtitle: "Change since January 2020, in percentage points"
+subtitle: "Ages 25–54, change since January 2020, in percentage points"
 xAxisType: temporal
 columns:
   x: date
