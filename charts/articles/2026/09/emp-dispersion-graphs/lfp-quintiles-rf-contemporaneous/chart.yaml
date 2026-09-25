@@ -20,6 +20,6 @@ yAxisPolicy:
 annotations:
   xAxis:
     - { x: "2020Q1", label: "2020Q1 = 0" }
-note: "Quarterly. The random forest is re-estimated and the quintiles are recut in every quarter, so the mapping from characteristics to predicted propensity never ages out of sample. Lines are trailing 4-quarter averages, additively indexed to 2020Q1 = 0. Quintile 1 is the disadvantaged end."
+note: "Quarterly. The random forest is re-estimated for the same sample and the quintiles are recut in every quarter, so the mapping from characteristics to predicted propensity never ages out of sample. Lines are trailing 4-quarter averages, additively indexed to 2020Q1 = 0. Quintile 1 is the disadvantaged end."
 source: "IPUMS CPS basic monthly samples, authors' calculations."
 data: data.csv
