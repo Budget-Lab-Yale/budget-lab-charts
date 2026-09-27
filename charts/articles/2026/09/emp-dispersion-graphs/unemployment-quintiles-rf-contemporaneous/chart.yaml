@@ -1,6 +1,6 @@
 chartType: line
 title: "Unemployment rate by propensity quintile, contemporaneous"
-subtitle: "Random forest re-estimated and quintiles recut every quarter, indexed to 2020Q1 = 0"
+subtitle: "Percentage point change since 2020Q1"
 xAxisType: quarterly
 columns:
   x: date
@@ -14,12 +14,11 @@ series_colors:
   "Quintile 1 (Highest)": blue-200
   "Quintile 3": amber
   "Quintile 5 (Lowest)": blue-600
-y_axis_title: "Percentage points"
 yAxisPolicy:
   includeZero: true
 annotations:
   xAxis:
     - { x: "2020Q1", label: "2020Q1 = 0" }
-note: "Quarterly. The random forest is re-estimated for the same sample and the quintiles are recut in every quarter. Lines are trailing 4-quarter averages, additively indexed to 2020Q1 = 0. Quintiles are ordered by predicted unemployment from highest to lowest, where quintile 1 is the disadvantaged end."
-source: "IPUMS CPS basic monthly samples, authors' calculations."
+note: "Sample is restricted to 25-54 year olds. Series are trailing 4-quarter averages of estimated rates within each group, additively indexed to zero in 2020Q1. 2025Q4 is calculated using non-missing values."
+source: "IPUMS CPS basic monthly samples and authors' calculations."
 data: data.csv
