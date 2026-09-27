@@ -1,5 +1,4 @@
-title: "Characteristics by predicted-employment quintile"
-subtitle: "CPS sample, random-forest model of labor force participation"
+title: "Characteristics by predicted labor force participation quintile"
 data: "data.csv"
 stub: ["quintile"]
 header: ["characteristic"]
@@ -22,7 +21,6 @@ column_labels:
   born_us: "Born US"
   not_citizen: "Not citizen"
   city: "City"
-  participation_rate: "Participation rate"
 
 column_order:
   - age
@@ -38,7 +36,6 @@ column_order:
   - born_us
   - not_citizen
   - city
-  - participation_rate
 
 row_order:
   - "Quintile 1 (Lowest)"
@@ -53,8 +50,7 @@ format:
     age: { type: number, decimals: 1 }
     nchild: { type: number, decimals: 2 }
     nchild_under5: { type: number, decimals: 2 }
-    participation_rate: { type: percent, decimals: 1 }
 
 sticky: { firstColumn: true }
-source: "The Budget Lab, CPS microdata."
-notes: "Quintiles rank workers by predicted labor force participation probability from a random-forest model. Shares are of each quintile's sample."
+source: "IPUMS CPS basic monthly samples and author’s calculations."
+notes: "Sample is restricted to 25-54 year olds. Shares are out of each quintile, e.g., 9% of the bottom quintile consists of four-year college graduates."
