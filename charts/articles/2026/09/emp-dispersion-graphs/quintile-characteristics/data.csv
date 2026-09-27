@@ -12,7 +12,6 @@ Quintile 1 (Lowest),nchild_under5,0.28
 Quintile 1 (Lowest),born_us,0.6400
 Quintile 1 (Lowest),not_citizen,0.2600
 Quintile 1 (Lowest),city,0.3200
-Quintile 1 (Lowest),participation_rate,0.6270
 Quintile 2,age,39.27
 Quintile 2,college,0.2100
 Quintile 2,male,0.3400
@@ -26,7 +25,6 @@ Quintile 2,nchild_under5,0.24
 Quintile 2,born_us,0.8100
 Quintile 2,not_citizen,0.0300
 Quintile 2,city,0.2700
-Quintile 2,participation_rate,0.7680
 Quintile 3,age,40.08
 Quintile 3,college,0.5800
 Quintile 3,male,0.2100
@@ -40,7 +38,6 @@ Quintile 3,nchild_under5,0.11
 Quintile 3,born_us,0.9300
 Quintile 3,not_citizen,0.0200
 Quintile 3,city,0.2900
-Quintile 3,participation_rate,0.8560
 Quintile 4,age,37.3
 Quintile 4,college,0.2800
 Quintile 4,male,0.8600
@@ -54,7 +51,6 @@ Quintile 4,nchild_under5,0.16
 Quintile 4,born_us,0.7300
 Quintile 4,not_citizen,0.1700
 Quintile 4,city,0.3600
-Quintile 4,participation_rate,0.9000
 Quintile 5 (Highest),age,39.63
 Quintile 5 (Highest),college,0.7300
 Quintile 5 (Highest),male,1.0000
@@ -68,4 +64,3 @@ Quintile 5 (Highest),nchild_under5,0.33
 Quintile 5 (Highest),born_us,0.7900
 Quintile 5 (Highest),not_citizen,0.1100
 Quintile 5 (Highest),city,0.3000
-Quintile 5 (Highest),participation_rate,0.9500
