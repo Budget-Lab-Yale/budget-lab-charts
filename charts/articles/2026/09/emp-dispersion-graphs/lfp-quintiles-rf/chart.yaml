@@ -20,5 +20,5 @@ annotations:
   xAxis:
     - { x: "2020-01-01", label: "Jan 2020 = 0" }
 note: "Sample is restricted to 25-54 year olds. Series are trailing 12-month averages of estimated rates within each group, additively indexed to zero in January 2020. The gap in October 2025 is due to the CPS not having been collected in that month."
-source: "IPUMS CPS basic monthly samples and authors' calculations."
+source: "IPUMS CPS basic monthly samples and author's calculations."
 data: data.csv
