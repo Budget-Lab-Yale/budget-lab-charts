@@ -6,10 +6,6 @@ columns:
   x: date
   value: value
   series: series
-series_order:
-  - "Quintile 1 (Lowest)"
-  - "Quintile 3"
-  - "Quintile 5 (Highest)"
 series_colors:
   "Quintile 1 (Lowest)": blue-200
   "Quintile 3": amber
