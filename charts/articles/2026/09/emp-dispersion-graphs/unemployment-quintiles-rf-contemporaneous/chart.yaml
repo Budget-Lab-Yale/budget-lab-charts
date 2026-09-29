@@ -1,0 +1,20 @@
+chartType: line
+title: "Unemployment rate by propensity quintile, contemporaneous"
+subtitle: "Percentage point change since 2020Q1"
+xAxisType: quarterly
+columns:
+  x: date
+  value: value
+  series: series
+series_order:
+  - "Quintile 1 (Highest)"
+  - "Quintile 3"
+  - "Quintile 5 (Lowest)"
+yAxisPolicy:
+  includeZero: true
+annotations:
+  xAxis:
+    - { x: "2020Q1", label: "2020Q1 = 0" }
+note: "Sample is restricted to 25-54 year olds. Series are trailing 4-quarter averages of estimated rates within each group, additively indexed to zero in 2020Q1. 2025Q4 is calculated using non-missing values."
+source: "IPUMS CPS basic monthly samples and author's calculations."
+data: data.csv

@@ -1,0 +1,20 @@
+chartType: line
+title: "In terms of labor force participation, less-educated workers have recovered the ground they lost in the pandemic"
+subtitle: "Percentage point change since January 2020"
+xAxisType: temporal
+columns:
+  x: date
+  value: value
+  series: series
+series_order:
+  - "High school or less"
+  - "Some college or associate"
+  - "Bachelor's degree or more"
+yAxisPolicy:
+  includeZero: true
+annotations:
+  xAxis:
+    - { x: "2020-01-01", label: "Jan 2020 = 0" }
+note: "Sample is restricted to 25-54 year olds. Series are trailing 12-month averages of estimated rates within each group, additively indexed to zero in January 2020. The gap in October 2025 is due to the CPS not having been collected in that month."
+source: "IPUMS CPS basic monthly sample and author's calculations."
+data: data.csv

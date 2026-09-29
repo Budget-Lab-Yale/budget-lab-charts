@@ -1,0 +1,56 @@
+title: "Characteristics by predicted labor force participation quintile"
+data: "data.csv"
+stub: ["characteristic"]
+header: ["quintile"]
+value: "value"
+
+stub_header: "Characteristic"
+stub_wrap: false
+
+row_labels:
+  age: "Age"
+  college: "College"
+  male: "Male"
+  white_non_hispanic: "White (Non-Hispanic)"
+  black_non_hispanic: "Black (Non-Hispanic)"
+  hispanic: "Hispanic"
+  married: "Married"
+  veteran: "Veteran"
+  nchild: "N children"
+  nchild_under5: "N children <5"
+  born_us: "Born US"
+  not_citizen: "Not citizen"
+  city: "City"
+
+row_order:
+  - age
+  - college
+  - male
+  - white_non_hispanic
+  - black_non_hispanic
+  - hispanic
+  - married
+  - veteran
+  - nchild
+  - nchild_under5
+  - born_us
+  - not_citizen
+  - city
+
+column_order:
+  - "Quintile 1 (Lowest)"
+  - "Quintile 2"
+  - "Quintile 3"
+  - "Quintile 4"
+  - "Quintile 5 (Highest)"
+
+format:
+  default: { type: percent, decimals: 0 }
+  rows:
+    age: { type: number, decimals: 1 }
+    nchild: { type: number, decimals: 2 }
+    nchild_under5: { type: number, decimals: 2 }
+
+sticky: { firstColumn: true }
+source: "IPUMS CPS basic monthly samples and author’s calculations."
+notes: "Sample is restricted to 25-54 year olds. Shares are out of each quintile, e.g., 9% of the bottom quintile consists of four-year college graduates."
