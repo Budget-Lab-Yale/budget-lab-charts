@@ -6,10 +6,6 @@ columns:
   x: date
   value: value
   series: series
-series_colors:
-  "Quintile 1 (Lowest)": blue-200
-  "Quintile 3": amber
-  "Quintile 5 (Highest)": blue-600
 yAxisPolicy:
   includeZero: true
 annotations:
