@@ -10,10 +10,6 @@ series_order:
   - "High school or less"
   - "Some college or associate"
   - "Bachelor's degree or more"
-series_colors:
-  "High school or less": blue-200
-  "Some college or associate": amber
-  "Bachelor's degree or more": blue-600
 yAxisPolicy:
   includeZero: true
 annotations:
