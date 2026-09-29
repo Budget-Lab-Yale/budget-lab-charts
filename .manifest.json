@@ -92,6 +92,24 @@
     "deficit-management-scorecard/scorecard-scatter": {
       "hash": "5c8def4ef129e932181a90745fe197ddb76640bdd5325aedcd00009a27dbc8ac"
     },
+    "emp-dispersion/lfp-by-education": {
+      "hash": "234d6334b7e39544a0fc50d23a33d5d141611267821a1f2d1e5238534a952b98"
+    },
+    "emp-dispersion/lfp-quintiles-rf": {
+      "hash": "ffd2a85d39948ee3082b0acef79c601f5222046c26038bccc56dcd7cdcc6a488"
+    },
+    "emp-dispersion/lfp-quintiles-rf-contemporaneous": {
+      "hash": "55fbf248443d774c6fd4d18a45bef3e0930df0bc780774d596181f61443e9bbe"
+    },
+    "emp-dispersion/quintile-characteristics": {
+      "hash": "ebdf778d06e12da4b734453d591b28bfc40ea13b83b734356e2c1296d300253c"
+    },
+    "emp-dispersion/unemployment-quintiles-rf": {
+      "hash": "2d15ada64ed7baa639609c4235c56a5cb24abd7a07feb233885459cbc3835d2b"
+    },
+    "emp-dispersion/unemployment-quintiles-rf-contemporaneous": {
+      "hash": "a9781b961b681e515f529e2a46f483741c07664b3db0b88583272956521da1c7"
+    },
     "recession-indicators/cfnai": {
       "hash": "4a697abaa14607573520eac80cce6ba9c34566978c2da3931f3e94cc876378ec"
     },
