@@ -482,7 +482,7 @@
   {
     "id": "emp-dispersion-graphs/lfp-by-education",
     "kind": "oneoff",
-    "collection": "emp-dispersion-graphs",
+    "collection": "",
     "collectionTitle": "Inequality in labor force participation has diminished",
     "title": "In terms of labor force participation, less-educated workers have recovered the ground they lost in the pandemic",
     "eyebrow": "Figure 1",
@@ -498,7 +498,7 @@
   {
     "id": "emp-dispersion-graphs/lfp-quintiles-rf",
     "kind": "oneoff",
-    "collection": "emp-dispersion-graphs",
+    "collection": "",
     "collectionTitle": "Inequality in labor force participation has diminished",
     "title": "Participation inequality has fallen substantially since before the pandemic, when measured with a broader set of variables than education",
     "eyebrow": "Figure 2",
@@ -514,7 +514,7 @@
   {
     "id": "emp-dispersion-graphs/lfp-quintiles-rf-contemporaneous",
     "kind": "oneoff",
-    "collection": "emp-dispersion-graphs",
+    "collection": "",
     "collectionTitle": "Inequality in labor force participation has diminished",
     "title": "LFPR by propensity quintile, contemporaneous",
     "eyebrow": "Figure 3",
@@ -530,7 +530,7 @@
   {
     "id": "emp-dispersion-graphs/quintile-characteristics",
     "kind": "oneoff",
-    "collection": "emp-dispersion-graphs",
+    "collection": "",
     "collectionTitle": "Inequality in labor force participation has diminished",
     "title": "Characteristics by predicted labor force participation quintile",
     "eyebrow": "Table 1",
@@ -546,7 +546,7 @@
   {
     "id": "emp-dispersion-graphs/unemployment-quintiles-rf",
     "kind": "oneoff",
-    "collection": "emp-dispersion-graphs",
+    "collection": "",
     "collectionTitle": "Inequality in labor force participation has diminished",
     "title": "Unemployment inequality fell before the pandemic and rose after it",
     "eyebrow": "Figure 4",
@@ -562,7 +562,7 @@
   {
     "id": "emp-dispersion-graphs/unemployment-quintiles-rf-contemporaneous",
     "kind": "oneoff",
-    "collection": "emp-dispersion-graphs",
+    "collection": "",
     "collectionTitle": "Inequality in labor force participation has diminished",
     "title": "Unemployment rate by propensity quintile, contemporaneous",
     "eyebrow": "Figure 5",
