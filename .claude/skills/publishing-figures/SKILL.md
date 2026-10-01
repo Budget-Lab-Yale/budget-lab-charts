@@ -95,7 +95,8 @@ summary of everything decided, then build.
 The engine takes **long/tidy CSV**: one row per observation, any column names (mapped to roles
 in the spec's `columns:` block), values numeric-or-empty. If the input is anything else —
 wide, Excel, multiple files, formatted numbers — follow
-[references/data-reshaping.md](references/data-reshaping.md).
+[references/data-reshaping.md](references/data-reshaping.md). A `timeline` is the exception: one
+row per event and no value column (data-reshaping.md § Timeline data).
 
 ## Step 4 — Write the files
 

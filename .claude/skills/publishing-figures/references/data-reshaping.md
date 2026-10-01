@@ -26,6 +26,27 @@ strip `$`, thousands separators, `%`; normalize `M/D/YYYY` (and Excel serial dat
 names that differ only by punctuation (e.g. `High–income` with an en-dash vs `Low income`) —
 renaming to plain ASCII words is safer than carrying unicode into config keys.
 
+## Timeline data
+
+A `timeline` is the exception to the long/tidy shape: **one row per event**, and no value column.
+Map the columns in `columns:` (ENGINE-CONFIG-SPEC.md § Column mapping):
+
+| Role | Content |
+|---|---|
+| `x` | Start date: `YYYY` or `YYYY-MM-DD` (not `YYYY-MM` — a month is its first day). |
+| `end` | Blank = a point event; a date = a span; `ongoing` = an open-ended span. |
+| `label` | The event's headline. Required on every row. |
+| `description` | Optional supporting text. |
+| `date_label` | Optional text that replaces the formatted date on that row (`FY2030`, `Spring 2027`). |
+| `series` | Optional category (colour, or lane with `timeline.lanes`). |
+
+A projected/planned flag is a further column named by `projected_field`: `1`, `true` or `yes` flags
+the row, and anything else (a blank, `0`, `x`) does not — so write `1`, not an arbitrary marker. Rows can be in any order; the engine sorts by date and keeps the CSV order for ties.
+
+**Approximate dates are an anomaly-gate question.** "Mid-2027", "FY2030", "early 2028" have no
+`YYYY-MM-DD`: ask which date to place the event at, and offer to keep the source's wording as its
+`date_label`. Never pick the placement date yourself.
+
 ## Wide → long
 
 Typical input: first column is x, each remaining column is a series.
