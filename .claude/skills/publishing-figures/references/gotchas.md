@@ -45,6 +45,25 @@ dates.
 Either the `columns:` block doesn't match the CSV header, or the header's first cell carries an
 invisible UTF-8 BOM. Rewrite the CSV without BOM.
 
+## Timeline errors and warnings
+
+- `row N: columns.end (...) is "..."; expected blank, a date, or "ongoing"` — the end column holds
+  prose ("present", "TBD", "2027?"). Ongoing is the literal word `ongoing`; an unknown end is a
+  question for the user, not a cell to guess.
+- `row N: end ... is before start ...` — usually swapped columns or a typo; ask.
+- `row N: columns.x (...): expected YYYY-MM-DD or YYYY` — a month (`2027-06`) or a fiscal/season
+  label in the date column. Month → first of the month; `FY2030` → a placement date plus a
+  `date_label` (data-reshaping.md § Timeline data).
+- `row N: columns.label (...) is blank` — every event needs a headline.
+- `... is not supported on chartType "timeline"` — the timeline takes only its accepted-field list;
+  `annotations`, `overlays` and value-axis fields have no meaning on it.
+- `timeline.axis cannot be used with timeline.spacing "even"` — pick one: even spacing makes the
+  gaps meaningless, so ticks would mislead.
+- `x_axis_title on a timeline requires timeline.axis: true` — there is no axis without the ticks.
+- Warnings (validate still passes): `more than 20 is hard to read — consider splitting it`, and
+  `horizontal layout needs more than N label rows per side at the ...px export width` — the PNG
+  then grows extra rows. Raise them with the user; `orientation: vertical` usually answers both.
+
 ## Table YAML breaks on math
 
 MathJax must sit in **single-quoted** YAML strings: `column_labels: {Change: '\(\Delta\)'}`.

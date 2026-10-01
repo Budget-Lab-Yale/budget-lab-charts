@@ -14,6 +14,13 @@ helps choose; it is not the schema.
 | Parts of a whole by category | `stacked` |
 | Two numeric variables per observation | `scatter` |
 | Point estimates across categories (e.g. by decile, by group) | `dotplot` |
+| Dated events — milestones, enactment and effective dates, phase-ins | `timeline` (see [Timelines](#timelines)) |
+
+**Recognise a timeline from the data, not only from a request.** A file whose rows are *events*
+rather than measurements — a date column plus a text column naming what happened, no numeric value
+column, often an end date (or `ongoing`) and a category — is a timeline; recommend it. A measured
+series with a few events to mark is still a `line` chart with `annotations.xAxis` lines: the events
+annotate the data rather than being the data.
 
 Hard constraints the engine enforces:
 
@@ -23,6 +30,8 @@ Hard constraints the engine enforces:
 - `waterfall` requires `categorical` and vertical.
 - `columns.section` (grouped category axis) works only on **horizontal** bar charts.
 - Horizontal `stacked` cannot combine with `small_multiples`.
+- `timeline` requires `xAxisType: temporal`, and accepts only a short field list (ENGINE-CONFIG-SPEC.md
+  § Timeline options, "Accepted fields") — no `annotations`, `overlays`, `valueLabels` and so on.
 
 ## Inferring `xAxisType` from the x column
 
@@ -43,6 +52,26 @@ reason when the engine was repinned to v1.14.0.)
 chart *type*, and the type wins. A `bar` or `stacked` chart of values by year is `categorical` with the
 years as category labels — **not** `numeric`, even though the column is plain numbers. Following the
 column rule there is a load-time validation error, not a bad-looking chart.
+
+## Timelines
+
+Data shape: [data-reshaping.md § Timeline data](data-reshaping.md#timeline-data). Fields:
+ENGINE-CONFIG-SPEC.md § Timeline options. Decide these silently from the data and list them in the
+design summary — the defaults are right for most timelines, so none is an interview question unless
+the data leaves it genuinely open:
+
+| Choice | Default | Change it when |
+|---|---|---|
+| `orientation` | `horizontal` — it switches to vertical by itself on a narrow screen | Many events or long descriptions: `vertical` reads as a list and downloads as a portrait PNG. |
+| `timeline.spacing` | `proportional` (distance = elapsed time) | Only the order matters, or dates cluster so tightly that gaps would crowd: `even`. |
+| `timeline.lanes` | off — one track, categories by colour | Categories are parallel tracks the reader compares (policy vs. cohort). Two lanes on a vertical render draw side by side; three or more share one track. This one is worth asking when there are 2–3 categories. |
+| `projected_field` | none | Some events are planned or projected: a flag column draws them hollow (points) or dashed (spans). |
+| `timeline.axis` | off — every event carries its own date | Proportional spacing where readers need to gauge gaps. Not allowed with `even`. |
+| `timeline.date_format` | derived (`%Y`, `%b %Y` or `%b %-d, %Y` from the dates) | Rarely; for one-off labels (`FY2030`, `Spring 2027`) use a `date_label` column instead. |
+
+Colours follow the same rules as every chart — omit `series_colors`. `tbl-chart validate` warns above
+20 events (suggest splitting, or `vertical`) and when a horizontal layout overflows `max_rows` at the
+export width; both are warnings, not errors, but raise them with the user.
 
 ## Titles
 
