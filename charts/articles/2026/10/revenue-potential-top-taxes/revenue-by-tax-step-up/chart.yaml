@@ -1,0 +1,34 @@
+chartType: stacked
+orientation: horizontal
+columns:
+  x: bar
+  series: tax
+  value: revenue_billions
+title: Revenue Estimates By Tax Provision with Step-Up in Basis at Death
+subtitle: Billions of dollars, fiscal 2027–2036
+note: "Policies added in order; each bar shows only what that policy adds. Capital gains: top rate on capital gains and dividends raised to 25 percent. Corporate: rate raised to 25 percent. Before response: reform law, nothing else changed. After mechanical income adjustments: adds the corporate and payroll changes to household income and the lower wealth that follows from paying the new tax. After behavioral response: conventional estimate."
+source: The Budget Lab
+xAxisType: categorical
+value_prefix: "$"
+tooltip_decimals: 0
+barStack:
+  netDisplay: text
+  hover: tooltip
+legendPosition: top
+series_order:
+  - Income tax, excluding gains
+  - Tax on capital gains
+  - Payroll tax
+  - Corporate tax
+  - Estate tax
+x_order:
+  - "Capital gains: before response"
+  - "Capital gains: after mechanical adjustments"
+  - "Capital gains: after behavioral response"
+  - "+ Corporate: before response"
+  - "+ Corporate: after mechanical adjustments"
+  - "+ Corporate: after behavioral response"
+  - "Package: before response"
+  - "Package: after mechanical adjustments"
+  - "Package: after behavioral response"
+data: data.csv
