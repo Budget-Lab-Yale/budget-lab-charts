@@ -1,0 +1,160 @@
+date,series,value
+2022-01-01,Insured unemployment,106.2
+2022-02-01,Insured unemployment,101.9
+2022-03-01,Insured unemployment,96.2
+2022-04-01,Insured unemployment,89.3
+2022-05-01,Insured unemployment,85.2
+2022-06-01,Insured unemployment,85.1
+2022-07-01,Insured unemployment,86.8
+2022-08-01,Insured unemployment,88.4
+2022-09-01,Insured unemployment,86.9
+2022-10-01,Insured unemployment,88.0
+2022-11-01,Insured unemployment,90.9
+2022-12-01,Insured unemployment,97.6
+2023-01-01,Insured unemployment,100.0
+2023-02-01,Insured unemployment,102.6
+2023-03-01,Insured unemployment,104.9
+2023-04-01,Insured unemployment,107.0
+2023-05-01,Insured unemployment,107.5
+2023-06-01,Insured unemployment,109.7
+2023-07-01,Insured unemployment,110.8
+2023-08-01,Insured unemployment,112.6
+2023-09-01,Insured unemployment,112.2
+2023-10-01,Insured unemployment,112.9
+2023-11-01,Insured unemployment,112.3
+2023-12-01,Insured unemployment,112.0
+2024-01-01,Insured unemployment,110.8
+2024-02-01,Insured unemployment,111.8
+2024-03-01,Insured unemployment,112.2
+2024-04-01,Insured unemployment,111.2
+2024-05-01,Insured unemployment,112.1
+2024-06-01,Insured unemployment,114.8
+2024-07-01,Insured unemployment,116.2
+2024-08-01,Insured unemployment,115.6
+2024-09-01,Insured unemployment,114.4
+2024-10-01,Insured unemployment,116.6
+2024-11-01,Insured unemployment,116.8
+2024-12-01,Insured unemployment,116.1
+2025-01-01,Insured unemployment,116.4
+2025-02-01,Insured unemployment,116.0
+2025-03-01,Insured unemployment,116.3
+2025-04-01,Insured unemployment,116.9
+2025-05-01,Insured unemployment,118.9
+2025-06-01,Insured unemployment,121.6
+2025-07-01,Insured unemployment,121.4
+2025-08-01,Insured unemployment,121.0
+2025-09-01,Insured unemployment,119.9
+2025-11-01,Insured unemployment,120.5
+2025-12-01,Insured unemployment,117.8
+2026-01-01,Insured unemployment,115.5
+2026-02-01,Insured unemployment,115.5
+2026-03-01,Insured unemployment,113.6
+2026-04-01,Insured unemployment,111.5
+2026-05-01,Insured unemployment,110.8
+2026-06-01,Insured unemployment,112.8
+2022-01-01,Adjusted insured unemployment,115.0
+2022-02-01,Adjusted insured unemployment,112.9
+2022-03-01,Adjusted insured unemployment,101.4
+2022-04-01,Adjusted insured unemployment,94.6
+2022-05-01,Adjusted insured unemployment,88.8
+2022-06-01,Adjusted insured unemployment,89.4
+2022-07-01,Adjusted insured unemployment,87.1
+2022-08-01,Adjusted insured unemployment,89.7
+2022-09-01,Adjusted insured unemployment,87.4
+2022-10-01,Adjusted insured unemployment,89.3
+2022-11-01,Adjusted insured unemployment,93.1
+2022-12-01,Adjusted insured unemployment,97.0
+2023-01-01,Adjusted insured unemployment,100.0
+2023-02-01,Adjusted insured unemployment,101.2
+2023-03-01,Adjusted insured unemployment,103.9
+2023-04-01,Adjusted insured unemployment,107.1
+2023-05-01,Adjusted insured unemployment,107.8
+2023-06-01,Adjusted insured unemployment,109.5
+2023-07-01,Adjusted insured unemployment,112.5
+2023-08-01,Adjusted insured unemployment,115.8
+2023-09-01,Adjusted insured unemployment,112.8
+2023-10-01,Adjusted insured unemployment,115.0
+2023-11-01,Adjusted insured unemployment,111.7
+2023-12-01,Adjusted insured unemployment,113.4
+2024-01-01,Adjusted insured unemployment,113.2
+2024-02-01,Adjusted insured unemployment,111.7
+2024-03-01,Adjusted insured unemployment,113.1
+2024-04-01,Adjusted insured unemployment,112.0
+2024-05-01,Adjusted insured unemployment,114.5
+2024-06-01,Adjusted insured unemployment,119.7
+2024-07-01,Adjusted insured unemployment,119.9
+2024-08-01,Adjusted insured unemployment,119.1
+2024-09-01,Adjusted insured unemployment,121.1
+2024-10-01,Adjusted insured unemployment,122.3
+2024-11-01,Adjusted insured unemployment,123.0
+2024-12-01,Adjusted insured unemployment,121.0
+2025-01-01,Adjusted insured unemployment,119.5
+2025-02-01,Adjusted insured unemployment,118.7
+2025-03-01,Adjusted insured unemployment,119.7
+2025-04-01,Adjusted insured unemployment,123.7
+2025-05-01,Adjusted insured unemployment,121.0
+2025-06-01,Adjusted insured unemployment,128.4
+2025-07-01,Adjusted insured unemployment,130.9
+2025-08-01,Adjusted insured unemployment,131.7
+2025-09-01,Adjusted insured unemployment,127.1
+2025-11-01,Adjusted insured unemployment,129.1
+2025-12-01,Adjusted insured unemployment,128.9
+2026-01-01,Adjusted insured unemployment,124.3
+2026-02-01,Adjusted insured unemployment,125.2
+2026-03-01,Adjusted insured unemployment,123.3
+2026-04-01,Adjusted insured unemployment,120.9
+2026-05-01,Adjusted insured unemployment,123.8
+2026-06-01,Adjusted insured unemployment,125.7
+2022-01-01,Surveyed unemployment,113.2
+2022-02-01,Surveyed unemployment,109.6
+2022-03-01,Surveyed unemployment,104.6
+2022-04-01,Surveyed unemployment,103.9
+2022-05-01,Surveyed unemployment,103.6
+2022-06-01,Surveyed unemployment,103.6
+2022-07-01,Surveyed unemployment,100.0
+2022-08-01,Surveyed unemployment,102.4
+2022-09-01,Surveyed unemployment,99.6
+2022-10-01,Surveyed unemployment,103.1
+2022-11-01,Surveyed unemployment,102.6
+2022-12-01,Surveyed unemployment,100.2
+2023-01-01,Surveyed unemployment,100.0
+2023-02-01,Surveyed unemployment,103.8
+2023-03-01,Surveyed unemployment,101.5
+2023-04-01,Surveyed unemployment,99.6
+2023-05-01,Surveyed unemployment,105.4
+2023-06-01,Surveyed unemployment,103.7
+2023-07-01,Surveyed unemployment,102.7
+2023-08-01,Surveyed unemployment,108.8
+2023-09-01,Surveyed unemployment,108.7
+2023-10-01,Surveyed unemployment,112.0
+2023-11-01,Surveyed unemployment,107.9
+2023-12-01,Surveyed unemployment,109.7
+2024-01-01,Surveyed unemployment,107.0
+2024-02-01,Surveyed unemployment,112.4
+2024-03-01,Surveyed unemployment,113.0
+2024-04-01,Surveyed unemployment,112.4
+2024-05-01,Surveyed unemployment,114.9
+2024-06-01,Surveyed unemployment,119.3
+2024-07-01,Surveyed unemployment,123.0
+2024-08-01,Surveyed unemployment,122.4
+2024-09-01,Surveyed unemployment,118.7
+2024-10-01,Surveyed unemployment,120.5
+2024-11-01,Surveyed unemployment,122.9
+2024-12-01,Surveyed unemployment,119.9
+2025-01-01,Surveyed unemployment,119.0
+2025-02-01,Surveyed unemployment,123.1
+2025-03-01,Surveyed unemployment,123.6
+2025-04-01,Surveyed unemployment,124.0
+2025-05-01,Surveyed unemployment,125.6
+2025-06-01,Surveyed unemployment,122.3
+2025-07-01,Surveyed unemployment,126.0
+2025-08-01,Surveyed unemployment,127.9
+2025-09-01,Surveyed unemployment,131.8
+2025-11-01,Surveyed unemployment,134.9
+2025-12-01,Surveyed unemployment,130.0
+2026-01-01,Surveyed unemployment,127.7
+2026-02-01,Surveyed unemployment,131.2
+2026-03-01,Surveyed unemployment,125.5
+2026-04-01,Surveyed unemployment,127.8
+2026-05-01,Surveyed unemployment,126.6
+2026-06-01,Surveyed unemployment,122.9
