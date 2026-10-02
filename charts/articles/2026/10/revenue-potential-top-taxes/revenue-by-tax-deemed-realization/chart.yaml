@@ -1,0 +1,37 @@
+chartType: stacked
+orientation: horizontal
+columns:
+  x: bar
+  series: tax
+  value: revenue_billions
+title: Revenue Estimates by Tax Provision with Gains Taxed at Death
+subtitle: Billions of dollars, fiscal 2027–2036
+note: "Policies added in order; each bar shows only what that policy adds. Capital gains: top rate on capital gains and dividends raised to 25 percent. Corporate: rate raised to 25 percent. Revenue from gains taxed at death is counted as tax on capital gains. Stages as in Figure 2."
+source: The Budget Lab
+xAxisType: categorical
+value_prefix: "$"
+tooltip_decimals: 0
+barStack:
+  netDisplay: text
+  hover: tooltip
+legendPosition: top
+series_order:
+  - Income tax, excluding gains
+  - Tax on capital gains
+  - Payroll tax
+  - Corporate tax
+  - Estate tax
+x_order:
+  - "Gains at death: before response"
+  - "Gains at death: after mechanical adjustments"
+  - "Gains at death: after behavioral response"
+  - "+ Capital gains: before response"
+  - "+ Capital gains: after mechanical adjustments"
+  - "+ Capital gains: after behavioral response"
+  - "+ Corporate: before response"
+  - "+ Corporate: after mechanical adjustments"
+  - "+ Corporate: after behavioral response"
+  - "Package: before response"
+  - "Package: after mechanical adjustments"
+  - "Package: after behavioral response"
+data: data.csv
