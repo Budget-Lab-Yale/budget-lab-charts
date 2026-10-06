@@ -1,18 +1,20 @@
 title: Projected Income Above Top-Group Thresholds, 2027
-subtitle: Billions of dollars (percent of GDP), current law
+subtitle: Current law
 notes: >-
-  AGI: groups ranked and income measured by adjusted gross income. Accrual: an AGI-based accrual
-  measure. Total income is the group's full income. Income above threshold is each unit's income
+  Total income is the group's full income. Income above threshold is each unit's income
   in excess of the group's entry threshold. After-tax income above threshold subtracts the federal
   tax on that income.
 source: The Budget Lab
 data: data.csv
-pane: measure
-pane_order:
+stub:
+  - measure
+  - group
+group_order:
   - AGI
   - Accrual
-stub:
-  - group
+group_notes:
+  AGI: Groups ranked and income measured by adjusted gross income.
+  Accrual: An AGI-based accrual measure.
 header:
   - quantity
   - unit

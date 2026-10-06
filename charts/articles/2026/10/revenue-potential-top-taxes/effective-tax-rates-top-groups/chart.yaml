@@ -4,6 +4,7 @@ columns:
   category: group
   series: income_measure
   value: effective_rate
+  section: ranking
 title: Projected Federal Effective Tax Rates on Top Groups, 2027
 subtitle: Percent of income, current law
 note: >-
@@ -17,6 +18,8 @@ tooltip_decimals: 1
 value_format:
   decimals: 1
   suffix: "%"
+yAxisPolicy:
+  min: 0
 series_order:
   - Cash income
   - Accrual income
