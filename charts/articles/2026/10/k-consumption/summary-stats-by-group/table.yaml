@@ -1,4 +1,5 @@
-title: ""                    # FILL IN
+title: "Appendix Table 1a"        
+subtitle: "Characteristics by the inclusion of Realized Capital Gains Income"
 data: data.csv
 stub: [variable]
 header: [group, statistic]
@@ -27,5 +28,5 @@ format:
   default: { decimals: 2, thousands: true }
   rows:
     Observations: { decimals: 0, thousands: true }
-source: "The Budget Lab"
-# notes: ""                  # optional
+source: "Federal Reserve, Survey of Consumer Finance"
+
