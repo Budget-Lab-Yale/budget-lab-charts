@@ -16,6 +16,6 @@ annotations:
     - { x: "2014" }        
   yAxis:
     - { y: 100 }
- note: "Measures the indexed change in income (measured in the CE) and corporate equities and net worth from the Financial Accounts."           
+note: "Measures the indexed change in income (measured in the CE) and corporate equities and net worth from the Financial Accounts."           
 source: " BLS Consumer Expenditure Survey, Federal Reserve Financial Accounts (S1M.s and S1M.r)"   
 data: data.csv
