@@ -1,0 +1,126 @@
+comparison,series,value,year
+Ages 45-54 vs. Ages 55-65,Min,0.090328,2013
+Ages 45-54 vs. Ages 55-65,Max,0.223187,2024
+Ages 45-54 vs. Ages 55-65,2000,0.185755,2000
+Ages 45-54 vs. Ages 55-65,2001,0.173961,2001
+Ages 45-54 vs. Ages 55-65,2002,0.15347,2002
+Ages 45-54 vs. Ages 55-65,2003,0.158245,2003
+Ages 45-54 vs. Ages 55-65,2004,0.125214,2004
+Ages 45-54 vs. Ages 55-65,2005,0.149126,2005
+Ages 45-54 vs. Ages 55-65,2006,0.140232,2006
+Ages 45-54 vs. Ages 55-65,2007,0.106499,2007
+Ages 45-54 vs. Ages 55-65,2008,0.127993,2008
+Ages 45-54 vs. Ages 55-65,2009,0.145216,2009
+Ages 45-54 vs. Ages 55-65,2010,0.154,2010
+Ages 45-54 vs. Ages 55-65,2011,0.109007,2011
+Ages 45-54 vs. Ages 55-65,2012,0.149104,2012
+Ages 45-54 vs. Ages 55-65,2014,0.176623,2014
+Ages 45-54 vs. Ages 55-65,2015,0.209557,2015
+Ages 45-54 vs. Ages 55-65,2016,0.16998,2016
+Ages 45-54 vs. Ages 55-65,2017,0.162701,2017
+Ages 45-54 vs. Ages 55-65,2018,0.156728,2018
+Ages 45-54 vs. Ages 55-65,2019,0.170769,2019
+Ages 45-54 vs. Ages 55-65,2020,0.201846,2020
+Ages 45-54 vs. Ages 55-65,2021,0.186287,2021
+Ages 45-54 vs. Ages 55-65,2022,0.195518,2022
+Ages 45-54 vs. Ages 55-65,2023,0.194628,2023
+Decile 10 vs. 1,Min,1.622692,2000
+Decile 10 vs. 1,Max,2.00247,2006
+Decile 10 vs. 1,2001,1.666486,2001
+Decile 10 vs. 1,2002,1.747243,2002
+Decile 10 vs. 1,2003,1.834441,2003
+Decile 10 vs. 1,2004,1.895428,2004
+Decile 10 vs. 1,2005,1.97383,2005
+Decile 10 vs. 1,2007,1.920509,2007
+Decile 10 vs. 1,2008,1.862359,2008
+Decile 10 vs. 1,2009,1.871012,2009
+Decile 10 vs. 1,2010,1.88537,2010
+Decile 10 vs. 1,2011,1.853056,2011
+Decile 10 vs. 1,2012,1.89374,2012
+Decile 10 vs. 1,2013,1.853048,2013
+Decile 10 vs. 1,2014,1.870157,2014
+Decile 10 vs. 1,2015,1.907431,2015
+Decile 10 vs. 1,2016,1.917988,2016
+Decile 10 vs. 1,2017,1.899035,2017
+Decile 10 vs. 1,2018,1.907578,2018
+Decile 10 vs. 1,2019,1.88183,2019
+Decile 10 vs. 1,2020,1.739686,2020
+Decile 10 vs. 1,2021,1.77365,2021
+Decile 10 vs. 1,2022,1.816108,2022
+Decile 10 vs. 1,2023,1.852545,2023
+Decile 10 vs. 1,2024,1.77496,2024
+Decile 10 vs. 9,Min,0.619136,2024
+Decile 10 vs. 9,Max,0.826981,2006
+Decile 10 vs. 9,2000,0.673956,2000
+Decile 10 vs. 9,2001,0.64594,2001
+Decile 10 vs. 9,2002,0.723925,2002
+Decile 10 vs. 9,2003,0.765373,2003
+Decile 10 vs. 9,2004,0.661964,2004
+Decile 10 vs. 9,2005,0.799944,2005
+Decile 10 vs. 9,2007,0.723796,2007
+Decile 10 vs. 9,2008,0.720083,2008
+Decile 10 vs. 9,2009,0.717963,2009
+Decile 10 vs. 9,2010,0.755839,2010
+Decile 10 vs. 9,2011,0.756194,2011
+Decile 10 vs. 9,2012,0.772413,2012
+Decile 10 vs. 9,2013,0.709124,2013
+Decile 10 vs. 9,2014,0.752528,2014
+Decile 10 vs. 9,2015,0.77885,2015
+Decile 10 vs. 9,2016,0.804585,2016
+Decile 10 vs. 9,2017,0.788284,2017
+Decile 10 vs. 9,2018,0.778842,2018
+Decile 10 vs. 9,2019,0.775513,2019
+Decile 10 vs. 9,2020,0.730406,2020
+Decile 10 vs. 9,2021,0.67881,2021
+Decile 10 vs. 9,2022,0.663476,2022
+Decile 10 vs. 9,2023,0.699817,2023
+Decile 10 vs. 1 (expenditure),Min,2.546844,2008
+Decile 10 vs. 1 (expenditure),Max,2.834432,2003
+Decile 10 vs. 1 (expenditure),2000,2.721133,2000
+Decile 10 vs. 1 (expenditure),2001,2.764279,2001
+Decile 10 vs. 1 (expenditure),2002,2.73168,2002
+Decile 10 vs. 1 (expenditure),2004,2.763279,2004
+Decile 10 vs. 1 (expenditure),2005,2.770405,2005
+Decile 10 vs. 1 (expenditure),2006,2.738292,2006
+Decile 10 vs. 1 (expenditure),2007,2.657612,2007
+Decile 10 vs. 1 (expenditure),2009,2.559928,2009
+Decile 10 vs. 1 (expenditure),2010,2.571767,2010
+Decile 10 vs. 1 (expenditure),2011,2.558915,2011
+Decile 10 vs. 1 (expenditure),2012,2.657189,2012
+Decile 10 vs. 1 (expenditure),2013,2.614669,2013
+Decile 10 vs. 1 (expenditure),2014,2.626494,2014
+Decile 10 vs. 1 (expenditure),2015,2.720165,2015
+Decile 10 vs. 1 (expenditure),2016,2.719443,2016
+Decile 10 vs. 1 (expenditure),2017,2.71605,2017
+Decile 10 vs. 1 (expenditure),2018,2.718934,2018
+Decile 10 vs. 1 (expenditure),2019,2.623135,2019
+Decile 10 vs. 1 (expenditure),2020,2.597239,2020
+Decile 10 vs. 1 (expenditure),2021,2.658479,2021
+Decile 10 vs. 1 (expenditure),2022,2.647,2022
+Decile 10 vs. 1 (expenditure),2023,2.665812,2023
+Decile 10 vs. 1 (expenditure),2024,2.556679,2024
+Owners vs. renters,Min,0.358066,2020
+Owners vs. renters,Max,0.50252,2005
+Owners vs. renters,2000,0.419683,2000
+Owners vs. renters,2001,0.435209,2001
+Owners vs. renters,2002,0.447043,2002
+Owners vs. renters,2003,0.487927,2003
+Owners vs. renters,2004,0.484496,2004
+Owners vs. renters,2006,0.489242,2006
+Owners vs. renters,2007,0.49271,2007
+Owners vs. renters,2008,0.478195,2008
+Owners vs. renters,2009,0.459904,2009
+Owners vs. renters,2010,0.449441,2010
+Owners vs. renters,2011,0.433041,2011
+Owners vs. renters,2012,0.451536,2012
+Owners vs. renters,2013,0.44925,2013
+Owners vs. renters,2014,0.422052,2014
+Owners vs. renters,2015,0.435363,2015
+Owners vs. renters,2016,0.418356,2016
+Owners vs. renters,2017,0.420632,2017
+Owners vs. renters,2018,0.437977,2018
+Owners vs. renters,2019,0.388393,2019
+Owners vs. renters,2021,0.370024,2021
+Owners vs. renters,2022,0.372136,2022
+Owners vs. renters,2023,0.379878,2023
+Owners vs. renters,2024,0.400935,2024
