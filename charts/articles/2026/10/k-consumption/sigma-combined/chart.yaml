@@ -1,28 +1,28 @@
 chartType: stacked
-title: "The addition of realized gains does not lead to massive shifts in the people in the top decile. While more impactful than realized gains, accrued gains also do not lead to massive changes in who compose the top decile.  "                
+title: "The addition of realized gains does not lead to massive shifts in the people in the top decile. While more impactful than realized gains, accrued gains also do not lead to massive changes in who compose the top decile."
 subtitle: "Percentage points of the top decile of income"
 xAxisType: categorical
 columns:
-  x: year
+  x: bar
   series: series
   value: value
-  facet: source
-x_order: ["1997", "2000", "2003", "2006", "2009", "2012", "2015", "2018", "2021"]
+  facet: year
+x_order: ["Portfolio", "Realized"]
 series_order:                # bottom -> top
-  - Entrants and exiters
+  - Entrants and exiters (Portfolio)
+  - Entrants and exiters (Realized gains)
   - Everyone else
+series_colors:
+  "Entrants and exiters (Portfolio)": red
+  "Entrants and exiters (Realized gains)": navy
+  "Everyone else": "#BBBBBB"
 yAxisPolicy:
   min: 0
   max: 10
 small_multiples:
-  columns: 2
+  columns: 9
   mode: shared
-  pane_order:
-    - Portfolio
-    - Realized
-  pane_titles:
-    Portfolio: "Portfolio"
-    Realized: "Realized gains"
-note: "Shows the mean between the entrant and exit rate for the top decile. Those rates are not the same as a result of the use of population weights but are similar in magnitude. Portfolio is a composite variable that includes accrued gains equity, bonds, and real estate."    
+  pane_order: ["1997", "2000", "2003", "2006", "2009", "2012", "2015", "2018", "2021"]
+note: "Shows the mean between the entrant and exit rate for the top decile. Those rates are not the same as a result of the use of population weights but are similar in magnitude. Portfolio is a composite variable that includes accrued gains equity, bonds, and real estate."
 source: "Federal Reserve Survey of Consumer Finance and authors’ calculations"
 data: data.csv
