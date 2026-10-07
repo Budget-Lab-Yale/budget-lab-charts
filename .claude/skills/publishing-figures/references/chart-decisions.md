@@ -15,6 +15,7 @@ helps choose; it is not the schema.
 | Two numeric variables per observation | `scatter` |
 | Point estimates across categories (e.g. by decile, by group) | `dotplot` |
 | Dated events — milestones, enactment and effective dates, phase-ins | `timeline` (see [Timelines](#timelines)) |
+| One part-to-whole composition, many categories of very different sizes (no time or second dimension) | `treemap` (see [Treemaps](#treemaps)) |
 
 **Recognise a timeline from the data, not only from a request.** A file whose rows are *events*
 rather than measurements — a date column plus a text column naming what happened, no numeric value
@@ -28,10 +29,16 @@ Hard constraints the engine enforces:
 - **`bar` and `stacked` require `xAxisType: categorical`** (v1.12.0+). A continuous axis silently
   dropped rows or drew an empty frame, so the engine now refuses it outright.
 - `waterfall` requires `categorical` and vertical.
-- `columns.section` (grouped category axis) works only on **horizontal** bar charts.
-- Horizontal `stacked` cannot combine with `small_multiples`.
+- `columns.section` (grouped category axis) works on **horizontal** `bar`, `stacked` (v1.16.0+) and
+  `dumbbell` charts, never on a vertical chart. See [Sections](#sections-horizontal-charts).
+- On a horizontal `bar`, `stacked` or `dumbbell` chart, `columns.facet` makes **no panes** (v1.16.0+):
+  each facet value is drawn as a group of one chart, exactly as `columns.section` draws a section.
+  For grouped rows on these charts write `columns.section`; setting both `columns.facet` and
+  `columns.section` is a validation error.
 - `timeline` requires `xAxisType: temporal`, and accepts only a short field list (ENGINE-CONFIG-SPEC.md
   § Timeline options, "Accepted fields") — no `annotations`, `overlays`, `valueLabels` and so on.
+- `treemap` requires `xAxisType: categorical`, has no axes, and likewise accepts only a short field
+  list (ENGINE-CONFIG-SPEC.md § Treemap options, "Accepted fields").
 
 ## Inferring `xAxisType` from the x column
 
@@ -72,6 +79,56 @@ the data leaves it genuinely open:
 Colours follow the same rules as every chart — omit `series_colors`. `tbl-chart validate` warns above
 20 events (suggest splitting, or `vertical`) and when a horizontal layout overflows `max_rows` at the
 export width; both are warnings, not errors, but raise them with the user.
+
+## Treemaps
+
+A treemap shows **one** composition as nested tiles whose area is proportional to value. Recommend it
+when there are many parts of very different sizes (budget categories, revenue sources) and a stacked
+bar would be crowded. It is the wrong choice when the reader must compare exact values (a sorted
+horizontal `bar` reads more precisely), when the composition changes over time (`area` or
+`stacked`), or when there are only two or three parts.
+
+Data shape: [data-reshaping.md § Treemap data](data-reshaping.md#treemap-data). Fields:
+ENGINE-CONFIG-SPEC.md § Treemap options. Key choices, decided from the data and listed in the design
+summary:
+
+| Choice | Default | Change it when |
+|---|---|---|
+| Groups (`columns.series`) | none — every tile blue | The parts fall into a few named families (Mandatory / Discretionary). One level only; two or more groups draw a legend. |
+| `treemap.label_value` | `share` (percent of the total) | Readers need the amounts: `value`, formatted by `value_format`. `none` shows names only. |
+| `value_format` | thousands grouped, 0 decimals | Units: `{prefix: "$", suffix: " billion"}`. `value_prefix` / `value_suffix` are errors on a treemap. |
+| `treemap.shading` | `size` — tiles shaded by size rank within their group | `none` when every tile in a group should be one flat colour. |
+| `treemap.tooltip` / `treemap.tooltip_note` | none | Extra hover rows from other CSV columns, or a free-text note per tile. |
+
+Colours follow the same rules as every chart: omit `series_colors` and groups take the ramp in turn.
+The tile shades are computed from the group colour by the engine and are not palette tokens; that is
+expected and not a palette violation. `series_order` on a treemap does **not** filter, and does not
+set layout order (groups are placed largest total first) — it sets which group gets which hue, and
+breaks ties between groups with equal totals. `tbl-chart validate` warns on more than 30 tiles, on
+more than seven groups without `series_colors`, on zero-value rows, and when more than half the tiles
+would be unlabelled in the PNG; raise these with the user.
+
+## Sections (horizontal charts)
+
+`columns.section` groups a horizontal `bar`, `stacked` or `dumbbell` chart's categories under bold
+headers (`section_order`, `section_labels`). From v1.16.0:
+
+- **Horizontal stacked bars take sections**, not only bars and dumbbells. Each category is still one
+  stack, with its own net marker and segment labels.
+- **A category label may repeat across sections.** A row is identified by section + category, so
+  "Top 1%" under both "Ranked by income" and "Ranked by wealth" draws two rows. `x_order` and
+  `x_labels` entries apply to the label in every section that has it, as does a `category_colors`
+  entry on a single-series `bar` (the only sectioned chart that honours `category_colors`; stacks
+  and dumbbells colour by series). Each
+  section + category + series may carry only one value.
+- **`tooltip_section: true`** puts the section in the hover card's header (`Corporate · Before
+  response`). Use it when labels repeat across sections, so the card says which row it is. It acts
+  where the chart hovers with a card (a dumbbell, or a stack with `barStack.hover: tooltip` or a net
+  dot); a plain horizontal `bar` hovers with value pills and ignores it. A validation error on a
+  chart without sections.
+- A facet column on these charts draws the same groups (ordered and titled by
+  `small_multiples.pane_order` / `pane_titles`, not `section_order` / `section_labels`). Prefer
+  `columns.section` in new specs.
 
 ## Titles
 
@@ -160,15 +217,27 @@ All four kinds live under one `annotations:` block (see ENGINE-CONFIG-SPEC.md §
 (`x: "2017"`, not `x: 2017`), or validation fails with `must be string`. `y` is a **number**.
 A zero line reads best as `{y: 0, style: solid}` with no label.
 
+**Horizontal charts swap the axes.** On a horizontal `bar`, `stacked` or `dumbbell` chart the value
+axis runs along x, so a value-axis reference line is an `annotations.xAxis` entry with a numeric `x`
+(still quoted: `x: "0"`). `annotations.yAxis` (and legacy `yAxisPolicy.markers`) is a validation
+error there.
+
+Dates in `x`, `start`, `end` follow the same strict grammar as the data (ENGINE-CONFIG-SPEC.md §
+Dates): a real calendar day `YYYY-MM-DD` or a bare `YYYY` on a temporal axis, `YYYYQ1`–`YYYYQ4` on a
+quarterly one.
+
 ## Series options (one-liners; details in ENGINE-CONFIG-SPEC.md § Series)
 
 - `series_order` — sets order **and filters**: a series omitted from the list is dropped from
-  the chart. List all of them or none.
+  the chart. List all of them or none, each once: a repeated entry (here or in `shape_order`) is
+  a validation error. On a treemap it does not filter and only breaks ties in the layout (see [Treemaps](#treemaps)).
 - `series_labels` — display names; keep raw CSV keys and rename here rather than editing data.
 - `series_styles: {key: {dashed: true}}` — projections/counterfactuals; for actual forecast
   rows prefer `projected_field` (a data column flagging projected observations).
 - `confidence_bands: [{series, lower, upper}]` — lower/upper are CSV column names.
-- `small_multiples` — requires `columns.facet`; then `columns`, `pane_order`, `pane_titles`.
+- `small_multiples` — requires `columns.facet`; then `columns`, `pane_order`, `pane_titles`. A
+  horizontal `bar`, `stacked` or `dumbbell` makes no panes and draws facets as groups instead (see
+  [Sections](#sections-horizontal-charts)).
 
 ## Tables (`table.yaml`)
 

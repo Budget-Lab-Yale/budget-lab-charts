@@ -96,7 +96,8 @@ The engine takes **long/tidy CSV**: one row per observation, any column names (m
 in the spec's `columns:` block), values numeric-or-empty. If the input is anything else —
 wide, Excel, multiple files, formatted numbers — follow
 [references/data-reshaping.md](references/data-reshaping.md). A `timeline` is the exception: one
-row per event and no value column (data-reshaping.md § Timeline data).
+row per event and no value column (data-reshaping.md § Timeline data). A `treemap` takes one row per
+tile: name, size and an optional group (data-reshaping.md § Treemap data).
 
 ## Step 4 — Write the files
 
