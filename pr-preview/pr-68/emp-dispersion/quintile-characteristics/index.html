@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Characteristics by predicted labor force participation quintile</title>
+<link rel="stylesheet" href="../../embed/v1/chart-1.16.0.css">
+<style>html.tbl-embedded body{margin:0 !important}html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style><script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}catch(e){document.documentElement.classList.add("tbl-embedded")}</script>
+</head>
+<body>
+<div id="chart" style="max-width:760px;margin:32px auto;padding:0 16px"></div>
+<script src="../../embed/v1/engine-1.16.0.js"></script>
+<script>
+var el = document.getElementById("chart");
+if (typeof BudgetLabChart === "undefined") {
+  renderUnavailable(el, "Characteristics by predicted labor force participation quintile", "Table 1");
+} else {
+BudgetLabChart.mountTable(el, {
+  spec: {"title":"Characteristics by predicted labor force participation quintile","data":"data.csv","stub":["characteristic"],"header":["quintile"],"value":"value","stub_header":"Characteristic","stub_wrap":false,"row_labels":{"age":"Age","college":"College","male":"Male","white_non_hispanic":"White (Non-Hispanic)","black_non_hispanic":"Black (Non-Hispanic)","hispanic":"Hispanic","married":"Married","veteran":"Veteran","nchild":"N children","nchild_under5":"N children \u003c5","born_us":"Born US","not_citizen":"Not citizen","city":"City"},"row_order":["age","college","male","white_non_hispanic","black_non_hispanic","hispanic","married","veteran","nchild","nchild_under5","born_us","not_citizen","city"],"column_order":["Quintile 1 (Lowest)","Quintile 2","Quintile 3","Quintile 4","Quintile 5 (Highest)"],"format":{"default":{"type":"percent","decimals":0},"rows":{"age":{"type":"number","decimals":1},"nchild":{"type":"number","decimals":2},"nchild_under5":{"type":"number","decimals":2}}},"sticky":{"firstColumn":true},"source":"IPUMS CPS basic monthly samples and author’s calculations.","notes":"Sample is restricted to 25-54 year olds. Shares are out of each quintile, e.g., 9% of the bottom quintile consists of four-year college graduates."},
+  rows: [{"quintile":"Quintile 1 (Lowest)","characteristic":"age","value":"39.88"},{"quintile":"Quintile 1 (Lowest)","characteristic":"college","value":"0.0900"},{"quintile":"Quintile 1 (Lowest)","characteristic":"male","value":"0.0500"},{"quintile":"Quintile 1 (Lowest)","characteristic":"white_non_hispanic","value":"0.4300"},{"quintile":"Quintile 1 (Lowest)","characteristic":"black_non_hispanic","value":"0.1600"},{"quintile":"Quintile 1 (Lowest)","characteristic":"hispanic","value":"0.2900"},{"quintile":"Quintile 1 (Lowest)","characteristic":"married","value":"0.5600"},{"quintile":"Quintile 1 (Lowest)","characteristic":"veteran","value":"0.0100"},{"quintile":"Quintile 1 (Lowest)","characteristic":"nchild","value":"1.37"},{"quintile":"Quintile 1 (Lowest)","characteristic":"nchild_under5","value":"0.28"},{"quintile":"Quintile 1 (Lowest)","characteristic":"born_us","value":"0.6400"},{"quintile":"Quintile 1 (Lowest)","characteristic":"not_citizen","value":"0.2600"},{"quintile":"Quintile 1 (Lowest)","characteristic":"city","value":"0.3200"},{"quintile":"Quintile 2","characteristic":"age","value":"39.27"},{"quintile":"Quintile 2","characteristic":"college","value":"0.2100"},{"quintile":"Quintile 2","characteristic":"male","value":"0.3400"},{"quintile":"Quintile 2","characteristic":"white_non_hispanic","value":"0.5900"},{"quintile":"Quintile 2","characteristic":"black_non_hispanic","value":"0.1500"},{"quintile":"Quintile 2","characteristic":"hispanic","value":"0.1600"},{"quintile":"Quintile 2","characteristic":"married","value":"0.5400"},{"quintile":"Quintile 2","characteristic":"veteran","value":"0.0300"},{"quintile":"Quintile 2","characteristic":"nchild","value":"1.13"},{"quintile":"Quintile 2","characteristic":"nchild_under5","value":"0.24"},{"quintile":"Quintile 2","characteristic":"born_us","value":"0.8100"},{"quintile":"Quintile 2","characteristic":"not_citizen","value":"0.0300"},{"quintile":"Quintile 2","characteristic":"city","value":"0.2700"},{"quintile":"Quintile 3","characteristic":"age","value":"40.08"},{"quintile":"Quintile 3","characteristic":"college","value":"0.5800"},{"quintile":"Quintile 3","characteristic":"male","value":"0.2100"},{"quintile":"Quintile 3","characteristic":"white_non_hispanic","value":"0.6700"},{"quintile":"Quintile 3","characteristic":"black_non_hispanic","value":"0.1500"},{"quintile":"Quintile 3","characteristic":"hispanic","value":"0.1100"},{"quintile":"Quintile 3","characteristic":"married","value":"0.5000"},{"quintile":"Quintile 3","characteristic":"veteran","value":"0.0500"},{"quintile":"Quintile 3","characteristic":"nchild","value":"0.72"},{"quintile":"Quintile 3","characteristic":"nchild_under5","value":"0.11"},{"quintile":"Quintile 3","characteristic":"born_us","value":"0.9300"},{"quintile":"Quintile 3","characteristic":"not_citizen","value":"0.0200"},{"quintile":"Quintile 3","characteristic":"city","value":"0.2900"},{"quintile":"Quintile 4","characteristic":"age","value":"37.3"},{"quintile":"Quintile 4","characteristic":"college","value":"0.2800"},{"quintile":"Quintile 4","characteristic":"male","value":"0.8600"},{"quintile":"Quintile 4","characteristic":"white_non_hispanic","value":"0.5400"},{"quintile":"Quintile 4","characteristic":"black_non_hispanic","value":"0.1200"},{"quintile":"Quintile 4","characteristic":"hispanic","value":"0.2400"},{"quintile":"Quintile 4","characteristic":"married","value":"0.4700"},{"quintile":"Quintile 4","characteristic":"veteran","value":"0.0700"},{"quintile":"Quintile 4","characteristic":"nchild","value":"0.85"},{"quintile":"Quintile 4","characteristic":"nchild_under5","value":"0.16"},{"quintile":"Quintile 4","characteristic":"born_us","value":"0.7300"},{"quintile":"Quintile 4","characteristic":"not_citizen","value":"0.1700"},{"quintile":"Quintile 4","characteristic":"city","value":"0.3600"},{"quintile":"Quintile 5 (Highest)","characteristic":"age","value":"39.63"},{"quintile":"Quintile 5 (Highest)","characteristic":"college","value":"0.7300"},{"quintile":"Quintile 5 (Highest)","characteristic":"male","value":"1.0000"},{"quintile":"Quintile 5 (Highest)","characteristic":"white_non_hispanic","value":"0.7000"},{"quintile":"Quintile 5 (Highest)","characteristic":"black_non_hispanic","value":"0.0600"},{"quintile":"Quintile 5 (Highest)","characteristic":"hispanic","value":"0.1700"},{"quintile":"Quintile 5 (Highest)","characteristic":"married","value":"0.8100"},{"quintile":"Quintile 5 (Highest)","characteristic":"veteran","value":"0.0600"},{"quintile":"Quintile 5 (Highest)","characteristic":"nchild","value":"1.39"},{"quintile":"Quintile 5 (Highest)","characteristic":"nchild_under5","value":"0.33"},{"quintile":"Quintile 5 (Highest)","characteristic":"born_us","value":"0.7900"},{"quintile":"Quintile 5 (Highest)","characteristic":"not_citizen","value":"0.1100"},{"quintile":"Quintile 5 (Highest)","characteristic":"city","value":"0.3000"}],
+  eyebrow: /[?&]eyebrow=(off|0|false|none|hide)\b/i.test(location.search) ? undefined : "Table 1",
+});
+}
+function renderUnavailable(el, title, eyebrow) {
+  var box = document.createElement("div");
+  box.setAttribute("role", "note");
+  box.style.cssText = "font:16px/1.5 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1c1c1c;border:1px solid #d9dce3;border-radius:4px;padding:20px";
+  if (eyebrow) {
+    var e = document.createElement("p");
+    e.textContent = eyebrow;
+    e.style.cssText = "margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a5f6b";
+    box.appendChild(e);
+  }
+  var h = document.createElement("p");
+  h.textContent = title;
+  h.style.cssText = "margin:0 0 12px;font-weight:600";
+  box.appendChild(h);
+  var p = document.createElement("p");
+  p.style.cssText = "margin:0;color:#5a5f6b";
+  p.appendChild(document.createTextNode("An error occurred, please try reloading this page. If this problem persists please contact "));
+  var a = document.createElement("a");
+  a.href = "mailto:budgetlab@yale.edu";
+  a.textContent = "budgetlab@yale.edu";
+  a.style.color = "inherit";
+  p.appendChild(a);
+  p.appendChild(document.createTextNode("."));
+  box.appendChild(p);
+  el.appendChild(box);
+}
+</script>
+<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script><script>(function(){if(window.self===window.top)return;function fit(){try{if(window.parentIFrame&&window.parentIFrame.size)window.parentIFrame.size();}catch(e){}}var t;function soon(){clearTimeout(t);t=setTimeout(fit,60);}if(window.ResizeObserver){try{new ResizeObserver(soon).observe(document.body);}catch(e){}}window.addEventListener("load",function(){setTimeout(fit,200);setTimeout(fit,800);});if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}})();</script>
+</body>
+</html>
