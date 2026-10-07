@@ -1,8 +1,6 @@
 chartType: line
-title: ""                    # FILL IN
-subtitle: ""                 # FILL IN: values = decile 10 minus decile 1, in share units (0-1)
-source: "The Budget Lab"
-# note: ""                   # optional
+title: "Appendix Chart 1"        
+subtitle: "Values = decile 10 minus decile 1, in shares (0-1)"                  
 xAxisType: temporal
 columns:
   x: year
@@ -26,4 +24,6 @@ series_labels:               # derived from the script's per-category graph titl
   gap_share_durable: "Durable goods"
   gap_share_nondurable: "Nondurable goods"
   gap_decile_share_expen: "Total expenditure"
+note: "Calculates the spending difference in consumption shares in the designated categories between the top and bottom decile." 
+source: "BLS Consumer Expenditure Survey and authors’ calculations"
 data: data.csv
