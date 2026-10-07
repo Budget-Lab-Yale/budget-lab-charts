@@ -688,6 +688,38 @@
     "tags": []
   },
   {
+    "id": "revenue-potential-top-taxes/appendix-parameters",
+    "kind": "oneoff",
+    "collection": "revenue-potential-top-taxes",
+    "collectionTitle": "Revenue Potential from Taxes at the Top",
+    "title": "Parameters and Sources",
+    "eyebrow": "Appendix Table 1",
+    "date": "2026-10-06",
+    "created": "",
+    "cadence": "",
+    "url": "",
+    "order": 6,
+    "path": "charts/articles/2026/10/revenue-potential-top-taxes/appendix-parameters/table.yaml",
+    "dataPath": "charts/articles/2026/10/revenue-potential-top-taxes/appendix-parameters/data.csv",
+    "tags": []
+  },
+  {
+    "id": "revenue-potential-top-taxes/appendix-tax-base-interactions",
+    "kind": "oneoff",
+    "collection": "revenue-potential-top-taxes",
+    "collectionTitle": "Revenue Potential from Taxes at the Top",
+    "title": "How the Tax Bases Interact",
+    "eyebrow": "Appendix Figure 1",
+    "date": "2026-10-06",
+    "created": "",
+    "cadence": "",
+    "url": "",
+    "order": 5,
+    "path": "charts/articles/2026/10/revenue-potential-top-taxes/appendix-tax-base-interactions/table.yaml",
+    "dataPath": "charts/articles/2026/10/revenue-potential-top-taxes/appendix-tax-base-interactions/data.csv",
+    "tags": []
+  },
+  {
     "id": "revenue-potential-top-taxes/capital-gains-laffer-curve",
     "kind": "oneoff",
     "collection": "revenue-potential-top-taxes",

@@ -131,6 +131,12 @@
     "recession-indicators/yield-curve": {
       "hash": "e5ab5145312813d8630542a11c5526b808dbc1a19f5fc96d928003dff4909301"
     },
+    "revenue-potential-top-taxes/appendix-parameters": {
+      "hash": "7693e21d47026e40fcb5f3de6566f93628d585e084bedc8a5f454e73728970a7"
+    },
+    "revenue-potential-top-taxes/appendix-tax-base-interactions": {
+      "hash": "c40f8a03aaa7f7dd0fc0f8e7bbdb2e0b458ae1d60646e93f4629e31c5440993a"
+    },
     "revenue-potential-top-taxes/capital-gains-laffer-curve": {
       "hash": "12382981b462d7fe73f2fb62404a1e1ed149c6b4f8154f2594f5085aaca79b0f"
     },
