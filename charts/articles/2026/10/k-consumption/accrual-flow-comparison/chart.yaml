@@ -10,10 +10,10 @@ columns:
 series_order:
   - Household income
   - Corporate equities
-  - Net worth                # NOTE: script legend says "Net worth" but this series is holdgain_ttl (total holding gains) -- relabel here if wrong
+  - Net worth              
 annotations:
   xAxis:
-    - { x: "2014" }          # base year
+    - { x: "2014" }        
   yAxis:
     - { y: 100 }
  note: "Measures the indexed change in income (measured in the CE) and corporate equities and net worth from the Financial Accounts."           
