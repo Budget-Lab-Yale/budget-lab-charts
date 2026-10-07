@@ -1,8 +1,6 @@
 chartType: dumbbell
-title: ""                    # FILL IN
-subtitle: ""                 # FILL IN (script subtitle: max = filled dot, min = open dot, 2000-2024)
-source: "The Budget Lab"
-# note: ""                   # optional
+title: "The necessary differences in the spending shares necessary for the K-shape to appear are not present in the CE, even across groups that are vastly different."                    # FILL IN
+subtitle: "Spending different across different categories in average household spending units"                 
 xAxisType: categorical
 orientation: horizontal
 columns:
@@ -19,4 +17,6 @@ series_order: [Min, Max]
 series_marker: { Min: hollow, Max: filled }
 value_axis_title: "Delta"
 value_format: { decimals: 2 }
+note: "Shows the spending differences for the designated groups above in average household spending units. Calculates the difference between the groups then divides by the average household spending."        
+source: " BLS Consumer Expenditure Survey and authors’ calculations"
 data: data.csv
