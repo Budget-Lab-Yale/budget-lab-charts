@@ -1,8 +1,7 @@
 chartType: line
-title: ""                    # FILL IN
-subtitle: "Index, 2014 = 100; annual holding-gain flows from Fed Z.1 (S1M.r)"
-source: "The Budget Lab"     # script note read: "CEX; Federal Reserve Z.1"
-# note: ""                   # optional
+title: " Financial Accounts data from the Federal Reserve shows us that there is more volatility in asset holdings that the CE does not capture."                 
+subtitle: "Percent change since 2014, Index: 2014 = 100"
+
 xAxisType: temporal
 columns:
   x: year
@@ -17,4 +16,6 @@ annotations:
     - { x: "2014" }          # base year
   yAxis:
     - { y: 100 }
+ note: "Measures the indexed change in income (measured in the CE) and corporate equities and net worth from the Financial Accounts."           
+source: " BLS Consumer Expenditure Survey, Federal Reserve Financial Accounts (S1M.s and S1M.r)"   
 data: data.csv
