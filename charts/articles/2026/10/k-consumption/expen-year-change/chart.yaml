@@ -1,8 +1,6 @@
 chartType: line
 title: "Considering the change in consumption by decile over time, they have grown at similar rates."                   
-subtitle: "Index, 2014 = 100"
-source: "The Budget Lab"
-# note: ""                   # optional
+subtitle: "Percentage point change since 2014. Index, 2014 = 100"
 xAxisType: temporal
 columns:
   x: year
@@ -17,4 +15,6 @@ annotations:
     - { x: "2014" }          # base year
   yAxis:
     - { y: 100 }
+note: Measures the indexed change in spending for deciles 1, 5, and 10.
+source: "BLS Consumer Expenditure Survey"
 data: data.csv
