@@ -1,0 +1,14 @@
+title: ""                    # FILL IN: article title (should match the published title exactly)
+slug: collection-slug        # FILL IN: lowercase-hyphenated, unique repo-wide, must equal this folder's name; permanent
+date: ""                     # FILL IN: "YYYY-MM-DD" -- and move this folder to charts/articles/<yyyy>/<mm>/ to match
+url: ""                      # leave empty until the article is live
+
+figures:                     # FILL IN each label ("Figure 1", "Appendix Figure 1", "Table 1"); order here = gallery order
+  accrual-flow-comparison: ""
+  expen-year-change: ""
+  share-expen-decile: ""
+  gap-consump-type: ""
+  sigma-combined: ""
+  delta-range: ""
+  summary-stats-by-group: ""
+  summary-stats-by-group-accrued-portfolio: ""

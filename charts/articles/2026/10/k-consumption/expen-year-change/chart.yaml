@@ -1,0 +1,20 @@
+chartType: line
+title: ""                    # FILL IN
+subtitle: "Index, 2014 = 100"
+source: "The Budget Lab"
+# note: ""                   # optional
+xAxisType: temporal
+columns:
+  x: year
+  series: series
+  value: value
+series_order:
+  - Decile 1
+  - Decile 5
+  - Decile 10
+annotations:
+  xAxis:
+    - { x: "2014" }          # base year
+  yAxis:
+    - { y: 100 }
+data: data.csv

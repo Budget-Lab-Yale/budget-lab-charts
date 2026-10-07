@@ -1,0 +1,29 @@
+chartType: line
+title: ""                    # FILL IN
+subtitle: ""                 # FILL IN: values = decile 10 minus decile 1, in share units (0-1)
+source: "The Budget Lab"
+# note: ""                   # optional
+xAxisType: temporal
+columns:
+  x: year
+  series: series
+  value: value
+yAxisPolicy:
+  includeZero: true
+series_order:
+  - gap_share_services
+  - gap_share_consumption
+  - gap_share_survival
+  - gap_share_luxury
+  - gap_share_durable
+  - gap_share_nondurable
+  - gap_decile_share_expen
+series_labels:               # derived from the script's per-category graph titles -- check these
+  gap_share_services: "Services"
+  gap_share_consumption: "Consumption"
+  gap_share_survival: "Survival goods"
+  gap_share_luxury: "Luxury goods"
+  gap_share_durable: "Durable goods"
+  gap_share_nondurable: "Nondurable goods"
+  gap_decile_share_expen: "Total expenditure"
+data: data.csv

@@ -1,0 +1,22 @@
+chartType: dumbbell
+title: ""                    # FILL IN
+subtitle: ""                 # FILL IN (script subtitle: max = filled dot, min = open dot, 2000-2024)
+source: "The Budget Lab"
+# note: ""                   # optional
+xAxisType: categorical
+orientation: horizontal
+columns:
+  category: comparison
+  series: series
+  value: value
+x_order:                     # top -> bottom, as in the script
+  - "Ages 45-54 vs. Ages 55-65"
+  - "Decile 10 vs. 1"
+  - "Decile 10 vs. 9"
+  - "Decile 10 vs. 1 (expenditure)"
+  - "Owners vs. renters"
+series_order: [Min, Max]
+series_marker: { Min: hollow, Max: filled }
+value_axis_title: "Delta"
+value_format: { decimals: 2 }
+data: data.csv

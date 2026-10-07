@@ -1,0 +1,15 @@
+chartType: line
+title: ""                    # FILL IN
+subtitle: ""                 # FILL IN: values are shares (0-1), as in the script; ×100 + value_suffix "%" if you want percent
+source: "The Budget Lab"
+# note: ""                   # optional
+xAxisType: temporal
+columns:
+  x: year
+  series: series
+  value: value
+series_order:
+  - Decile 1
+  - Decile 5
+  - Decile 10
+data: data.csv

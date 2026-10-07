@@ -1,0 +1,31 @@
+title: ""                    # FILL IN
+data: data.csv
+stub: [variable]
+header: [group, statistic]
+value: value
+stub_header: ""
+column_group_order: [Entrants, Exiters, Overlap]
+column_order: [Mean, Median]
+row_order:
+  - income
+  - inc_no_kg
+  - kginc
+  - networth
+  - age
+  - occat1
+  - self_emp_mark
+  - Observations
+row_labels:
+  income: "Income"
+  inc_no_kg: "Income (excl. capital gains)"
+  kginc: "Capital Gains Income"
+  networth: "Net Worth"
+  age: "Age"
+  occat1: "Employment Category"
+  self_emp_mark: "Self Employment"
+format:
+  default: { decimals: 2, thousands: true }
+  rows:
+    Observations: { decimals: 0, thousands: true }
+source: "The Budget Lab"
+# notes: ""                  # optional

@@ -1,0 +1,20 @@
+chartType: line
+title: ""                    # FILL IN
+subtitle: "Index, 2014 = 100; annual holding-gain flows from Fed Z.1 (S1M.r)"
+source: "The Budget Lab"     # script note read: "CEX; Federal Reserve Z.1"
+# note: ""                   # optional
+xAxisType: temporal
+columns:
+  x: year
+  series: series
+  value: value
+series_order:
+  - Household income
+  - Corporate equities
+  - Net worth                # NOTE: script legend says "Net worth" but this series is holdgain_ttl (total holding gains) -- relabel here if wrong
+annotations:
+  xAxis:
+    - { x: "2014" }          # base year
+  yAxis:
+    - { y: 100 }
+data: data.csv
