@@ -24,5 +24,5 @@ small_multiples:
     Portfolio: "Portfolio"
     Realized: "Realized gains"
 note: "Shows the mean between the entrant and exit rate for the top decile. Those rates are not the same as a result of the use of population weights but are similar in magnitude. Portfolio is a composite variable that includes accrued gains equity, bonds, and real estate."    
-source: " Federal Reserve Survey of Consumer Finance and authors’ calculations"
+source: "Federal Reserve Survey of Consumer Finance and authors’ calculations"
 data: data.csv
