@@ -1,8 +1,6 @@
 chartType: line
-title: ""                    # FILL IN
-subtitle: ""                 # FILL IN: values are shares (0-1), as in the script; ×100 + value_suffix "%" if you want percent
-source: "The Budget Lab"
-# note: ""                   # optional
+title: "Shares of total consumption by decile also do not signal an underlying K-shaped economy as shares have remained flat for roughly 20 years."                    
+subtitle: "Shares of total expenditure by decile relative to total expenditure"              
 xAxisType: temporal
 columns:
   x: year
@@ -12,4 +10,6 @@ series_order:
   - Decile 1
   - Decile 5
   - Decile 10
+note: "Measures total consumption for each decile relative to total consumption across all deciles for deciles 1, 5, and 10. "
+source: "BLS Consumer Expenditure Survey"
 data: data.csv
