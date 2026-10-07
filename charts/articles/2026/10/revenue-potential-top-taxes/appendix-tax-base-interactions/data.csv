@@ -1,0 +1,37 @@
+increase,base,effect
+Ordinary rates,Ordinary income,▼ \(\textit{Underreporting rises; giving responds}\)
+Ordinary rates,Capital gains,▲ Compensation converts into deferred equity gains; income shifted into corporate form returns as shareholder gain
+Ordinary rates,Corporate,▲ Income shifts into C-corporation form
+Ordinary rates,Estate,▼ Evaders' assets leave the reported estate
+Ordinary rates,Gains at death,▲ Converted gains add to the stock later held at death
+Ordinary rates,Wealth,▼ Evaders' assets leave the reported wealth base
+Capital gains rates,Ordinary income,▲ Conversion unwinds; pay returns as salary
+Capital gains rates,Capital gains,▼ \(\textit{Realizations deferred; retiming around effective dates}\)
+Capital gains rates,Corporate,▼ All-in corporate rate rises; income shifts to pass-through
+Capital gains rates,Estate,—
+Capital gains rates,Gains at death,▲ Deferred gains accumulate and arrive at death
+Capital gains rates,Wealth,—
+The corporate rate,Ordinary income,"▼ Rates of return competed down; interest, rents, pass-through income fall °; ▲ income shifted out of corporate form is taxed as pass-through income"
+The corporate rate,Capital gains,▼ Equity marked down; later realizations shrink °; ▼ income leaving corporate form no longer returns as shareholder gain
+The corporate rate,Corporate,▼ \(\textit{Income shifts toward pass-through form; the taxed base erodes}\)
+The corporate rate,Estate,▼ Marked-down portfolios shrink estates °
+The corporate rate,Gains at death,▼ Unrealized gains absorb the markdown °
+The corporate rate,Wealth,▼ Marked-down portfolios shrink the base °
+The estate tax,Ordinary income,—
+The estate tax,Capital gains,—
+The estate tax,Corporate,—
+The estate tax,Estate,▼ \(\textit{Reported estates shrink}\)
+The estate tax,Gains at death,—
+The estate tax,Wealth,—
+The tax on gains at death,Ordinary income,▲ Income shifted out of corporate form is taxed as pass-through income
+The tax on gains at death,Capital gains,▲ Deferral no longer escapes tax; realizations rise during life
+The tax on gains at death,Corporate,▼ Retain-to-death shelter loses value; income shifts to pass-through
+The tax on gains at death,Estate,▼ Gains tax due at death is deductible from the estate †
+The tax on gains at death,Gains at death,▼ \(\textit{Realizations pulled forward shrink the pool taxed at death}\)
+The tax on gains at death,Wealth,—
+The wealth tax,Ordinary income,▼ Concealed assets' income leaves the return
+The wealth tax,Capital gains,▼ Concealed assets' realized gains leave the return
+The wealth tax,Corporate,—
+The wealth tax,Estate,▼ Concealed assets leave the reported estate
+The wealth tax,Gains at death,—
+The wealth tax,Wealth,▼ \(\textit{Valuation discounts and concealment shrink reported wealth}\)

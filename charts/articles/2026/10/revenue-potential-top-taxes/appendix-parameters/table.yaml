@@ -1,0 +1,36 @@
+title: Parameters and Sources
+data: data.csv
+stub:
+  - group
+  - parameter
+header:
+  - column
+value: value
+stub_header: Parameter
+stub_wrap: true
+stub_width: 280
+column_width:
+  Value: 100
+  Source: 290
+column_wrap: true
+format:
+  default:
+    type: number
+  rows:
+    "Long-run response (\\(\\eta\\)), the exponent on one minus the net tax cost of selling a dollar of assets":
+      decimals: 2
+    Share of realizations that can retime ±1 year:
+      decimals: 2
+    Valuation of pass-through interests at death:
+      decimals: 3
+    Income conversion, percent of eligible pool per percentage point change in the rate gap:
+      decimals: 2
+    Entity shifting, percent of pass-through income per percentage point change in the rate differential:
+      decimals: 2
+    Reported-estate elasticity with respect to the net-of-tax rate:
+      decimals: 2
+    Corporate taxable income elasticity with respect to the statutory net-of-tax rate:
+      decimals: 3
+    Normal-return share of the change in corporate profits:
+      decimals: 3
+source: The Budget Lab
