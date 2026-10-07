@@ -1,4 +1,5 @@
-title: ""                    # FILL IN
+title: "Appendix Table 1b"  
+subtitle: "Characteristics by the inclusion of Accrued Capital Gains (Portfolio)"
 data: data.csv
 stub: [variable]
 header: [group, statistic]
@@ -31,5 +32,5 @@ format:
   default: { decimals: 2, thousands: true }
   rows:
     Observations: { decimals: 0, thousands: true }
-source: "The Budget Lab"
-# notes: ""                  # optional
+notes: "Portfolio includes bonds, corporate equities, and real estate accrued values."                
+source: "Federal Reserve, Survey of Consumer Finance"
