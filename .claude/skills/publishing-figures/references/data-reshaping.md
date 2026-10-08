@@ -3,8 +3,11 @@
 Target shape (ENGINE-CONFIG-SPEC.md § CSV format): **long/tidy**, header row, one row per
 observation. Any column names — map them in the spec's `columns:` block (`x`, `value`,
 `series`, plus `facet`/`shape`/`section` when used). The x column must parse for the chosen
-`xAxisType` (temporal = strict `YYYY-MM-DD`; quarterly = strict `YYYYQ#`; numeric = plain
-number; categorical = any non-empty string). Value columns are numeric or empty (empty =
+`xAxisType` (temporal = strict `YYYY-MM-DD` naming a real calendar day, or a bare `YYYY`;
+quarterly = strict `YYYYQ1`–`YYYYQ4`; numeric = plain number; categorical = any non-empty string).
+From v1.16.0 the date grammar is enforced everywhere a date is read (ENGINE-CONFIG-SPEC.md § Dates):
+`2023-02-29`, `2024-1-1`, `2024/01/01` and `2024q1` all fail validation, so normalize dates during
+the reshape, never by hand afterwards. Value columns are numeric or empty (empty =
 missing observation). Extra columns are tolerated. Tables are also tidy: one row per cell.
 
 ## The anomaly gate — ask, don't fix
@@ -47,6 +50,22 @@ the row, and anything else (a blank, `0`, `x`) does not — so write `1`, not an
 `YYYY-MM-DD`: ask which date to place the event at, and offer to keep the source's wording as its
 `date_label`. Never pick the placement date yourself.
 
+## Treemap data
+
+A `treemap` takes **one row per tile**, with `xAxisType: categorical`:
+
+| Role | Content |
+|---|---|
+| `x` | The tile's name, shown as written. Non-blank. |
+| `value` | The tile's size: a number ≥ 0 in every row. Blank, negative or non-numeric is an error. |
+| `series` | Optional group (one level). Non-blank in every row when mapped. |
+
+Further columns may feed `treemap.tooltip` rows or `treemap.tooltip_note`; any other column role
+(`facet`, `section`, ...) is an error. A name may appear only once per group (once overall with no
+groups). Negative values are an anomaly-gate question: a treemap cannot draw them, so ask whether to
+drop the row, chart something else, or pick a different chart type. A zero-value row draws no tile
+and validate warns about it; ask whether to keep it.
+
 ## Wide → long
 
 Typical input: first column is x, each remaining column is a series.
@@ -78,7 +97,8 @@ sort by x then series.
 ## Sanity checks before writing data.csv
 
 - Every x value parses under the chosen `xAxisType` (spot-check first/last rows).
-- No duplicate (x, series) pairs.
+- No duplicate (x, series) pairs. On a sectioned chart the key is (section, x, series): the same
+  category label may repeat across sections, but only once within one.
 - Any series/category names you reference in the spec (`series_order`, `series_colors`,
   `x_order`, `pane_order`…) must match the CSV values **byte-for-byte** — print
   `JSON.stringify` of the unique values to expose en-dashes, non-breaking spaces, and
