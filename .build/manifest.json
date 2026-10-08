@@ -131,6 +131,27 @@
     "recession-indicators/yield-curve": {
       "hash": "03f1bfe369f9e2609f370c952f9146ccfe1c18fe77981394a446b2b5db555e3e"
     },
+    "revenue-potential-top-taxes/appendix-parameters": {
+      "hash": "1697159919d2928e5f8ad71ebd95cbecda77d74999d80c1e1c536d927cd98f23"
+    },
+    "revenue-potential-top-taxes/appendix-tax-base-interactions": {
+      "hash": "4bb28ff20158bb3cd51286d99ab675b36630035d93e8c1cb168a7b2ed5c87b8f"
+    },
+    "revenue-potential-top-taxes/capital-gains-laffer-curve": {
+      "hash": "a0170d3d5d78d29b2323e7425baa9a9dae37649000ce83f622c3dbbad5cb1cae"
+    },
+    "revenue-potential-top-taxes/effective-tax-rates-top-groups": {
+      "hash": "911a0da0e532b3b91421956840aae6bfaa75dc06b9d6296677f21560d66233c9"
+    },
+    "revenue-potential-top-taxes/income-above-top-thresholds": {
+      "hash": "d3866c667f5efedf534813528da1ddeec4977104727817f7ce856e044ead3151"
+    },
+    "revenue-potential-top-taxes/revenue-by-tax-deemed-realization": {
+      "hash": "536bda9305c07f6541bdfb6a35fa112892cca891fb3a03c517dce96188144ad9"
+    },
+    "revenue-potential-top-taxes/revenue-by-tax-step-up": {
+      "hash": "4f1a8de1844724d92876ab11222cadf2564357443e19a8dfe39354f08d4caab2"
+    },
     "tariff-model-update-july2026/eta-effect": {
       "hash": "e5e51e6779b280d7de4c2c6ff3f47f34c33406021a8ccd7e16316fec796ba0ca"
     },
