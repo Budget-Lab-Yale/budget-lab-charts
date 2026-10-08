@@ -28,6 +28,6 @@ format:
   default: { decimals: 2, thousands: true }
   rows:
     Observations: { decimals: 0, thousands: true }
-note: "Characteristics are pooled across all SCF survey years."
+notes: "Characteristics are pooled across all SCF survey years."
 source: "Federal Reserve, Survey of Consumer Finance"
 
