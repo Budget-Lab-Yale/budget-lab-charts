@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How the Tax Bases Interact</title>
+<link rel="stylesheet" href="../../embed/v1/chart-1.16.2.css">
+<style>html.tbl-embedded body{margin:0 !important}html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style><script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}catch(e){document.documentElement.classList.add("tbl-embedded")}</script>
+</head>
+<body>
+<div id="chart" style="max-width:760px;margin:32px auto;padding:0 16px"></div>
+<script src="../../embed/v1/engine-1.16.2.js"></script>
+<script>
+var el = document.getElementById("chart");
+if (typeof BudgetLabChart === "undefined") {
+  renderUnavailable(el, "How the Tax Bases Interact", "Appendix Figure 1");
+} else {
+BudgetLabChart.mountTable(el, {
+  spec: {"title":"How the Tax Bases Interact","data":"data.csv","stub":["increase"],"header":["base"],"value":"effect","stub_header":"An increase in…","stub_width":96,"stub_wrap":true,"column_width":104,"column_wrap":true,"sticky":{"firstColumn":true},"notes":"In addition, for all tax bases, any increase in tax paid during life (and every loss of income from the corporate feedback channel or the employer payroll wage adjustment) is partly financed out of saving. The forgone wealth compounds, which shrinks the wealth tax base, the estate tax base, and the income tax base on investment income in later years. \\\\ ▲ = the base grows; ▼ = the base shrinks. Italic = own-base response. ° = mechanical interaction; † = statutory interaction, counted in the first-order estimate; others are behavioral responses. — = no channel in the model.","source":"The Budget Lab"},
+  rows: [{"increase":"Ordinary rates","base":"Ordinary income","effect":"▼ \\(\\textit{Underreporting rises; giving responds}\\)"},{"increase":"Ordinary rates","base":"Capital gains","effect":"▲ Compensation converts into deferred equity gains; income shifted into corporate form returns as shareholder gain"},{"increase":"Ordinary rates","base":"Corporate","effect":"▲ Income shifts into C-corporation form"},{"increase":"Ordinary rates","base":"Estate","effect":"▼ Evaders' assets leave the reported estate"},{"increase":"Ordinary rates","base":"Gains at death","effect":"▲ Converted gains add to the stock later held at death"},{"increase":"Ordinary rates","base":"Wealth","effect":"▼ Evaders' assets leave the reported wealth base"},{"increase":"Capital gains rates","base":"Ordinary income","effect":"▲ Conversion unwinds; pay returns as salary"},{"increase":"Capital gains rates","base":"Capital gains","effect":"▼ \\(\\textit{Realizations deferred; retiming around effective dates}\\)"},{"increase":"Capital gains rates","base":"Corporate","effect":"▼ All-in corporate rate rises; income shifts to pass-through"},{"increase":"Capital gains rates","base":"Estate","effect":"—"},{"increase":"Capital gains rates","base":"Gains at death","effect":"▲ Deferred gains accumulate and arrive at death"},{"increase":"Capital gains rates","base":"Wealth","effect":"—"},{"increase":"Corporate rate","base":"Ordinary income","effect":"▼ Rates of return competed down; interest, rents, pass-through income fall °; ▲ income shifted out of corporate form is taxed as pass-through income"},{"increase":"Corporate rate","base":"Capital gains","effect":"▼ Equity marked down; later realizations shrink °; ▼ income leaving corporate form no longer returns as shareholder gain"},{"increase":"Corporate rate","base":"Corporate","effect":"▼ \\(\\textit{Income shifts toward pass-through form; the taxed base erodes}\\)"},{"increase":"Corporate rate","base":"Estate","effect":"▼ Marked-down portfolios shrink estates °"},{"increase":"Corporate rate","base":"Gains at death","effect":"▼ Unrealized gains absorb the markdown °"},{"increase":"Corporate rate","base":"Wealth","effect":"▼ Marked-down portfolios shrink the base °"},{"increase":"Estate tax","base":"Ordinary income","effect":"—"},{"increase":"Estate tax","base":"Capital gains","effect":"—"},{"increase":"Estate tax","base":"Corporate","effect":"—"},{"increase":"Estate tax","base":"Estate","effect":"▼ \\(\\textit{Reported estates shrink}\\)"},{"increase":"Estate tax","base":"Gains at death","effect":"—"},{"increase":"Estate tax","base":"Wealth","effect":"—"},{"increase":"Tax on gains at death","base":"Ordinary income","effect":"▲ Income shifted out of corporate form is taxed as pass-through income"},{"increase":"Tax on gains at death","base":"Capital gains","effect":"▲ Deferral no longer escapes tax; realizations rise during life"},{"increase":"Tax on gains at death","base":"Corporate","effect":"▼ Retain-to-death shelter loses value; income shifts to pass-through"},{"increase":"Tax on gains at death","base":"Estate","effect":"▼ Gains tax due at death is deductible from the estate †"},{"increase":"Tax on gains at death","base":"Gains at death","effect":"▼ \\(\\textit{Realizations pulled forward shrink the pool taxed at death}\\)"},{"increase":"Tax on gains at death","base":"Wealth","effect":"—"},{"increase":"Wealth tax","base":"Ordinary income","effect":"▼ Concealed assets' income leaves the return"},{"increase":"Wealth tax","base":"Capital gains","effect":"▼ Concealed assets' realized gains leave the return"},{"increase":"Wealth tax","base":"Corporate","effect":"—"},{"increase":"Wealth tax","base":"Estate","effect":"▼ Concealed assets leave the reported estate"},{"increase":"Wealth tax","base":"Gains at death","effect":"—"},{"increase":"Wealth tax","base":"Wealth","effect":"▼ \\(\\textit{Valuation discounts and concealment shrink reported wealth}\\)"}],
+  eyebrow: /[?&]eyebrow=(off|0|false|none|hide)\b/i.test(location.search) ? undefined : "Appendix Figure 1",
+});
+}
+function renderUnavailable(el, title, eyebrow) {
+  var box = document.createElement("div");
+  box.setAttribute("role", "note");
+  box.style.cssText = "font:16px/1.5 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1c1c1c;border:1px solid #d9dce3;border-radius:4px;padding:20px";
+  if (eyebrow) {
+    var e = document.createElement("p");
+    e.textContent = eyebrow;
+    e.style.cssText = "margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a5f6b";
+    box.appendChild(e);
+  }
+  var h = document.createElement("p");
+  h.textContent = title;
+  h.style.cssText = "margin:0 0 12px;font-weight:600";
+  box.appendChild(h);
+  var p = document.createElement("p");
+  p.style.cssText = "margin:0;color:#5a5f6b";
+  p.appendChild(document.createTextNode("An error occurred, please try reloading this page. If this problem persists please contact "));
+  var a = document.createElement("a");
+  a.href = "mailto:budgetlab@yale.edu";
+  a.textContent = "budgetlab@yale.edu";
+  a.style.color = "inherit";
+  p.appendChild(a);
+  p.appendChild(document.createTextNode("."));
+  box.appendChild(p);
+  el.appendChild(box);
+}
+</script>
+<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script><script>(function(){if(window.self===window.top)return;function fit(){try{if(window.parentIFrame&&window.parentIFrame.size)window.parentIFrame.size();}catch(e){}}var t;function soon(){clearTimeout(t);t=setTimeout(fit,60);}if(window.ResizeObserver){try{new ResizeObserver(soon).observe(document.body);}catch(e){}}window.addEventListener("load",function(){setTimeout(fit,200);setTimeout(fit,800);});if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}})();</script>
+</body>
+</html>
