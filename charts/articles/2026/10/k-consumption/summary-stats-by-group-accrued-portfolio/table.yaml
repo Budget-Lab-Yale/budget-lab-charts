@@ -18,7 +18,7 @@ row_order:
   - occat1
   - self_emp_mark
   - Observations
-row_labels:                  # the .tex used raw variable names; these labels are my plain-language guesses -- check them
+row_labels:             
   income: "Income"
   inc_accrued_portfolio: "Income incl. accrued portfolio income"
   accrued_income_portfolio: "Accrued portfolio income"
@@ -32,5 +32,5 @@ format:
   default: { decimals: 2, thousands: true }
   rows:
     Observations: { decimals: 0, thousands: true }
-notes: "Portfolio includes bonds, corporate equities, and real estate accrued values."                
+notes: "Portfolio includes bonds, corporate equities, and real estate accrued values. Characteristics are pooled across all SCF survey years."                
 source: "Federal Reserve, Survey of Consumer Finance"
