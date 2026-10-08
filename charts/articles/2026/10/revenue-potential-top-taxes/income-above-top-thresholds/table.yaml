@@ -1,0 +1,44 @@
+title: Projected Income Above Top-Group Thresholds, 2027
+subtitle: Current law
+notes: >-
+  Total income is the group's full income. Income above threshold is each unit's income
+  in excess of the group's entry threshold. After-tax income above threshold subtracts the federal
+  tax on that income.
+source: The Budget Lab
+data: data.csv
+stub:
+  - measure
+  - group
+group_order:
+  - AGI
+  - Accrual
+group_notes:
+  AGI: Groups ranked and income measured by adjusted gross income.
+  Accrual: An AGI-based accrual measure.
+header:
+  - quantity
+  - unit
+value: value
+stub_header: Group
+format:
+  default:
+    decimals: 0
+    thousands: true
+  columns:
+    Millions of dollars:
+      decimals: 2
+      prefix: "$"
+    Billions of dollars:
+      decimals: 0
+      thousands: true
+      prefix: "$"
+    Percent of GDP:
+      decimals: 1
+      suffix: "%"
+column_labels:
+  Millions of dollars: "$ millions"
+  Billions of dollars: "$ billions"
+  Percent of GDP: "% of GDP"
+header_labels:
+  After-tax income above threshold: 'After-tax income \\ above threshold'
+  Income above threshold: 'Income above \\ threshold'

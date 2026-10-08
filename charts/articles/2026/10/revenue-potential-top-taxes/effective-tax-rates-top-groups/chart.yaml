@@ -1,0 +1,27 @@
+chartType: dumbbell
+orientation: horizontal
+columns:
+  category: group
+  series: income_measure
+  value: effective_rate
+  section: ranking
+title: Projected Federal Effective Tax Rates on Top Groups, 2027
+subtitle: Percent of income, current law
+note: >-
+  Taxes: individual income tax after refundable credits, payroll tax including the employer share,
+  estate tax, and corporate income tax allocated to households. Cash income is expanded income.
+  Accrual income is Haig-Simons income, which counts capital gains as they accrue.
+source: The Budget Lab
+xAxisType: categorical
+value_suffix: "%"
+tooltip_decimals: 1
+value_format:
+  decimals: 1
+  suffix: "%"
+yAxisPolicy:
+  min: 0
+series_order:
+  - Cash income
+  - Accrual income
+data: data.csv
+tooltip_section: true

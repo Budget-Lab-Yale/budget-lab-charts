@@ -1,0 +1,23 @@
+chartType: line
+columns:
+  x: top_rate
+  series: treatment_at_death
+  value: revenue_billions
+title: Capital Gains Laffer Curve by Tax Treatment at Death
+subtitle: Billions of dollars, fiscal 2027–2036, after behavioral response
+note: >-
+  Rate on long-term capital gains only. Carryover and deemed realization include the revenue from
+  the change in treatment at death, shown alone at 20 percent.
+source: The Budget Lab
+xAxisType: numeric
+x_axis_title: Top statutory rate on long-term capital gains (percent)
+value_prefix: "$"
+tooltip_decimals: 0
+points: true
+yAxisPolicy:
+  includeZero: true
+series_order:
+  - Step-up
+  - Carryover
+  - Deemed realization
+data: data.csv

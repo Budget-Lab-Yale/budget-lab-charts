@@ -1,0 +1,22 @@
+title: How the Tax Bases Interact
+data: data.csv
+stub:
+  - increase
+header:
+  - base
+value: effect
+stub_header: An increase in…
+stub_width: 96
+stub_wrap: true
+column_width: 104
+column_wrap: true
+sticky:
+  firstColumn: true
+notes: >-
+  In addition, for all tax bases, any increase in tax paid during life (and every loss of income
+  from the corporate feedback channel or the employer payroll wage adjustment) is partly financed
+  out of saving. The forgone wealth compounds, which shrinks the wealth tax base, the estate tax
+  base, and the income tax base on investment income in later years. \\ ▲ = the base grows; ▼ = the
+  base shrinks. Italic = own-base response. ° = mechanical interaction; † = statutory interaction,
+  counted in the first-order estimate; others are behavioral responses. — = no channel in the model.
+source: The Budget Lab
