@@ -24,3 +24,4 @@ series_order:
   - Cash income
   - Accrual income
 data: data.csv
+tooltip_section: true
