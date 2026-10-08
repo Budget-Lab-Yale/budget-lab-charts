@@ -21,11 +21,35 @@ Some existing charts use `xAxisPolicy.markers` / `xAxisPolicy.bands` / `yAxisPol
 Those are deprecated aliases — even though committed examples contain them, write the modern
 `annotations:` block (ENGINE-CONFIG-SPEC.md § Annotations) in new charts.
 
-## `columns.section requires chartType "bar" with orientation "horizontal"`
+## `columns.section requires a horizontal "bar", "stacked" or "dumbbell" chart`
 
-The section axis works only on plain horizontal **bar** charts — not `stacked`, even horizontal.
-For a sectioned stacked distribution, drop `columns.section`/`section_order` and convey the
-grouping through `x_order` instead.
+Sections exist only on horizontal charts. Since v1.16.0 a horizontal `stacked` chart takes them too,
+so a sectioned stacked distribution no longer needs the old `x_order` workaround. A vertical chart
+cannot have sections; set `orientation: horizontal` or drop `columns.section`.
+
+## Section and facet errors
+
+- `category "A" in section "S1" has more than one "x" value — rows are identified by section +
+  category, ...` — two CSV rows for the same section + category + series. A label repeated across
+  *different* sections is fine (two rows); within one section it is a duplicate to resolve with the
+  user, not to sum or drop.
+- `columns.facet and columns.section are both set: on a horizontal chart columns.facet draws its
+  values as groups, ...` — keep one, normally `columns.section`.
+- `section_order applies to columns.section; with columns.facet the groups are ordered and titled by
+  ...` (also `section_labels`) — on a faceted horizontal chart use `small_multiples.pane_order` /
+  `pane_titles`, or switch the facet column to `columns.section`.
+- `tooltip_section needs columns.section — ...` — the field only means something on a sectioned
+  chart.
+
+## `annotations.yAxis draws nothing on a horizontal "bar" chart: its value axis runs along x, ...`
+
+On a horizontal `bar`, `stacked` or `dumbbell` chart a value-axis line is an `annotations.xAxis`
+entry with `x` set to the value (`x: "0.13"`). Same for legacy `yAxisPolicy.markers`.
+
+## `/series_order: "X" appears more than once`
+
+Since v1.16.0 a value listed twice in `series_order` or `shape_order` is a validation error. Remove
+the repeat.
 
 ## `series_order names series ["X"] not found in the data`
 
@@ -34,11 +58,13 @@ Config keys must match CSV values **byte-for-byte**: en-dash vs hyphen (`High–
 series values and copy from that. Also remember `series_order` **filters** — a series left out
 of the list disappears from the chart.
 
-## `row N: time: expected YYYY-MM-DD, got "..."`
+## `row N: time: expected YYYY-MM-DD or YYYY, got "..."` / `row N: time: invalid date "..."`
 
-x formats are strict: temporal is exactly `YYYY-MM-DD` (not `YYYY-MM`, not `M/D/YYYY`);
-quarterly is exactly `2025Q1` (not `2025-Q1`, not `Q1 2025`). Monthly data → first-of-month
-dates.
+x formats are strict: temporal is exactly `YYYY-MM-DD` or a bare `YYYY` (not `YYYY-MM`, not
+`M/D/YYYY`, not `2024-1-1`); quarterly is exactly `2025Q1` (not `2025-Q1`, not `Q1 2025`, not
+`2025q1`). Monthly data → first-of-month dates. `invalid date` means the shape is right but the day
+does not exist (`2023-02-29`, `2024-02-30`): a source error to raise with the user, not to round.
+The same grammar applies to annotation, shading and rug dates in the spec.
 
 ## `columns.x is "time" but no such column exists`
 
@@ -63,6 +89,19 @@ invisible UTF-8 BOM. Rewrite the CSV without BOM.
 - Warnings (validate still passes): `more than 20 is hard to read — consider splitting it`, and
   `horizontal layout needs more than N label rows per side at the ...px export width` — the PNG
   then grows extra rows. Raise them with the user; `orientation: vertical` usually answers both.
+
+## Treemap errors and warnings
+
+- `row N: columns.value ("...") must be a number ≥ 0, got "..."` — a negative, blank or text value.
+  A treemap cannot draw a negative part; ask the user (data-reshaping.md § Treemap data).
+- `row N: duplicate tile "A" in group "g" (also row M)` — the same name twice in one group (or twice
+  anywhere, with no groups). Usually a missed aggregation or a missing group column; ask.
+- `... is not supported on chartType "treemap"` — the treemap takes only its accepted-field list.
+  The common slip is `value_prefix` / `value_suffix`: use `value_format: {prefix, suffix}`.
+- `chartType "treemap" requires xAxisType "categorical"`.
+- Warnings (validate still passes): zero-value rows, more than 30 tiles, more than seven groups with
+  no `series_colors`, and more than half the tiles unlabelled at the export width. Raise them with
+  the user; fewer, larger tiles (aggregate a long tail into "Other") usually answers the last two.
 
 ## Table YAML breaks on math
 
