@@ -1,6 +1,6 @@
 <!-- AUTO-VENDORED FILE — DO NOT EDIT ----------------------------------------
 
-  Verbatim copy of CONFIG-SPEC.md from budget-lab-chart-engine v1.16.1, the
+  Verbatim copy of CONFIG-SPEC.md from budget-lab-chart-engine v1.16.2, the
   engine version pinned in package.json.
 
   It lives here so that writing a figure never requires opening the engine repo.
