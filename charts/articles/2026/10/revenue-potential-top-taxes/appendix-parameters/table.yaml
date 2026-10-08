@@ -10,9 +10,11 @@ stub_header: Parameter
 stub_wrap: true
 stub_width: 280
 column_width:
-  Value: 100
+  Value: 144
   Source: 290
 column_wrap: true
+column_align:
+  Value: center
 format:
   default:
     type: number
