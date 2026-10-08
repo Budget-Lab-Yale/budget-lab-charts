@@ -1,186 +1,186 @@
 {
-  "renderVersion": "engine:git+ssh://git@github.com/Budget-Lab-Yale/budget-lab-chart-engine.git#9067f8e958d862bb5ccbbd1219e5963adb0f0c91|thumbs:1|fonts:1",
-  "engineVersion": "1.16.0",
+  "renderVersion": "engine:git+ssh://git@github.com/Budget-Lab-Yale/budget-lab-chart-engine.git#8a5c913ff9a7224fedc62ec758a0a7a1b4925157|thumbs:1|fonts:1",
+  "engineVersion": "1.16.1",
   "charts": {
     "ai-fiscal/atr-by-decile": {
-      "hash": "e72c137b629aa13403833f1729c7cd908ec8a10a2f06b9fcedde38bd39e7285e"
+      "hash": "67f7629c760d47c6ee6bc36d8cfd0d3feb1f80d2c1f034929537401eda2be734"
     },
     "ai-fiscal/debt-to-gdp": {
-      "hash": "f2f980621c69093c24fc5b054651e02611caf92c700aa6256c739d7ca8ef0b13"
+      "hash": "571cca31b3c9c7fa4e6589f31511b1effb142df96286b427d663dd73b6e20559"
     },
     "ai-fiscal/gdp-growth-history": {
-      "hash": "73f87cfb7a97468239a789fc59eed410f7e4e4db8ecf204e6b7e258136d1e095"
+      "hash": "07d120ad2a6e50e45e3f32609ae0eb71755dc34dfa263740190ebde0c9c35e98"
     },
     "ai-fiscal/inequality-gini": {
-      "hash": "77ebaa4a34e1aa4f193a16c296c8f7629299bbea40b34166cda2532d7f078520"
+      "hash": "ffa60978ab4ddcb1fc3b8bfc27643c498bc3eb93309c75b1c0b237cc0cd28ac4"
     },
     "ai-fiscal/key-parameters": {
-      "hash": "1cc52bf3db25ae31885442a9d97778d004cadb468c05b819a34793ee38e8e096"
+      "hash": "f59ffbf9f827c1da1362cc928eb4907a668d47e7f0f12c113b396bbe6ba6b5a6"
     },
     "ai-fiscal/key-parameters-symbols": {
-      "hash": "0bd72ada5cee87fb344a328722bd7dce03495ec4d025d7e77c6c431a086aa39f"
+      "hash": "d7524c8b1fb44de7e2b7560f5969e8c0adf6ed46d27a28fbe6a6031ccba04d98"
     },
     "ai-fiscal/labor-share-history": {
-      "hash": "6046c3bb814ca9f379b435aa6dfb580cc55036d688cb12e7c9fcbc9768001d26"
+      "hash": "336b631b853e2e7b75cae6e1322c05b67120949a42adc460bd8cba72cf0e8f6b"
     },
     "ai-fiscal/revenue-by-income-type": {
-      "hash": "a39c65852c307820e6a2438b5a430333ab0f1e5610aea4dd237ec00eb3bf38fa"
+      "hash": "ed2497bf43a84ba95e9da260dcbf98a2988123015108b732eb0ed880d5a121be"
     },
     "ai-fiscal/revenue-by-instrument": {
-      "hash": "cbc8d3a36caee51d08f1b0fec3264d37d37be63ef025e8e8b783a66a71e290bf"
+      "hash": "70e9333aafe4a622cf8c6ad419601db9e2babdaee5ba45b9fd5e42b152087409"
     },
     "ai-fiscal/revenue-fixed-vs-reallocated": {
-      "hash": "12ce106921f1be8bb48130e529d88a36048ddc8637b07ff79a6390f21eb0ce74"
+      "hash": "ed01cd62a86a3efcaf1e44a064e1bb0e18a57eea6ed4533a0b6133e6909a3693"
     },
     "ai-fiscal/revenue-headline": {
-      "hash": "918a21bb9e7f5f02c323800c89858347981e36795f36b4cb671cc8d8d3814281"
+      "hash": "bf22a4b29168530169e08d125d8dbd06bf9e7f2236d85c324dbbbc8eebe8356b"
     },
     "ai-fiscal/revenue-vs-factor-income": {
-      "hash": "ba9418c0e7fff9710eb6593fd0c27035eb74670525764973bbb6c441adf6a215"
+      "hash": "db94db23d89aefb3e9b6ad45c9091e19c3a2e91331a9052d0d2792bad7492bfb"
     },
     "ai-fiscal/revenue-vs-pretax-income": {
-      "hash": "d9375996a252af4218552aeaa0fbf70b2bd3b9fe61a53a3a2a8e4d354fcae297"
+      "hash": "010326a78221558b85681997ec75714beede8d32b799bc53cc5ddd5ee63d1e31"
     },
     "atus-childcare/childcare-by-activity": {
-      "hash": "7180193724f29cfca1d0e7dff69c236816975bd5f092636c64032c42210dbfe8"
+      "hash": "ae96a65d8d90fcd31c249c4c0d04e148307be986a908101dba9a146e5048cd70"
     },
     "atus-childcare/childcare-by-cohort-all-adults": {
-      "hash": "48a50a39e54ed6024b3163712d1b2287b77afdf73a95c896f9a3a81ac7d4947d"
+      "hash": "8bdbe6ba9aaedf3b5cfe1df53e563d67c192923558116f8e0d5d3f6d3493d852"
     },
     "atus-childcare/childcare-by-cohort-parents": {
-      "hash": "5b7dd766391de27cf1c6733e511d702aa5bd8e0387f95bc960e0a5a407a2e638"
+      "hash": "6da8ca86f61ae0a7801bfe00bd68f2231db9459a5831632fefc28bfd189cfbde"
     },
     "atus-childcare/childcare-by-household-type": {
-      "hash": "b50ab1a7723254e20b23ad249235e20242f4869f0f6dec3cb0378d36a572e759"
+      "hash": "631fd906ce75ceb059547d23bd0eb94690204cf1b74c8fe376f9586c23c9e12f"
     },
     "atus-childcare/childcare-by-household-type-and-child-age": {
-      "hash": "9140c878e02b396d0078c0ee33e0318a63304a9b9d21b3deb9723e0defe0aae5"
+      "hash": "e6b43eae3d53a28ec8bbd3b5b6a136a282022ca4e1df413e40c803a2a18d5e88"
     },
     "atus-childcare/childcare-by-sex-and-child-age": {
-      "hash": "29d1081c7bef011a51571281789d965f32c0765e1b5577576065be91b8ffc9d1"
+      "hash": "d90b6902f029e8c365c9d61dc4c669bbc47fb717633864f644f255becc74f6ae"
     },
     "atus-childcare/leisure-by-cohort": {
-      "hash": "0fb31ed82bbfc433cf27bd6e7c6ac62e072bcdf23de7d32fbf405c58f682bcbd"
+      "hash": "624022593091286e13b599deeecfd64e59901f2526a192f810085a02d9f74dad"
     },
     "atus-childcare/leisure-by-household-type": {
-      "hash": "8825492cf4e6baf6a7c0719adc85fa1c118a07195874f38eba3393943af5bc4d"
+      "hash": "95240b2130b12b99cd82060866f34d6f18d2c6ba07a512217f357192ebfaf6b5"
     },
     "atus-childcare/work-by-cohort-parents": {
-      "hash": "78336cc25004e8ddb4ed9c3949d40db5df1aad4a64787c92ecdcd1a3080d3fe6"
+      "hash": "2e98062d89b55be9beaf4ac1ee355e34c405357323e04dfd3f27f5a711cd056f"
     },
     "atus-childcare/work-by-household-type": {
-      "hash": "5bda26f001e8435fdfe65d766b9c96ddc91d02e15badcd57117c55f8593813b0"
+      "hash": "bb80fc86285b3c017df3e409b1094f91a75454ba7e1461199d85ab6e13644ccb"
     },
     "atus-childcare/work-by-youngest-child-age": {
-      "hash": "df50eb8041524f6e00cde6201ef61d9318f9564afb0cda12ca6ad34a334d4094"
+      "hash": "f459f20bf12fe729a346c32173c42b9ecca2ca366e4f1005abe9986d404b2560"
     },
     "ces-qcew-benchmark-revisions/final-v-prelim": {
-      "hash": "4f4cf733fc0bc885a0ecb12abd3d6e710a191d25b33c9870e13e0460585d329f"
+      "hash": "160bf517a9c3bc571912ce5e241d68a1be1f2e2b8d69b0c02e5f853e8a5e1269"
     },
     "ces-qcew-benchmark-revisions/regressions": {
-      "hash": "ac954ab3f6143657e82f48b0e6e006bfaa10ad0bf5b61456dea81417d59b664f"
+      "hash": "38d95c8f1b61a9b5aa4afc0e74c441454fae564e25ed2fcf5d830c1eabe6cd4c"
     },
     "ces-qcew-benchmark-revisions/revisions-since-2015": {
-      "hash": "d180566c66e60f04df625b8b75359d20460fdc3ee5c65786b2589bcf54db76d4"
+      "hash": "4ea86ed860b688bb5d2db1f0a2d6ece0d24c89c97130c4f93427e40130e86311"
     },
     "deficit-management-scorecard/deviation-distribution": {
-      "hash": "2b9decac6d2209ab3f5226ff09b7839c57c09dbcb00c2e42278c5246dd220514"
+      "hash": "3d58d5f91d45336ef9a4ae8ac9ab55249d28a53048628c088d4322348497f3d4"
     },
     "deficit-management-scorecard/required-deficit-reduction": {
-      "hash": "6e8d0f41693bdfe5a27623ddaa2aa31619c972f3fef3a0a56e546aa3d6de96b8"
+      "hash": "1ee8c8ed7d930938a86edaac7d9e7c4a3330b3e1e6fd7d27d248a0e66344ef67"
     },
     "deficit-management-scorecard/scorecard-scatter": {
-      "hash": "949cb5e4b89185461ff6e5345e7737fa4e50d55e436be97051e285ad73309f0f"
+      "hash": "61ac16528c003c65497e1e6cba2683b036f85e99e0bb27b551ee4279293fe7bf"
     },
     "emp-dispersion/lfp-by-education": {
-      "hash": "58299f148b84aaec823ed717263d50309e1fc8dc7106ab09cd093600439a8b75"
+      "hash": "429573083133a75522d2516ca1c1dd7af96b1df7651ff1351062af32e0df8e8b"
     },
     "emp-dispersion/lfp-quintiles-rf": {
-      "hash": "00569d61536722620d2f9fd9548bb43041fe4d93c107311e2c323e5671e19c35"
+      "hash": "ae72ce925922ed079bba445a16a890600785c3aa30623de130b7ea7aaaf585cd"
     },
     "emp-dispersion/lfp-quintiles-rf-contemporaneous": {
-      "hash": "c66917c2543d205f0bb4b6a9fc8380e77edfcb0c210b5d07c11dff60de53f110"
+      "hash": "54566e1d0334dfa263fab956ebe29368186b757779756fea43009053da4f8324"
     },
     "emp-dispersion/quintile-characteristics": {
-      "hash": "bde97e411ff2fd0d88d219ea190b7f12cba33e99115bd49561a6818b503564d2"
+      "hash": "6cde26218ef9640951676b6b845ee38a7fc339bed7063cce96199eba175c5d89"
     },
     "emp-dispersion/unemployment-quintiles-rf": {
-      "hash": "92d5b56a1b48bb939a3778629be7cf6d5055ccc977be60587d5f2d2438ae5248"
+      "hash": "90245d9ada9e1e042060bcde85cadf022430a3e8809bb1b129e2e50aed06a282"
     },
     "emp-dispersion/unemployment-quintiles-rf-contemporaneous": {
-      "hash": "64efb05a239820075366c40157eee33c10dca91e50758b45b018c583f370a81c"
+      "hash": "8ae9a4cf23b98dc03e85e3cf6049c7a4ecf1c0eb98115d8328eeb4bbcb96b75e"
     },
     "recession-indicators/cfnai": {
-      "hash": "e9484325cb064481c8b6ff2fc4038a2ea01006704c5e089e1765f6e6a49d3d23"
+      "hash": "b93fd9d1cf2cfa0d11e7b5d82201b7801391235b2b018c64f8514cdbdfd5a36a"
     },
     "recession-indicators/michez-rule": {
-      "hash": "c8fd0eff843962e5e861ac17575aac85a20fe5d66f00a9ff1e2f477072e4bfff"
+      "hash": "d93bdd96c4fa32e5be5ef7f24fecf0c1b5f56d099296719e5f0446bef4f6478e"
     },
     "recession-indicators/news-sentiment": {
-      "hash": "ce40291c7a2e5fd288876e878ef54265d23bbf15afd6f4b73534c1bac6827ad9"
+      "hash": "1bfe9c690b1f51cc8c60bfcbfe787442b3ef08adea0c7339caeea74f69dd2aa2"
     },
     "recession-indicators/sahm-rule": {
-      "hash": "df6b1e60dba1846dc71b638857aa1d7f15a5e67644a6e159d34ae1231662a27e"
+      "hash": "9b162b48009cd2cbe4fe8bf2b5c20cacf116398bfeb67cc7e32fe5fcf8248ca7"
     },
     "recession-indicators/ui-percent": {
-      "hash": "b25c607d0840c84160507a53b1700cd281021d245d131aaa2339a38d55d00b43"
+      "hash": "58531509d36633fcc44e09f9549ff612b188907670ad27c646050b045266d5de"
     },
     "recession-indicators/ui-pp": {
-      "hash": "00ef7031fa33acb49ff0d20efbe740b6220fd7e93922be9f9c7e7a4181a0f2fa"
+      "hash": "d4e6caf7a1862959c3b33cb7d010ae0fac3656124a9e82295a8eabfb18da54c0"
     },
     "recession-indicators/yield-curve": {
-      "hash": "151d9bad99eceaa001acbda5af378e4dac95c040051c02b4d9cc07106af5b42e"
+      "hash": "03f1bfe369f9e2609f370c952f9146ccfe1c18fe77981394a446b2b5db555e3e"
     },
     "revenue-potential-top-taxes/appendix-parameters": {
-      "hash": "13470e5047614891faac309410382e26af5b6ab7f1d9f0d5a3ff9670a1d1125d"
+      "hash": "1697159919d2928e5f8ad71ebd95cbecda77d74999d80c1e1c536d927cd98f23"
     },
     "revenue-potential-top-taxes/appendix-tax-base-interactions": {
-      "hash": "99edfdf8664f476a0a90b2d152770c6c4cb3834461dc82cb9d373b4cd52b0621"
+      "hash": "287e3b3352cf39b6453f3a783693a63f272a6a0a14f3db059c025d46ef669146"
     },
     "revenue-potential-top-taxes/capital-gains-laffer-curve": {
-      "hash": "5e8f80d9032d38d550d40aa8e2faa83b9549aa1e5930e55fc0c94306f412ecde"
+      "hash": "a0170d3d5d78d29b2323e7425baa9a9dae37649000ce83f622c3dbbad5cb1cae"
     },
     "revenue-potential-top-taxes/effective-tax-rates-top-groups": {
-      "hash": "94e6e3758b233d9d1d03399c136bda5e7a3fa6413789af5fd6a1f81b4b31e9e9"
+      "hash": "911a0da0e532b3b91421956840aae6bfaa75dc06b9d6296677f21560d66233c9"
     },
     "revenue-potential-top-taxes/income-above-top-thresholds": {
-      "hash": "e6dd6e6e722d3d20ff1b9a1d18391122f4a144c1bc183c892cbf0341e72f9b77"
+      "hash": "d3866c667f5efedf534813528da1ddeec4977104727817f7ce856e044ead3151"
     },
     "revenue-potential-top-taxes/revenue-by-tax-deemed-realization": {
-      "hash": "2bc29bc2586c4017c46884d3a818802a5f579273549117fff51e6e90f7cfa4a4"
+      "hash": "536bda9305c07f6541bdfb6a35fa112892cca891fb3a03c517dce96188144ad9"
     },
     "revenue-potential-top-taxes/revenue-by-tax-step-up": {
-      "hash": "dba3981bb2e139875c607c83e139297ed17d011e24663a955ad607ded9566a1e"
+      "hash": "4f1a8de1844724d92876ab11222cadf2564357443e19a8dfe39354f08d4caab2"
     },
     "tariff-model-update-july2026/eta-effect": {
-      "hash": "01f507d229ecf686516a720b09410733d191ab576e62e86ca0e0d4af809e3152"
+      "hash": "e5e51e6779b280d7de4c2c6ff3f47f34c33406021a8ccd7e16316fec796ba0ca"
     },
     "tariff-model-update-july2026/etas": {
-      "hash": "41e196419215b76778ef1b80109ebc5da8b9e44151251f8465c2152931370205"
+      "hash": "a2ecc39eed03add2d2b3b51ff2241195702764e0c6ff9535dec1f22ef1be0c91"
     },
     "tariff-model-update-july2026/etr-vintages": {
-      "hash": "7c6361bdb2252607c2953c235b60cb2d9fc0b4750b4abb9dd3c9647cba1f1b04"
+      "hash": "9ea275ac7ed9e5c89106730fbf63984f3c1e0255b840a451cd22d2bf77e1afbd"
     },
     "tariff-model-update-july2026/headline-results": {
-      "hash": "effa9e7bb4361dad13573231cb1eae082e9601fdf91ef816280588e0fc09a12c"
+      "hash": "59f32290cf5b2ec4ae3cf63ae4147a987227e2dcac19ccfb3b73e94799f1d55e"
     },
     "tariff-model-update-july2026/price-waterfall": {
-      "hash": "75abf9d54e91e76692dd67d4c3baa0564829a303eb0f8a823cee96840a6c9ae2"
+      "hash": "7fd332dc071e2d96c864591d1245166c8582d67e43ca17197e83ebdc5caba6c1"
     },
     "tariff-model-update-july2026/update-decomposition": {
-      "hash": "f1399527a7f372e1f52a99ed226f4415d9554f7dd03d426959ddf25aaa56888a"
+      "hash": "f0314b7dc7841dc73ad868ffd341222e0004c61532ff0ab9c546701b3da0f34a"
     },
     "ui-recipiency/appendix-figure-1-job-losers-share": {
-      "hash": "ea6574f865446a89f520e838363005c05564dca707c0ef39890ea30f05f29a77"
+      "hash": "b8e06dfb0999cb17c0d1da73c671b437d6a545b04ee948913a480fdff276ccdb"
     },
     "ui-recipiency/figure-1-insured-vs-total-unemployment": {
-      "hash": "17c60a6c4fcbb09a5969dbe1235f07f05989d6d3ba1c6fd8a02d7a880636a4d4"
+      "hash": "01a842ea93a81855d75ac88397630b725fa0fb98dca4d0809c7bf2357b2c9e39"
     },
     "ui-recipiency/figure-2-long-term-unemployment-share": {
-      "hash": "de0db37304876c392ab2e6af29a0558c097bde1512041243edbb332a2824a227"
+      "hash": "d90dc753d03a2846c44cc04e235d3267f526c34c3bcafd74a4ba8d2a7409723a"
     },
     "ui-recipiency/figure-3-indexed-claims-vs-unemployment": {
-      "hash": "d6b924340d803a5b4327c64b888a2f4c080becafa4859efbbd9fba86df1eef93"
+      "hash": "d71a70579e4b62cc3e32430920da011ac578061f94e9ae83c1cd0d21a8e58942"
     }
   }
 }
