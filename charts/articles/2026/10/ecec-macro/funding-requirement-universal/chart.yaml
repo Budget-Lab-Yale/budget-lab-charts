@@ -1,0 +1,15 @@
+chartType: line
+xAxisType: temporal
+columns: { x: year, value: value }
+yAxisPolicy: { min: 0, includeZero: true }
+annotations:
+  points:
+    - { x: "2030", y: 79.74233164021717, label: "2030: $80 billion\n0.23% of GDP", connector: true, dx: 12, dy: 44 }
+    - { x: "2055", y: 72.99994490088885, label: "2055: $73 billion\n0.14% of GDP", connector: true, dx: -40, dy: 44 }
+title: "Annual Funding Required for the Universal Subsidy"
+subtitle: "Federal cost net of taxes on parents’ added earnings, billions of 2026 dollars, 2026–2055"
+note: "Direct federal cost minus federal income and payroll taxes on parents’ added earnings, including career effects. Excludes macroeconomic feedback and taxes on children’s adult earnings. GDP shares use baseline GDP."
+source: "The Budget Lab analysis."
+value_prefix: "$"
+tooltip_decimals: 1
+data: data.csv
