@@ -25,8 +25,8 @@ xAxisPolicy:
 yAxisPolicy:
   markers:
     - { y: 0.55, label: "Slow (55%)", color: green, labelPosition: left }
-    - { y: 0.538, label: "Moderate (53.8%)", color: violet, labelPosition: left }
-    - { y: 0.513, label: "Rapid (51.3%)", color: amber, labelPosition: left }
+    - { y: 0.54, label: "Moderate (54%)", color: violet, labelPosition: left }
+    - { y: 0.52, label: "Rapid (52%)", color: amber, labelPosition: left }
 
 source: BLS and AI-Fiscal assumptions
 data: data.csv
