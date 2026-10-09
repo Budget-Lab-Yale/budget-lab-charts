@@ -1,0 +1,16 @@
+title: "The Universal Subsidy’s National Work Response in 2030, by Measure"
+data: data.csv
+stub: [measure]
+header: [column]
+value: value
+stub_header: "Measure"
+column_labels:
+  change: "Change from baseline"
+  includes: "What the calculation includes"
+column_order: [change, includes]
+stub_width: 210
+stub_wrap: true
+column_width: { change: 125, includes: 250 }
+column_wrap: { includes: true }
+source: "The Budget Lab analysis."
+notes: "National percentage changes use CBO’s projected labor force."

@@ -1,0 +1,25 @@
+chartType: stacked
+orientation: horizontal
+xAxisType: categorical
+columns: { x: policy, series: series, value: value, facet: estimate }
+x_order: ["Universal subsidy", "Income-limited subsidy", "Expanded care credit", "Provider tax credit", "Child allowance"]
+series_order: [immediate, career, children]
+series_labels:
+  immediate: "Parents’ immediate work response"
+  career: "Parents’ career effects"
+  children: "Children’s adult earnings"
+series_colors: { immediate: blue, career: blue-light, children: amber }
+small_multiples:
+  mode: shared
+  pane_order: ["Test-score", "Schooling"]
+  pane_titles: { "Test-score": "Test-score estimate", "Schooling": "Schooling estimate" }
+legendPosition: top
+barStack: { netDisplay: none, hover: tooltip }
+yAxisPolicy: { min: 0 }
+title: "Long-Run Potential GDP Under Two Estimates of Children’s Adult Earnings"
+subtitle: "Percent change from baseline once every worker aged 27–65 has grown up under the policy"
+note: "Holds the economy at its 2055 size, setting financing aside and allowing capital to fully adjust. The test-score estimate maps age-4 test-score gains into adult earnings; the schooling estimate maps age-4 care changes into completed schooling. They are alternatives, not a range. The child allowance has small negative components."
+source: "The Budget Lab analysis."
+value_suffix: "%"
+tooltip_decimals: 2
+data: data.csv
