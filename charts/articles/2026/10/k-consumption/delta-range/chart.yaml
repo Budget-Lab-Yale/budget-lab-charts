@@ -13,7 +13,7 @@ x_order:                     # top -> bottom, as in the script
   - "Decile 10 vs. 9"
   - "Decile 10 vs. 1 (expenditure)"
   - "Owners vs. renters"
-x_labels:                    # hover-card header; min/max years are typed in by hand
+x_labels:                    
   "Ages 45-54 vs. Ages 55-65": "Ages 45-54 vs. Ages 55-65 (min: 2013, max: 2024)"
   "Decile 10 vs. 1": "Decile 10 vs. 1 (min: 2000, max: 2006)"
   "Decile 10 vs. 9": "Decile 10 vs. 9 (min: 2024, max: 2006)"
