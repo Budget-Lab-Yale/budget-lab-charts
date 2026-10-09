@@ -3,43 +3,43 @@
   "engineVersion": "1.16.2",
   "charts": {
     "ai-fiscal/atr-by-decile": {
-      "hash": "6e480652f812d163125be506ff498485699ea3894459f4ba0e236be464894581"
+      "hash": "4f28748b9f09c69b7ddf0c3587e265c8b96700df75db13c13d4374cecc33fcbc"
     },
     "ai-fiscal/debt-to-gdp": {
-      "hash": "a3649f3a12c37aad7789cc84b53ffb1c6f323db2f58f70b28e45bba3c0afa0a9"
+      "hash": "90a5d07b05330f40f4320adaae5bbb4a9054ecbc31245bd938e1d951911499e3"
     },
     "ai-fiscal/gdp-growth-history": {
-      "hash": "54a36a0d41f36a586d13a01b1d3c5e82a9a5c671bf45cb29861afa3450ab0527"
+      "hash": "d8e5d5e77851d278866c64ec33d9c91040286a2ddb60bbac307380a14f0ef8df"
     },
     "ai-fiscal/inequality-gini": {
-      "hash": "51667de5b825d26392e5f3e54287a014a38d00461f9ca3f21b27f19bb5257dbb"
+      "hash": "b7c6762b3cefe1998d358924987d32303804cfc39e548806ecfab16e8b4ada2d"
     },
     "ai-fiscal/key-parameters": {
-      "hash": "45f698c1799648e961b72bb03c693f4d444f167864f4b159a8abbe6d9c6c6820"
+      "hash": "74f487b53008692d42c2d0fb730259eb9a998d14dfa4dbc7e575ace4e8aa7e59"
     },
     "ai-fiscal/key-parameters-symbols": {
-      "hash": "226d1e3db92819b1453ee8411d419bdf1e3c5e658452c0d8186c81efa973a377"
+      "hash": "642c8594ea5dafa39d61bcaaf4a50295749e0ba3da9b7ef39653801178b4aa4e"
     },
     "ai-fiscal/labor-share-history": {
-      "hash": "eeab60ec594385e0e854863877323cb3493cb90d0e8c0c0da72e09581175d4c3"
+      "hash": "9d9d5cc8a3168abfa18edbbfe4db9130919be8cbe81441de9fdca6dfd607f4fb"
     },
     "ai-fiscal/revenue-by-income-type": {
-      "hash": "d1ad9c331cb814e780a197021aa1d0bfe3ad785a6e3d153660bb5a9d77317eba"
+      "hash": "a7d2ec2b3b6f23233849ad74952767a7a1674bc6752daa4a5aafad47553a0194"
     },
     "ai-fiscal/revenue-by-instrument": {
-      "hash": "a2d282cac0919f8321a27ffb03ef2dacfaae7a4e397bd087eaefaae7da766ddd"
+      "hash": "837ac632c5f1328c7bb962f16b1ba7c7c893eafb55385eab3d4fe41e242d450a"
     },
     "ai-fiscal/revenue-fixed-vs-reallocated": {
-      "hash": "868b91bfaef70df2cb278e0e00c6bfe076cef72f8526ab3eff642c6df6db65a6"
+      "hash": "62e7f10f3f6d1d131554dbd6caf361c6c82e98cf9b3c554f2ca3f574564ed604"
     },
     "ai-fiscal/revenue-headline": {
-      "hash": "a34c0d508ac619de01e2a8df8b093cb37d7a5ab802c7a591a4e52d28a1d0c050"
+      "hash": "51e2dcb4b97f79d663f4d12e181eeed8b75db431ceafcc2801bc0158f9e7efac"
     },
     "ai-fiscal/revenue-vs-factor-income": {
-      "hash": "b03cfbb5f9160cfb08ee9edc7b923a033a187431038561254eb664c38b000367"
+      "hash": "3c89927efc88656fc6b96305fe9011ebab2f9952996857657a8befe78526a7e3"
     },
     "ai-fiscal/revenue-vs-pretax-income": {
-      "hash": "f6c5d884810743a35901c26801e23a33be841efcd2e6f043ecd36b837935a7bd"
+      "hash": "537d8fc3d571bdbd113dea3a3a37f885dea8ab1e7d1623edebf809b4dec3ac47"
     },
     "atus-childcare/childcare-by-activity": {
       "hash": "8dc2e149e044882128ee348227fdc4ac78c737a3a16e63b3aa1d9c3a811c63c3"
