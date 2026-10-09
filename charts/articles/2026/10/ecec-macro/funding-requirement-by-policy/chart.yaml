@@ -29,5 +29,4 @@ note: "Direct federal cost minus federal income and payroll taxes on parents’ 
 source: "The Budget Lab analysis."
 value_prefix: "$"
 tooltip_decimals: 1
-tooltip_x_format: "%Y"
 data: data.csv
