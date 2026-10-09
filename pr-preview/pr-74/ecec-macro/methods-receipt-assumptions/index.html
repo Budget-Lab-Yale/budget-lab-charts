@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Federal Receipt Assumptions</title>
+<link rel="stylesheet" href="../../embed/v1/chart-1.16.2.css">
+<style>html.tbl-embedded body{margin:0 !important}html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style><script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}catch(e){document.documentElement.classList.add("tbl-embedded")}</script>
+</head>
+<body>
+<div id="chart" style="max-width:760px;margin:32px auto;padding:0 16px"></div>
+<script src="../../embed/v1/engine-1.16.2.js"></script>
+<script>
+var el = document.getElementById("chart");
+if (typeof BudgetLabChart === "undefined") {
+  renderUnavailable(el, "Federal Receipt Assumptions", "Methods Table 2");
+} else {
+BudgetLabChart.mountTable(el, {
+  spec: {"title":"Federal Receipt Assumptions","data":"data.csv","stub":["row"],"header":["column"],"value":"value","stub_header":"Parameter","column_labels":{"c1":"Symbol","c2":"Central value","c3":"Construction"},"column_order":["c1","c2","c3"],"stub_width":170,"stub_wrap":true,"column_width":{"c1":70,"c2":170,"c3":280},"column_wrap":{"c1":true,"c2":true,"c3":true},"source":"The Budget Lab analysis, Tax-Simulator calibration, and CBO’s Budgetary Feedback Model.","format":{"rows":{"Parent earnings-to-compensation factor":{"decimals":2}}},"column_align":"left"},
+  rows: [{"row":"Labor tax rate","column":"c1","value":"\\(t_L\\)"},{"row":"Labor tax rate","column":"c2","value":"About 27% near the start, 31% in 2055"},{"row":"Labor tax rate","column":"c3","value":"Tax-Simulator marginal rate on wages, multiplied by 86.47% tax-data wage coverage and a 94.57% wage share of a compensation change"},{"row":"Capital tax rate","column":"c1","value":"\\(t_K\\)"},{"row":"Capital tax rate","column":"c2","value":"10%"},{"row":"Capital tax rate","column":"c3","value":"Budgetary Feedback Model component rates weighted by 2024 national-accounts income (10.17%, rounded)"},{"row":"GDP-linked rate","column":"c1","value":"\\(\\beta\\)"},{"row":"GDP-linked rate","column":"c2","value":"3% in 2026, declining to 2% in 2036 and constant thereafter"},{"row":"GDP-linked rate","column":"c3","value":"Budgetary Feedback Model rates for capital-gains realizations and corporate loss positions"},{"row":"Parent earnings-to-compensation factor","column":"c1","value":""},{"row":"Parent earnings-to-compensation factor","column":"c2","value":"1.20"},{"row":"Parent earnings-to-compensation factor","column":"c3","value":"94.58% wage share raised by 2024 national-accounts ratios of employer social insurance (7.0%) and other supplements (14.3%) to wages"},{"row":"Employer payroll on career earnings","column":"c1","value":""},{"row":"Employer payroll on career earnings","column":"c2","value":"7.65%"},{"row":"Employer payroll on career earnings","column":"c3","value":"Statutory rate applied to the 94.58% wage share; no taxable-maximum adjustment"}],
+  eyebrow: /[?&]eyebrow=(off|0|false|none|hide)\b/i.test(location.search) ? undefined : "Methods Table 2",
+});
+}
+function renderUnavailable(el, title, eyebrow) {
+  var box = document.createElement("div");
+  box.setAttribute("role", "note");
+  box.style.cssText = "font:16px/1.5 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1c1c1c;border:1px solid #d9dce3;border-radius:4px;padding:20px";
+  if (eyebrow) {
+    var e = document.createElement("p");
+    e.textContent = eyebrow;
+    e.style.cssText = "margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a5f6b";
+    box.appendChild(e);
+  }
+  var h = document.createElement("p");
+  h.textContent = title;
+  h.style.cssText = "margin:0 0 12px;font-weight:600";
+  box.appendChild(h);
+  var p = document.createElement("p");
+  p.style.cssText = "margin:0;color:#5a5f6b";
+  p.appendChild(document.createTextNode("An error occurred, please try reloading this page. If this problem persists please contact "));
+  var a = document.createElement("a");
+  a.href = "mailto:budgetlab@yale.edu";
+  a.textContent = "budgetlab@yale.edu";
+  a.style.color = "inherit";
+  p.appendChild(a);
+  p.appendChild(document.createTextNode("."));
+  box.appendChild(p);
+  el.appendChild(box);
+}
+</script>
+<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script><script>(function(){if(window.self===window.top)return;function fit(){try{if(window.parentIFrame&&window.parentIFrame.size)window.parentIFrame.size();}catch(e){}}var t;function soon(){clearTimeout(t);t=setTimeout(fit,60);}if(window.ResizeObserver){try{new ResizeObserver(soon).observe(document.body);}catch(e){}}window.addEventListener("load",function(){setTimeout(fit,200);setTimeout(fit,800);});if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}})();</script>
+</body>
+</html>
