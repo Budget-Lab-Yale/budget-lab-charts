@@ -20,7 +20,7 @@ yAxisPolicy:
   min: 0
   max: 10
 small_multiples:
-  columns: 9
+  columns: 10
   mode: shared
   pane_order: ["1997", "2000", "2003", "2006", "2009", "2012", "2015", "2018", "2021", "2024"]
 note: "Shows the mean between the entrant and exit rate for the top decile. Those rates are not the same as a result of the use of population weights but are similar in magnitude. Portfolio is a composite variable that includes accrued gains equity, bonds, and real estate."
