@@ -1,0 +1,19 @@
+chartType: line
+xAxisType: temporal
+columns: { x: year, series: series, value: value }
+series_order: [paid_for, deficit_financed]
+series_labels: { paid_for: "Paid for", deficit_financed: "Deficit financed" }
+series_styles: { deficit_financed: { dashed: true } }
+annotations:
+  yAxis:
+    - { y: 0, style: solid, color: black }
+  points:
+    - { x: "2055", y: 0.120905754204981, series: paid_for, label: "+0.12%", connector: true, dx: -48, dy: 20 }
+    - { x: "2055", y: -0.334023915298498, series: deficit_financed, label: "−0.33%", connector: true, dx: -48, dy: -18 }
+title: "Potential GDP Under the Universal Subsidy, Paid For vs. Deficit Financed"
+subtitle: "Percent change from baseline, 2026–2055"
+note: "Deficit financed: borrowing covers the funding requirement, and each dollar borrowed displaces 33 cents of private investment. Paid for: new revenue or spending cuts cover it. Children’s adult earnings are excluded."
+source: "The Budget Lab analysis."
+value_suffix: "%"
+tooltip_decimals: 2
+data: data.csv
