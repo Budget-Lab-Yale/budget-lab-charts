@@ -13,7 +13,7 @@ yAxisPolicy: { min: 0 }
 valueLabels: { show: true, decimals: 2 }
 title: "Parents’ and Children’s Contributions to Long-Run Potential GDP"
 subtitle: "Percent change from baseline once every worker aged 27–65 has grown up under the policy"
-note: "Holds the economy at its 2055 size, with capital fully adjusted and financing excluded, so these results cannot be added to the annual estimates. Children’s earnings use the test-score estimate. Components may not sum to totals because of rounding."
+note: "Holds the economy at its 2055 size while putting aside financing feedback and allowing capital to fully adjust. As such, these results should not be added to the annual estimates. Components may not sum to totals because of rounding."
 source: "The Budget Lab analysis."
 value_suffix: "%"
 tooltip_decimals: 2
