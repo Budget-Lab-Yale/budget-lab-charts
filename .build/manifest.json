@@ -92,6 +92,48 @@
     "deficit-management-scorecard/scorecard-scatter": {
       "hash": "ff9c9ee372ccaa0a7641c95ae1a633a22797fcbdf3c557fc5e858e70561780cc"
     },
+    "ecec-macro/full-workforce-gdp-by-estimate": {
+      "hash": "5a0ccb5a04dcc1be984237178e784e60c020fd2ed34e1f29ef73b3a92dfe2433"
+    },
+    "ecec-macro/full-workforce-gdp-universal": {
+      "hash": "1c8fd0055c94c6a0554e5f7cdf9653a39c565f59b974beb03ffb76431110ac7d"
+    },
+    "ecec-macro/funding-requirement-by-policy": {
+      "hash": "b2cacf273ab003cf1e03cb8232da86da0412571bf0862779763bbf680f276990"
+    },
+    "ecec-macro/funding-requirement-universal": {
+      "hash": "82446108c070ad4d9dac383795c140adceb88a49ce96be3dd0a473bd85887c40"
+    },
+    "ecec-macro/methods-macro-assumptions": {
+      "hash": "d3cb75ecb12ecd252dc47636816c1219534749633c36886d373aba42ccb35c90"
+    },
+    "ecec-macro/methods-parental-assumptions": {
+      "hash": "d19e635d7472d2efeba72f42f3be182afc0b33776822ee3723ab477b71a4a91f"
+    },
+    "ecec-macro/methods-receipt-assumptions": {
+      "hash": "117e3c180cc61b568528d97ed7301dd7d934f39e22e6d769f5a4afd300ffb702"
+    },
+    "ecec-macro/parental-contributions-by-policy": {
+      "hash": "63d1b6caa7cae567e9d347e0bc564b7705a69eb93c0d9eb5cd1c133f37e6739b"
+    },
+    "ecec-macro/parental-contributions-universal": {
+      "hash": "abd42344a99e0712270aa910988b50ce06f97767fadcc9e5e7a615d278ae7f53"
+    },
+    "ecec-macro/parents-and-children-contributions": {
+      "hash": "235c9f6c265fcf6543f24e338e358f53a4f39a6db9a4095bd4c11939b34e7db9"
+    },
+    "ecec-macro/potential-gdp-2055-by-financing": {
+      "hash": "5b3c6ff5ab9e5aa1198b4cc0d5b297e6a0c3baf7c5ee105bae611ace33afc84d"
+    },
+    "ecec-macro/potential-gdp-financing-paths": {
+      "hash": "648f334d7e1b40d25df63ab5ac0ca9fc91b4c08a85fa4a2774d31a1b1243c3db"
+    },
+    "ecec-macro/work-response-2030": {
+      "hash": "c7241d73ffa24d383d49220150f1e39ed2eb595759cdf1d7dddfcf48c323062b"
+    },
+    "ecec-macro/workforce-timing": {
+      "hash": "0f40dca4978b02584222febcdcc03346eb7e2efd3ac21090ed0b9dd5b734baf8"
+    },
     "emp-dispersion/lfp-by-education": {
       "hash": "cfe58a65cca7539c0332b8a38728eff7b8be34c20957b492be318cd716b92271"
     },
