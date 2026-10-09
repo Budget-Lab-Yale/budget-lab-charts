@@ -1,9 +1,0 @@
-chartType: timeline
-xAxisType: temporal
-title: "When Children Born Under the Policy Reach the Workforce"
-subtitle: "Key years, 2026–2095"
-source: "The Budget Lab analysis."
-columns: { x: year, label: milestone, description: description, series: series }
-series_order: [projection, cohort]
-series_labels: { projection: "Within our projection, 2026–2055", cohort: "Beyond our projection, 2056–2095" }
-data: data.csv
