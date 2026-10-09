@@ -1,7 +1,7 @@
 chartType: line
 title: How AI scenario GDP growth assumptions compare to historical GDP growth
 subtitle: Real GDP growth rate
-note: CBO projections from 2026 onward. Shaded areas indicate US recessions.
+note: Five-year annualized growth in real GDP. CBO projections from 2026 onward. Shaded areas indicate US recessions.
 xAxisType: temporal
 
 columns:
