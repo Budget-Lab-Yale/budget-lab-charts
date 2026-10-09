@@ -7,7 +7,7 @@ series_order: [paid_for, deficit_financed]
 series_labels: { paid_for: "Paid for", deficit_financed: "Deficit financed" }
 title: "Potential GDP in 2055 by Policy and Financing"
 subtitle: "Effect of parents’ work, percent change from baseline"
-note: "Paid for: new revenue or spending cuts cover each policy’s annual funding requirement, with no further effect on work or investment. Deficit financed: borrowing covers it. Children’s adult earnings are excluded. Baseline is CBO’s 2026 long-term projection."
+note: "Paid for: policymakers raise revenue or cut spending to cover each policy’s annual funding requirement, in ways assumed not to change work or investment incentives. Deficit financed: borrowing covers it. Children’s adult earnings are excluded. Baseline is CBO’s 2026 long-term projection."
 source: "The Budget Lab analysis."
 value_suffix: "%"
 tooltip_decimals: 2
