@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overall inequality changes are driven by assumptions about labor income inequality</title>
+<link rel="stylesheet" href="../../embed/v1/chart-1.16.2.css">
+<style>html.tbl-embedded body{margin:0 !important}html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style><script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}catch(e){document.documentElement.classList.add("tbl-embedded")}</script>
+</head>
+<body>
+<div id="chart" style="max-width:760px;margin:32px auto;padding:0 16px"></div>
+<script src="../../embed/v1/engine-1.16.2.js"></script>
+<script>
+var el = document.getElementById("chart");
+if (typeof BudgetLabChart === "undefined") {
+  renderUnavailable(el, "Overall inequality changes are driven by assumptions about labor income inequality", "Figure 6");
+} else {
+BudgetLabChart.mountChart(el, {
+  spec: {"chartType":"dotplot","title":"Overall inequality changes are driven by assumptions about labor income inequality","subtitle":"Change in within-scenario Gini coefficient, FY 2030. Positive = inequality rises.","xAxisType":"categorical","y_axis_title":"Change in Gini","tooltip_decimals":4,"columns":{"x":"labor_dist","value":"delta","series":"income_concept","shape":"income_concept","facet":"ai_speed"},"x_order":["Compressive","Proportional","Expansive"],"series_order":["aftertax","pretax"],"series_labels":{"aftertax":"After-tax","pretax":"Pre-tax"},"small_multiples":{"mode":"shared","columns":3,"pane_order":["Slow","Moderate","Rapid"]},"source":"The Budget Lab AI-Revenue Microsimulation Model.","data":"data.csv"},
+  rows: [{"ai_speed":"Moderate","share_mode":"Reallocated","labor_dist":"Proportional","Scenario":"Moderate AI · Reallocated shares · Proportional labor","income_concept":"aftertax","gini_baseline":"0.554723007083343","gini_cf":"0.556846975499188","delta":"0.00212396841584506"},{"ai_speed":"Moderate","share_mode":"Reallocated","labor_dist":"Proportional","Scenario":"Moderate AI · Reallocated shares · Proportional labor","income_concept":"pretax","gini_baseline":"0.591605525530161","gini_cf":"0.593727708415495","delta":"0.00212218288533417"},{"ai_speed":"Moderate","share_mode":"Reallocated","labor_dist":"Compressive","Scenario":"Moderate AI · Reallocated shares · Compressive labor","income_concept":"aftertax","gini_baseline":"0.554723007083343","gini_cf":"0.546302636014886","delta":"-0.0084203710684565"},{"ai_speed":"Moderate","share_mode":"Reallocated","labor_dist":"Compressive","Scenario":"Moderate AI · Reallocated shares · Compressive labor","income_concept":"pretax","gini_baseline":"0.591605525530161","gini_cf":"0.58204777395084","delta":"-0.00955775157932159"},{"ai_speed":"Moderate","share_mode":"Reallocated","labor_dist":"Expansive","Scenario":"Moderate AI · Reallocated shares · Expansive labor","income_concept":"aftertax","gini_baseline":"0.554723007083343","gini_cf":"0.567436925514403","delta":"0.0127139184310602"},{"ai_speed":"Moderate","share_mode":"Reallocated","labor_dist":"Expansive","Scenario":"Moderate AI · Reallocated shares · Expansive labor","income_concept":"pretax","gini_baseline":"0.591605525530161","gini_cf":"0.60542710730706","delta":"0.0138215817768991"},{"ai_speed":"Rapid","share_mode":"Reallocated","labor_dist":"Proportional","Scenario":"Rapid AI · Reallocated shares · Proportional labor","income_concept":"aftertax","gini_baseline":"0.554723007083343","gini_cf":"0.559636303883901","delta":"0.00491329680055819"},{"ai_speed":"Rapid","share_mode":"Reallocated","labor_dist":"Proportional","Scenario":"Rapid AI · Reallocated shares · Proportional labor","income_concept":"pretax","gini_baseline":"0.591605525530161","gini_cf":"0.596550196912608","delta":"0.00494467138244681"},{"ai_speed":"Rapid","share_mode":"Reallocated","labor_dist":"Compressive","Scenario":"Rapid AI · Reallocated shares · Compressive labor","income_concept":"aftertax","gini_baseline":"0.554723007083343","gini_cf":"0.538876124113076","delta":"-0.015846882970267"},{"ai_speed":"Rapid","share_mode":"Reallocated","labor_dist":"Compressive","Scenario":"Rapid AI · Reallocated shares · Compressive labor","income_concept":"pretax","gini_baseline":"0.591605525530161","gini_cf":"0.573580990444202","delta":"-0.0180245350859591"},{"ai_speed":"Rapid","share_mode":"Reallocated","labor_dist":"Expansive","Scenario":"Rapid AI · Reallocated shares · Expansive labor","income_concept":"aftertax","gini_baseline":"0.554723007083343","gini_cf":"0.580604621671912","delta":"0.0258816145885689"},{"ai_speed":"Rapid","share_mode":"Reallocated","labor_dist":"Expansive","Scenario":"Rapid AI · Reallocated shares · Expansive labor","income_concept":"pretax","gini_baseline":"0.591605525530161","gini_cf":"0.619608861337528","delta":"0.0280033358073667"},{"ai_speed":"Slow","share_mode":"Reallocated","labor_dist":"Proportional","Scenario":"Slow AI · Reallocated shares · Proportional labor","income_concept":"aftertax","gini_baseline":"0.554723007083343","gini_cf":"0.555343655924813","delta":"0.000620648841470062"},{"ai_speed":"Slow","share_mode":"Reallocated","labor_dist":"Proportional","Scenario":"Slow AI · Reallocated shares · Proportional labor","income_concept":"pretax","gini_baseline":"0.591605525530161","gini_cf":"0.592210868249462","delta":"0.000605342719301016"},{"ai_speed":"Slow","share_mode":"Reallocated","labor_dist":"Compressive","Scenario":"Slow AI · Reallocated shares · Compressive labor","income_concept":"aftertax","gini_baseline":"0.554723007083343","gini_cf":"0.553596118824457","delta":"-0.00112688825888563"},{"ai_speed":"Slow","share_mode":"Reallocated","labor_dist":"Compressive","Scenario":"Slow AI · Reallocated shares · Compressive labor","income_concept":"pretax","gini_baseline":"0.591605525530161","gini_cf":"0.590265834463162","delta":"-0.00133969106699938"},{"ai_speed":"Slow","share_mode":"Reallocated","labor_dist":"Expansive","Scenario":"Slow AI · Reallocated shares · Expansive labor","income_concept":"aftertax","gini_baseline":"0.554723007083343","gini_cf":"0.557083258091105","delta":"0.00236025100776249"},{"ai_speed":"Slow","share_mode":"Reallocated","labor_dist":"Expansive","Scenario":"Slow AI · Reallocated shares · Expansive labor","income_concept":"pretax","gini_baseline":"0.591605525530161","gini_cf":"0.594137779701154","delta":"0.0025322541709929"}],
+  eyebrow: /[?&]eyebrow=(off|0|false|none|hide)\b/i.test(location.search) ? undefined : "Figure 6",
+});
+}
+function renderUnavailable(el, title, eyebrow) {
+  var box = document.createElement("div");
+  box.setAttribute("role", "note");
+  box.style.cssText = "font:16px/1.5 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1c1c1c;border:1px solid #d9dce3;border-radius:4px;padding:20px";
+  if (eyebrow) {
+    var e = document.createElement("p");
+    e.textContent = eyebrow;
+    e.style.cssText = "margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a5f6b";
+    box.appendChild(e);
+  }
+  var h = document.createElement("p");
+  h.textContent = title;
+  h.style.cssText = "margin:0 0 12px;font-weight:600";
+  box.appendChild(h);
+  var p = document.createElement("p");
+  p.style.cssText = "margin:0;color:#5a5f6b";
+  p.appendChild(document.createTextNode("An error occurred, please try reloading this page. If this problem persists please contact "));
+  var a = document.createElement("a");
+  a.href = "mailto:budgetlab@yale.edu";
+  a.textContent = "budgetlab@yale.edu";
+  a.style.color = "inherit";
+  p.appendChild(a);
+  p.appendChild(document.createTextNode("."));
+  box.appendChild(p);
+  el.appendChild(box);
+}
+</script>
+<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script><script>(function(){if(window.self===window.top)return;function fit(){try{if(window.parentIFrame&&window.parentIFrame.size)window.parentIFrame.size();}catch(e){}}var t;function soon(){clearTimeout(t);t=setTimeout(fit,60);}if(window.ResizeObserver){try{new ResizeObserver(soon).observe(document.body);}catch(e){}}window.addEventListener("load",function(){setTimeout(fit,200);setTimeout(fit,800);});if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}})();</script>
+</body>
+</html>

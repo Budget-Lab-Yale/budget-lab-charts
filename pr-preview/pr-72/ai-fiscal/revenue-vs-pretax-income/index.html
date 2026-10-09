@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Federal revenue gains versus change in pre-tax income</title>
+<link rel="stylesheet" href="../../embed/v1/chart-1.16.2.css">
+<style>html.tbl-embedded body{margin:0 !important}html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style><script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}catch(e){document.documentElement.classList.add("tbl-embedded")}</script>
+</head>
+<body>
+<div id="chart" style="max-width:760px;margin:32px auto;padding:0 16px"></div>
+<script src="../../embed/v1/engine-1.16.2.js"></script>
+<script>
+var el = document.getElementById("chart");
+if (typeof BudgetLabChart === "undefined") {
+  renderUnavailable(el, "Federal revenue gains versus change in pre-tax income", "Appendix Figure 3");
+} else {
+BudgetLabChart.mountChart(el, {
+  spec: {"chartType":"scatter","title":"Federal revenue gains versus change in pre-tax income","subtitle":"Change in federal revenue (y-axis) plotted against pre-tax income growth (x-axis), FY 2030, Billions USD","xAxisType":"numeric","x_axis_title":"Change in pre-tax factor income ($B)","y_axis_title":"Change in total revenue ($B)","columns":{"x":"delta_Y","value":"total_with_macro_cit","series":"ai_speed","shape":"labor_dist"},"series_order":["Slow","Moderate","Rapid"],"series_colors":{"Slow":"green","Moderate":"violet","Rapid":"amber"},"shape_order":["Compressive","Proportional","Expansive"],"color_legend_title":"AI speed","shape_legend_title":"Labor distribution","yAxisPolicy":{"includeZero":true},"source":"The Budget Lab AI-Revenue Microsimulation Model.","data":"data.csv"},
+  rows: [{"ai_speed":"Moderate","share_mode":"Reallocated","labor_dist":"Proportional","Scenario":"Moderate AI · Reallocated shares · Proportional labor","macro_cit_delta":"33.7774748788545","outlays_tax_credits":"-1.07849179806213","revenues_corp_tax":"0","revenues_estate_tax":"0","revenues_income_tax":"69.0530073180144","revenues_other":"0","revenues_payroll_tax":"9.3556340249479","revenues_vat":"0","total":"79.4871331410241","total_capital":"49.4313684315475","total_interaction":"0.0480621953411173","total_labor":"30.0077025141354","total_with_macro_cit":"113.264608019879","delta_Y":"403.085723180422"},{"ai_speed":"Moderate","share_mode":"Reallocated","labor_dist":"Compressive","Scenario":"Moderate AI · Reallocated shares · Compressive labor","macro_cit_delta":"33.7774748788545","outlays_tax_credits":"-7.74837234431591","revenues_corp_tax":"0","revenues_estate_tax":"0","revenues_income_tax":"17.064085764795","revenues_other":"0","revenues_payroll_tax":"34.3343914073391","revenues_vat":"0","total":"59.146849516449","total_capital":"49.4313684315475","total_interaction":"0.0038104265659058","total_labor":"9.71167065833561","total_with_macro_cit":"92.9243243953035","delta_Y":"396.519941774583"},{"ai_speed":"Moderate","share_mode":"Reallocated","labor_dist":"Expansive","Scenario":"Moderate AI · Reallocated shares · Expansive labor","macro_cit_delta":"33.7774748788545","outlays_tax_credits":"5.45111444954932","revenues_corp_tax":"0","revenues_estate_tax":"0","revenues_income_tax":"123.483438790769","revenues_other":"0","revenues_payroll_tax":"-16.6618761854836","revenues_vat":"0","total":"101.370448155736","total_capital":"49.4313684315475","total_interaction":"0.113857235893192","total_labor":"51.8252224882954","total_with_macro_cit":"135.147923034591","delta_Y":"408.951288056593"},{"ai_speed":"Rapid","share_mode":"Reallocated","labor_dist":"Proportional","Scenario":"Rapid AI · Reallocated shares · Proportional labor","macro_cit_delta":"74.4441671879153","outlays_tax_credits":"-0.737832220917753","revenues_corp_tax":"0","revenues_estate_tax":"0","revenues_income_tax":"120.740916836021","revenues_other":"0","revenues_payroll_tax":"4.87123295222636","revenues_vat":"0","total":"126.349982009165","total_capital":"110.676210036276","total_interaction":"0.063487409624031","total_labor":"15.6102845632649","total_with_macro_cit":"200.79414919708","delta_Y":"681.365966532718"},{"ai_speed":"Rapid","share_mode":"Reallocated","labor_dist":"Compressive","Scenario":"Rapid AI · Reallocated shares · Compressive labor","macro_cit_delta":"74.4441671879153","outlays_tax_credits":"-14.1468765597672","revenues_corp_tax":"0","revenues_estate_tax":"0","revenues_income_tax":"19.3167426642071","revenues_other":"0","revenues_payroll_tax":"53.5658418148544","revenues_vat":"0","total":"87.0294610388273","total_capital":"110.676210036276","total_interaction":"-0.261336248324369","total_labor":"-23.385412749124","total_with_macro_cit":"161.473628226743","delta_Y":"667.452005752053"},{"ai_speed":"Rapid","share_mode":"Reallocated","labor_dist":"Expansive","Scenario":"Rapid AI · Reallocated shares · Expansive labor","macro_cit_delta":"74.4441671879153","outlays_tax_credits":"11.9970284572449","revenues_corp_tax":"0","revenues_estate_tax":"0","revenues_income_tax":"231.870770165091","revenues_other":"0","revenues_payroll_tax":"-47.985752299868","revenues_vat":"0","total":"171.887989407977","total_capital":"110.676210036276","total_interaction":"0.288739502173485","total_labor":"60.9230398695281","total_with_macro_cit":"246.332156595892","delta_Y":"692.402195271912"},{"ai_speed":"Slow","share_mode":"Reallocated","labor_dist":"Proportional","Scenario":"Slow AI · Reallocated shares · Proportional labor","macro_cit_delta":"8.21592200208995","outlays_tax_credits":"0.368722591245188","revenues_corp_tax":"0","revenues_estate_tax":"0","revenues_income_tax":"3.93546001088544","revenues_other":"0","revenues_payroll_tax":"-3.7673125102699","revenues_vat":"0","total":"-0.200575090630082","total_capital":"11.8507249604036","total_interaction":"-0.00379998303287721","total_labor":"-12.0475000680008","total_with_macro_cit":"8.01534691145987","delta_Y":"18.4844202005042"},{"ai_speed":"Slow","share_mode":"Reallocated","labor_dist":"Compressive","Scenario":"Slow AI · Reallocated shares · Compressive labor","macro_cit_delta":"8.21592200208995","outlays_tax_credits":"-0.717580226326447","revenues_corp_tax":"0","revenues_estate_tax":"0","revenues_income_tax":"-4.72220153060562","revenues_other":"0","revenues_payroll_tax":"0.372827705542704","revenues_vat":"0","total":"-3.6317935987372","total_capital":"11.8507249604036","total_interaction":"-0.0026685186467148","total_labor":"-15.4798500404941","total_with_macro_cit":"4.58412840335275","delta_Y":"17.460016963887"},{"ai_speed":"Slow","share_mode":"Reallocated","labor_dist":"Expansive","Scenario":"Slow AI · Reallocated shares · Expansive labor","macro_cit_delta":"8.21592200208995","outlays_tax_credits":"1.45311266812115","revenues_corp_tax":"0","revenues_estate_tax":"0","revenues_income_tax":"12.6572121884519","revenues_other":"0","revenues_payroll_tax":"-7.93797064299088","revenues_vat":"0","total":"3.26612887733972","total_capital":"11.8507249604036","total_interaction":"-0.00433862614409009","total_labor":"-8.58025745691975","total_with_macro_cit":"11.4820508794297","delta_Y":"19.4883121339044"}],
+  eyebrow: /[?&]eyebrow=(off|0|false|none|hide)\b/i.test(location.search) ? undefined : "Appendix Figure 3",
+});
+}
+function renderUnavailable(el, title, eyebrow) {
+  var box = document.createElement("div");
+  box.setAttribute("role", "note");
+  box.style.cssText = "font:16px/1.5 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1c1c1c;border:1px solid #d9dce3;border-radius:4px;padding:20px";
+  if (eyebrow) {
+    var e = document.createElement("p");
+    e.textContent = eyebrow;
+    e.style.cssText = "margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a5f6b";
+    box.appendChild(e);
+  }
+  var h = document.createElement("p");
+  h.textContent = title;
+  h.style.cssText = "margin:0 0 12px;font-weight:600";
+  box.appendChild(h);
+  var p = document.createElement("p");
+  p.style.cssText = "margin:0;color:#5a5f6b";
+  p.appendChild(document.createTextNode("An error occurred, please try reloading this page. If this problem persists please contact "));
+  var a = document.createElement("a");
+  a.href = "mailto:budgetlab@yale.edu";
+  a.textContent = "budgetlab@yale.edu";
+  a.style.color = "inherit";
+  p.appendChild(a);
+  p.appendChild(document.createTextNode("."));
+  box.appendChild(p);
+  el.appendChild(box);
+}
+</script>
+<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script><script>(function(){if(window.self===window.top)return;function fit(){try{if(window.parentIFrame&&window.parentIFrame.size)window.parentIFrame.size();}catch(e){}}var t;function soon(){clearTimeout(t);t=setTimeout(fit,60);}if(window.ResizeObserver){try{new ResizeObserver(soon).observe(document.body);}catch(e){}}window.addEventListener("load",function(){setTimeout(fit,200);setTimeout(fit,800);});if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}})();</script>
+</body>
+</html>
