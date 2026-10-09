@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Potential GDP in 2055 by Policy and Financing</title>
+<link rel="stylesheet" href="../../embed/v1/chart-1.16.2.css">
+<style>html.tbl-embedded body{margin:0 !important}html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style><script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}catch(e){document.documentElement.classList.add("tbl-embedded")}</script>
+</head>
+<body>
+<div id="chart" style="max-width:760px;margin:32px auto;padding:0 16px"></div>
+<script src="../../embed/v1/engine-1.16.2.js"></script>
+<script>
+var el = document.getElementById("chart");
+if (typeof BudgetLabChart === "undefined") {
+  renderUnavailable(el, "Potential GDP in 2055 by Policy and Financing", "Figure 1");
+} else {
+BudgetLabChart.mountChart(el, {
+  spec: {"chartType":"bar","orientation":"horizontal","xAxisType":"categorical","columns":{"x":"policy","series":"series","value":"value"},"x_order":["Universal subsidy","Income-limited subsidy","Expanded care credit","Provider tax credit","Child allowance"],"series_order":["paid_for","deficit_financed"],"series_labels":{"paid_for":"Paid for","deficit_financed":"Deficit financed"},"title":"Potential GDP in 2055 by Policy and Financing","subtitle":"Effect of parents’ work, percent change from baseline","note":"Paid for: policymakers raise revenue or cut spending to cover each policy’s annual funding requirement, in ways assumed not to change work or investment incentives. Deficit financed: borrowing covers it. Children’s adult earnings are excluded. Baseline is CBO’s 2026 long-term projection.","source":"The Budget Lab analysis.","value_suffix":"%","tooltip_decimals":2,"data":"data.csv"},
+  rows: [{"policy":"Universal subsidy","series":"paid_for","value":"0.120905754204981","potential_gdp_billion_2026_dollars":"63.46424165980524"},{"policy":"Universal subsidy","series":"deficit_financed","value":"-0.334023915298498","potential_gdp_billion_2026_dollars":"-175.33139444065327"},{"policy":"Income-limited subsidy","series":"paid_for","value":"0.115320342127423","potential_gdp_billion_2026_dollars":"60.532421382180004"},{"policy":"Income-limited subsidy","series":"deficit_financed","value":"-0.312775500146556","potential_gdp_billion_2026_dollars":"-164.1779587505332"},{"policy":"Expanded care credit","series":"paid_for","value":"0.0456326228092552","potential_gdp_billion_2026_dollars":"23.952869907477105"},{"policy":"Expanded care credit","series":"deficit_financed","value":"-0.00220261505663455","potential_gdp_billion_2026_dollars":"-1.1561674227745056"},{"policy":"Provider tax credit","series":"paid_for","value":"0.0177175438118571","potential_gdp_billion_2026_dollars":"9.300057631562769"},{"policy":"Provider tax credit","series":"deficit_financed","value":"-0.0363662657014263","potential_gdp_billion_2026_dollars":"-19.08889688432152"},{"policy":"Child allowance","series":"paid_for","value":"-0.00070810899005513","potential_gdp_billion_2026_dollars":"-0.37169116029126104"},{"policy":"Child allowance","series":"deficit_financed","value":"-0.109706439474877","potential_gdp_billion_2026_dollars":"-57.58564621057181"}],
+  eyebrow: /[?&]eyebrow=(off|0|false|none|hide)\b/i.test(location.search) ? undefined : "Figure 1",
+});
+}
+function renderUnavailable(el, title, eyebrow) {
+  var box = document.createElement("div");
+  box.setAttribute("role", "note");
+  box.style.cssText = "font:16px/1.5 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1c1c1c;border:1px solid #d9dce3;border-radius:4px;padding:20px";
+  if (eyebrow) {
+    var e = document.createElement("p");
+    e.textContent = eyebrow;
+    e.style.cssText = "margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a5f6b";
+    box.appendChild(e);
+  }
+  var h = document.createElement("p");
+  h.textContent = title;
+  h.style.cssText = "margin:0 0 12px;font-weight:600";
+  box.appendChild(h);
+  var p = document.createElement("p");
+  p.style.cssText = "margin:0;color:#5a5f6b";
+  p.appendChild(document.createTextNode("An error occurred, please try reloading this page. If this problem persists please contact "));
+  var a = document.createElement("a");
+  a.href = "mailto:budgetlab@yale.edu";
+  a.textContent = "budgetlab@yale.edu";
+  a.style.color = "inherit";
+  p.appendChild(a);
+  p.appendChild(document.createTextNode("."));
+  box.appendChild(p);
+  el.appendChild(box);
+}
+</script>
+<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script><script>(function(){if(window.self===window.top)return;function fit(){try{if(window.parentIFrame&&window.parentIFrame.size)window.parentIFrame.size();}catch(e){}}var t;function soon(){clearTimeout(t);t=setTimeout(fit,60);}if(window.ResizeObserver){try{new ResizeObserver(soon).observe(document.body);}catch(e){}}window.addEventListener("load",function(){setTimeout(fit,200);setTimeout(fit,800);});if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}})();</script>
+</body>
+</html>
