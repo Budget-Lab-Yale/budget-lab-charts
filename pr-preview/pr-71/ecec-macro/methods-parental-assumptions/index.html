@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parental Work and Career Assumptions</title>
+<link rel="stylesheet" href="../../embed/v1/chart-1.16.2.css">
+<style>html.tbl-embedded body{margin:0 !important}html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style><script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}catch(e){document.documentElement.classList.add("tbl-embedded")}</script>
+</head>
+<body>
+<div id="chart" style="max-width:760px;margin:32px auto;padding:0 16px"></div>
+<script src="../../embed/v1/engine-1.16.2.js"></script>
+<script>
+var el = document.getElementById("chart");
+if (typeof BudgetLabChart === "undefined") {
+  renderUnavailable(el, "Parental Work and Career Assumptions", "Methods Table 1");
+} else {
+BudgetLabChart.mountTable(el, {
+  spec: {"title":"Parental Work and Career Assumptions","data":"data.csv","stub":["row"],"header":["column"],"value":"value","stub_header":"Assumption","column_labels":{"c1":"Central treatment","c2":"Basis"},"column_order":["c1","c2"],"stub_width":190,"stub_wrap":true,"column_width":{"c1":180,"c2":300},"column_wrap":{"c1":true,"c2":true},"source":"The Budget Lab assumptions and calculations using the ACS, SIPP, and the research cited above.","format":{"rows":{"History retirement age":{"decimals":0}}},"column_align":"left"},
+  rows: [{"row":"Annual hours by work state","column":"c1","value":"0, 1,000, and 2,000"},{"row":"Annual hours by work state","column":"c2","value":"Standardized nonwork, part-time, and full-time hours"},{"row":"Experience credit per year","column":"c1","value":"0, 0.15, and 1"},{"row":"Experience credit per year","column":"c2","value":"Part-time credit from Blundell and coauthors"},{"row":"Return to an additional experience year","column":"c1","value":"0.02 in log wages"},{"row":"Return to an additional experience year","column":"c2","value":"Within the range implied by Blundell and coauthors; no depreciation of the accumulated difference"},{"row":"Avoided year out of work","column":"c1","value":"0.01 in log wages"},{"row":"Avoided year out of work","column":"c2","value":"Near the lower end of Blundell and coauthors’ implied wage losses"},{"row":"First-year retention after eligibility","column":"c1","value":"20%"},{"row":"First-year retention after eligibility","column":"c2","value":"Employment state dependence; applies only while the baseline parent is out of work"},{"row":"Retention half-life","column":"c1","value":"Two years"},{"row":"Retention half-life","column":"c2","value":"Fading employment effects in childcare and earnings-subsidy studies"},{"row":"Wage catch-up ceiling","column":"c1","value":"Greater of the wage anchor and about 87% of the national average"},{"row":"Wage catch-up ceiling","column":"c2","value":"ACS wage of employed mothers of young children"},{"row":"History retirement age","column":"c1","value":"65"},{"row":"History retirement age","column":"c2","value":"Older parents keep their immediate ECEC effects"},{"row":"Effective-workforce normalization","column":"c1","value":"1,830 annual hours per unit of baseline potential labor force"},{"row":"Effective-workforce normalization","column":"c2","value":"Separate from the 2,000-hour full-time worker equivalent"}],
+  eyebrow: /[?&]eyebrow=(off|0|false|none|hide)\b/i.test(location.search) ? undefined : "Methods Table 1",
+});
+}
+function renderUnavailable(el, title, eyebrow) {
+  var box = document.createElement("div");
+  box.setAttribute("role", "note");
+  box.style.cssText = "font:16px/1.5 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1c1c1c;border:1px solid #d9dce3;border-radius:4px;padding:20px";
+  if (eyebrow) {
+    var e = document.createElement("p");
+    e.textContent = eyebrow;
+    e.style.cssText = "margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a5f6b";
+    box.appendChild(e);
+  }
+  var h = document.createElement("p");
+  h.textContent = title;
+  h.style.cssText = "margin:0 0 12px;font-weight:600";
+  box.appendChild(h);
+  var p = document.createElement("p");
+  p.style.cssText = "margin:0;color:#5a5f6b";
+  p.appendChild(document.createTextNode("An error occurred, please try reloading this page. If this problem persists please contact "));
+  var a = document.createElement("a");
+  a.href = "mailto:budgetlab@yale.edu";
+  a.textContent = "budgetlab@yale.edu";
+  a.style.color = "inherit";
+  p.appendChild(a);
+  p.appendChild(document.createTextNode("."));
+  box.appendChild(p);
+  el.appendChild(box);
+}
+</script>
+<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script><script>(function(){if(window.self===window.top)return;function fit(){try{if(window.parentIFrame&&window.parentIFrame.size)window.parentIFrame.size();}catch(e){}}var t;function soon(){clearTimeout(t);t=setTimeout(fit,60);}if(window.ResizeObserver){try{new ResizeObserver(soon).observe(document.body);}catch(e){}}window.addEventListener("load",function(){setTimeout(fit,200);setTimeout(fit,800);});if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}})();</script>
+</body>
+</html>

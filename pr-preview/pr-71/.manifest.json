@@ -104,6 +104,15 @@
     "ecec-macro/funding-requirement-universal": {
       "hash": "82446108c070ad4d9dac383795c140adceb88a49ce96be3dd0a473bd85887c40"
     },
+    "ecec-macro/methods-macro-assumptions": {
+      "hash": "d3cb75ecb12ecd252dc47636816c1219534749633c36886d373aba42ccb35c90"
+    },
+    "ecec-macro/methods-parental-assumptions": {
+      "hash": "d19e635d7472d2efeba72f42f3be182afc0b33776822ee3723ab477b71a4a91f"
+    },
+    "ecec-macro/methods-receipt-assumptions": {
+      "hash": "117e3c180cc61b568528d97ed7301dd7d934f39e22e6d769f5a4afd300ffb702"
+    },
     "ecec-macro/parental-contributions-by-policy": {
       "hash": "63d1b6caa7cae567e9d347e0bc564b7705a69eb93c0d9eb5cd1c133f37e6739b"
     },
