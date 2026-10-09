@@ -25,7 +25,7 @@ annotations:
     - { x: "2055", y: 16.641156143176694, facet: "Child allowance", label: "2055: $17B\n0.03% of GDP", connector: true, dx: -30, dy: 36 }
 title: "Annual Funding Required by Policy"
 subtitle: "Federal cost net of taxes on parents’ added earnings, billions of 2026 dollars, 2026–2055"
-note: "Direct federal cost minus federal income and payroll taxes on parents’ added earnings, including career effects. Excludes macroeconomic feedback and taxes on children’s adult earnings."
+note: "Direct federal cost minus federal income and payroll taxes on parents’ added earnings, including career effects. Excludes macroeconomic feedback and taxes on children’s adult earnings. GDP shares use baseline GDP."
 source: "The Budget Lab analysis."
 value_prefix: "$"
 tooltip_decimals: 1
