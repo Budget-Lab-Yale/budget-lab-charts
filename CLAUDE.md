@@ -82,5 +82,9 @@ prompts (see the `gpt-review` skill). Add to it when a bug or a review reveals a
   commits, checks out, or otherwise changes the working tree or branches (it only fetches
   origin/main to read published figures), and its outputs never enter the archive.** Archived
   figures are read from origin/main with `git show`. Working files live beside the deck. Enforced
-  by assertOutsideArchive in scripts/slides/paths.mjs (tested by paths.test.mjs), which every
-  script that writes files calls before writing.
+  in Node by assertOutsideArchive in scripts/slides/paths.mjs, which every script calls before it
+  reads a working file (chart.yaml, its data file, source.json) or writes one; paths.test.mjs
+  covers it and CI's Validate job runs it. insert-slide.ps1 enforces the same rule with
+  Assert-OutsideArchive in scripts/slides/insert-checks.ps1, on the deck, its `_backups` folder,
+  each image and its source.json, before any PowerPoint call; test-insert-checks.ps1 covers it
+  COM-free, but it is Windows PowerShell, so CI does not run it.

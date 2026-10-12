@@ -7,8 +7,8 @@ description: Use when putting a Budget Lab chart onto a PowerPoint slide or into
 
 Slide-sized, TBL-branded charts from the same engine as the website, inserted into a TBL 16:9
 deck. Nothing here touches the published archive: working files live **beside the deck**, in
-`<deck folder>\Slide charts\<name>\`, and every script refuses paths under `charts/`. Never run
-git writes for this work.
+`<deck folder>\Slide charts\<name>\`, and every script, insert-slide.ps1 included, refuses to read or
+write under `charts/`. Never run git writes for this work.
 
 ## 0. Preflight
 `npm run slides:preflight`. Fix anything it reports before going further. Claude Code must be
