@@ -1,0 +1,7 @@
+chartType: timeline
+xAxisType: temporal
+columns:
+  x: date
+  label: label
+title: A Short Timeline
+data: data.csv

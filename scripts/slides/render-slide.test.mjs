@@ -9,6 +9,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { REPO_ROOT } from "../lib.mjs";
 import { altText, resolveTitle } from "./alt-text.mjs";
+import { overflowError, widthError } from "./render-slide.mjs";
 
 const SCRIPT = fileURLToPath(new URL("./render-slide.mjs", import.meta.url));
 const FIXTURES = fileURLToPath(new URL("./fixtures/", import.meta.url));
@@ -52,6 +53,7 @@ const JOBS = {
   token: ["title-token", ["--frame", "below-title"]],
   unknown: ["unknown-field", ["--frame", "full"]],
   short: ["short-bars", ["--frame", "full", "--keep-source"]],
+  timeline: ["timeline", ["--frame", "half"]],
 };
 
 before(async () => {
@@ -80,11 +82,14 @@ test("1. Laffer below-title: 3200x1545 PNG, 1280x618 SVG, alt_text and source.js
   assert.equal(s.keep_source, false);
 });
 
-test("2. half frame, 30 horizontal bars: exit 1, both heights, suggests full, no PNG", () => {
+test("2. half frame, 30 horizontal bars: exit 1, both heights, row-count advice, no PNG", () => {
   const r = runs.tall;
   assert.equal(r.code, 1);
   assert.match(r.stderr, /taller than the half frame \(\d+ > 618 px\)/);
-  assert.match(r.stderr, /--frame full/);
+  assert.match(r.stderr, /number of rows \(30 rows\)/);
+  // This fixture renders taller than the full frame too, so suggesting full would be wrong.
+  assert.ok(+r.stderr.match(/\((\d+) > 618 px\)/)[1] > 720);
+  assert.doesNotMatch(r.stderr, /--frame full/);
   assert.doesNotMatch(r.stderr, NO_STACK);
   assert.equal(existsSync(out("tall", "png")), false, "no clipped PNG is written");
   assert.equal(existsSync(out("tall", "svg")), false);
@@ -138,4 +143,32 @@ test("alt-text: resolveTitle uses the selected option's label, then default, the
   assert.equal(resolveTitle({ ...spec, title_selectors: { dimension: { ...spec.title_selectors.dimension, default: "country" } } }), "GDP by Trading Partner");
   assert.equal(altText(spec, { dimension: "country" }), "Stacked bar chart: GDP by Trading Partner. Percent");
   assert.equal(altText({ chartType: "mystery", title: "T" }), "Chart: T.");
+});
+
+test("7. a timeline keeps its own width: exit 1 in half, no PNG", () => {
+  const r = runs.timeline;
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /Timeline charts keep their own width \(\d+ px\) and can't be fitted to the half frame \(640 px\)/);
+  assert.doesNotMatch(r.stderr, NO_STACK);
+  assert.equal(existsSync(out("timeline", "png")), false);
+});
+
+test("overflow and width messages depend on the case", () => {
+  const half = { width: 640, height: 618 }, full = { width: 1280, height: 720 };
+  const frames = { half, full };
+  const hbar = { chartType: "bar", orientation: "horizontal", columns: { x: "c", value: "v" } };
+  const rows = Array.from({ length: 22 }, (_, i) => ({ c: `C${i}`, v: "1" }));
+  assert.equal(overflowError(hbar, rows, 618, "half", half, frames), null);
+  const fits = overflowError(hbar, rows, 700, "half", half, frames);
+  assert.match(fits, /taller than the half frame \(700 > 618 px\).*\(22 rows\).*--frame full/);
+  assert.doesNotMatch(overflowError(hbar, rows, 782, "half", half, frames), /--frame full/);
+  assert.doesNotMatch(overflowError(hbar, rows, 782, "full", full, frames), /--frame full/);
+  const line = { chartType: "line" };
+  assert.match(overflowError(line, [], 700, "half", half, frames), /Try --frame full, fewer categories, or small_multiples\.columns\./);
+  assert.match(overflowError(line, [], 800, "full", full, frames), /Try fewer categories, or small_multiples\.columns\./);
+  const faceted = { ...hbar, columns: { ...hbar.columns, facet: "f" } };
+  assert.match(overflowError(faceted, [{ f: "a", c: "x" }, { f: "b", c: "x" }], 700, "half", half, frames), /\(2 rows\)/);
+  assert.equal(widthError({ chartType: "timeline" }, 640.5, "half", half), null);
+  assert.equal(widthError({ chartType: "timeline" }, 1000, "half", half),
+    "Timeline charts keep their own width (1000 px) and can't be fitted to the half frame (640 px).");
 });

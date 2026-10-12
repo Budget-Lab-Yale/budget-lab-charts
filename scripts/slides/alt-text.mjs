@@ -23,6 +23,8 @@ function activeOption(selector, selected) {
   return byId(selected) ?? byId(selector?.default) ?? options[0];
 }
 
+export const typeName = (chartType) => (Object.hasOwn(TYPE_NAMES, chartType) ? TYPE_NAMES[chartType] : null);
+
 export function resolveTitle(spec, selections = {}) {
   const title = spec?.title ?? "";
   const selectors = spec?.title_selectors;
@@ -35,7 +37,7 @@ export function resolveTitle(spec, selections = {}) {
 }
 
 export function altText(spec, selections = {}) {
-  const type = Object.hasOwn(TYPE_NAMES, spec?.chartType) ? `${TYPE_NAMES[spec.chartType]} chart` : "Chart";
+  const type = typeName(spec?.chartType) ? `${typeName(spec.chartType)} chart` : "Chart";
   const title = resolveTitle(spec, selections).trim();
   const subtitle = String(spec?.subtitle ?? "").trim();
   return [`${type}:`, title && `${title}.`, subtitle].filter(Boolean).join(" ");

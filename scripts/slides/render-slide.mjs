@@ -15,7 +15,7 @@ import { REPO_ROOT, buildTblChartCmd } from "../lib.mjs";
 import { FRAMES, getFrame } from "./frames.mjs";
 import { assertOutsideArchive } from "./paths.mjs";
 import { readSource, writeSource } from "./source-json.mjs";
-import { altText } from "./alt-text.mjs";
+import { altText, typeName } from "./alt-text.mjs";
 
 const USAGE = `Usage: node scripts/slides/render-slide.mjs <working folder> --frame <${Object.keys(FRAMES).join("|")}> [--keep-source]`;
 
@@ -165,6 +165,40 @@ async function renderInChromium({ js, css }, payload) {
   }
 }
 
+// A timeline keeps its own width whatever the frame says; rasterising it onto the frame's canvas
+// would clip it or leave a gap, so it is refused.
+export function widthError(spec, w, frameName, frame) {
+  if (Math.abs(w - frame.width) <= 1) return null;
+  return `${typeName(spec.chartType) ?? "These"} charts keep their own width (${w} px) and can't be fitted to the ${frameName} frame (${frame.width} px).`;
+}
+
+// Horizontal bar/stacked (and dumbbell) charts take their height from their row count, not the
+// frame, so a bigger frame only helps when the rendered height already fits it.
+function rowSized(spec) {
+  if (spec.chartType === "bar" || spec.chartType === "stacked") return spec.orientation === "horizontal";
+  return spec.chartType === "dumbbell" && spec.orientation !== "vertical";
+}
+function rowCount(spec, rows) {
+  const c = spec.columns ?? {};
+  const x = (spec.chartType === "dumbbell" && c.category) || c.x || "time";
+  const group = c.section ?? c.facet;
+  return new Set(rows.map((r) => (group ? JSON.stringify([r[group], r[x]]) : String(r[x])))).size;
+}
+
+export function overflowError(spec, rows, h, frameName, frame, frames = FRAMES) {
+  if (h <= frame.height + 1) return null;
+  const head = `Rendered chart is taller than the ${frameName} frame (${h} > ${frame.height} px).`;
+  const full = frames.full;
+  const fitsFull = frameName !== "full" && full && h <= full.height + 1;
+  if (rowSized(spec)) {
+    const n = rowCount(spec, rows);
+    return `${head} A horizontal ${typeName(spec.chartType).toLowerCase()} chart's height comes from its number of rows (${n} rows), not the frame, so it needs fewer categories or splitting across two slides.` +
+      (fitsFull ? ` At ${h} px it would fit the full frame (--frame full).` : "");
+  }
+  const tries = [frameName !== "full" ? "--frame full" : null, "fewer categories", "small_multiples.columns"].filter(Boolean);
+  return `${head} Try ${tries.slice(0, -1).join(", ")}, or ${tries.at(-1)}.`;
+}
+
 export function pngDimensions(buf) {
   const sig = "89504e470d0a1a0a";
   if (buf.length < 24 || buf.subarray(0, 8).toString("hex") !== sig || buf.subarray(12, 16).toString("latin1") !== "IHDR") return null;
@@ -203,13 +237,8 @@ export async function renderSlide({ folder: folderArg, frame: frameName, keepSou
   const bundle = readBundle(repoRoot);
   const out = await renderInChromium(bundle, { spec, rows, selections, frame });
   if (out.error) fail(`The engine could not render the chart: ${oneLine(out.error)}`);
-  if (Math.abs(out.w - frame.width) > 1) {
-    fail(`Rendered chart is ${out.w} px wide, not the ${frameName} frame's ${frame.width} px (a timeline keeps its own width). Slide frames cannot hold it without scaling.`);
-  }
-  if (out.h > frame.height + 1) {
-    const tries = [frameName !== "full" && "--frame full", "fewer categories", "small_multiples.columns"].filter(Boolean);
-    fail(`Rendered chart is taller than the ${frameName} frame (${out.h} > ${frame.height} px). Try ${tries.slice(0, -1).join(", ")}, or ${tries.at(-1)}.`);
-  }
+  const sizeError = widthError(spec, out.w, frameName, frame) ?? overflowError(spec, rows, out.h, frameName, frame);
+  if (sizeError) fail(sizeError);
   const warnings = [];
   if (out.h < frame.height - 1) warnings.push(`padded ${frame.height - out.h} px below the chart (it renders ${out.h} px tall in the ${frame.height} px ${frameName} frame).`);
 
