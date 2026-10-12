@@ -1,0 +1,12 @@
+{
+  "below-title": { "width": 1280, "height": 618, "scale": 2.5, "logoTop": 20, "fillPanes": true,
+    "layout": "1_Title - no content", "titled": true,
+    "place": [ { "left": 0, "top": 76.707, "width": 960, "height": 463.5 } ] },
+  "full": { "width": 1280, "height": 720, "scale": 2.5, "logoTop": 20, "fillPanes": true,
+    "layout": "Blank", "titled": false,
+    "place": [ { "left": 0, "top": 0, "width": 960, "height": 540 } ] },
+  "half": { "width": 640, "height": 618, "scale": 2.5, "logoTop": 20, "fillPanes": true,
+    "layout": "1_Title - no content", "titled": true,
+    "place": [ { "left": 0, "top": 76.707, "width": 480, "height": 463.5 },
+               { "left": 480, "top": 76.707, "width": 480, "height": 463.5 } ] }
+}
