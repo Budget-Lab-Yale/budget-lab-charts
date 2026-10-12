@@ -5,13 +5,13 @@ import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { extname, join, normalize, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse as parseYaml } from "yaml";
 import { REPO_ROOT } from "../lib.mjs";
-import { dedupeCaptures, parseArgs, pickCapture, toCsv } from "./capture-interactive.mjs";
+import { dedupeCaptures, parseArgs, pickCapture, toCsv, writeCapture } from "./capture-interactive.mjs";
 
 const SCRIPT = fileURLToPath(new URL("./capture-interactive.mjs", import.meta.url));
 const RENDER = fileURLToPath(new URL("./render-slide.mjs", import.meta.url));
@@ -62,6 +62,13 @@ before(async () => {
     none: [`${base}/no-engine.html`],
     archive: [url, "--pick", "1", "--to", join(REPO_ROOT, "charts", "slide-capture-test")],
   };
+  // The chart folder already holds an archived figure that was rendered: a capture must replace its
+  // source.json, not inherit ref/commit or the old render's keys.
+  mkdirSync(folder("by-category"), { recursive: true });
+  writeFileSync(join(folder("by-category"), "source.json"), JSON.stringify({
+    origin: "archived", ref: "articles/x/fig", commit: "abc1234",
+    engine_version: "1.16.3", frame: "half", keep_source: true, alt_text: "Old alt text.",
+  }), "utf-8");
   await Promise.all(Object.entries(jobs).map(async ([key, args]) => {
     runs[key] = { dir: args[args.indexOf("--to") + 1], ...(await capture(args)) };
   }));
@@ -91,6 +98,20 @@ test("toCsv: union of keys in first-seen order, RFC-4180 quoting, empty for miss
   ]);
   assert.equal(csv, 'a,b,c\n1,"say ""hi""",\n-0.5,,"x,y"\n3,"two\nlines",\n');
   assert.equal(toCsv([]), "");
+});
+
+test("toCsv: a missing cell is empty even when its key names an inherited property", () => {
+  assert.equal(toCsv([{ constructor: "builders", value: 1 }, { value: 2 }]), "constructor,value\nbuilders,1\n,2\n");
+});
+
+test("writeCapture: zero rows writes the folder but warns that the render will fail", () => {
+  const dir = join(root, "Slide charts", "zero-rows");
+  const r = writeCapture(dir, { kind: "chart", spec: { chartType: "bar" }, rows: [], selections: null, downloadName: "empty" }, { url: "https://x/", engineVersion: null });
+  assert.equal(r.dir, dir);
+  assert.deepEqual(r.warnings, ["captured 0 rows for empty; the render will fail."]);
+  assert.equal(readFileSync(join(dir, "data.csv"), "utf8"), "");
+  const ok = writeCapture(join(root, "Slide charts", "one-row"), { kind: "chart", spec: {}, rows: [{ a: 1 }], selections: null, downloadName: "one" }, { url: "https://x/", engineVersion: null });
+  assert.deepEqual(ok.warnings, []);
 });
 
 test("dedupeCaptures: same spec + selections collapses to the last call, in first-seen position", () => {
@@ -155,6 +176,7 @@ test("3. --pick <chart>: chart.yaml, data.csv, source.json in a path with spaces
   assert.equal(v.valid, true, JSON.stringify(v.errors));
 
   const s = JSON.parse(readFileSync(join(r.dir, "source.json"), "utf8"));
+  assert.deepEqual(Object.keys(s).sort(), ["captured_at", "origin", "selections", "tool_engine_version", "url"], "replaced, not merged");
   assert.equal(s.origin, "interactive");
   assert.equal(s.url, `${base}/index.html?tab=prices&figure=by-category`);
   assert.deepEqual(s.selections, { dimension: "country" });

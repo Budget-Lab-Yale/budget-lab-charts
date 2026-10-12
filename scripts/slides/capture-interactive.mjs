@@ -11,7 +11,6 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { stringify as toYaml } from "yaml";
 import { assertOutsideArchive } from "./paths.mjs";
-import { writeSource } from "./source-json.mjs";
 
 const USAGE = 'Usage: node scripts/slides/capture-interactive.mjs "<url>" [--pick <name-or-number> --to <working folder>]';
 const NO_CAPTURES = "no charts were captured — this tool may not keep its state in the URL; only its default view can be captured";
@@ -78,7 +77,7 @@ export function toCsv(rows) {
   const keys = [];
   const seen = new Set();
   for (const r of rows) for (const k of Object.keys(r)) if (!seen.has(k)) { seen.add(k); keys.push(k); }
-  return [keys, ...rows.map((r) => keys.map((k) => r[k]))].map((cells) => cells.map(csvField).join(",")).join("\n") + "\n";
+  return [keys, ...rows.map((r) => keys.map((k) => (Object.hasOwn(r, k) ? r[k] : null)))].map((cells) => cells.map(csvField).join(",")).join("\n") + "\n";
 }
 
 // A tool re-mounts a figure on every control change; the last call is what is on screen.
@@ -177,23 +176,28 @@ export async function captureInteractive(url, { settleMs = SETTLE_MS, capMs = CA
   }
 }
 
+// source.json is written fresh, not merged (writeSource merges): a capture into a folder that held an
+// archived fetch or an earlier render must not inherit its ref/commit or render keys.
 export function writeCapture(to, cap, { url, engineVersion }) {
   const dir = resolve(to);
-  const files = [
-    ["chart.yaml", toYaml({ ...cap.spec, data: "data.csv" })],
-    ["data.csv", toCsv(cap.rows ?? [])],
-  ];
-  for (const [name] of [...files, ["source.json"]]) assertOutsideArchive(join(dir, name));
-  mkdirSync(dir, { recursive: true });
-  for (const [name, text] of files) writeFileSync(join(dir, name), text, "utf-8");
-  writeSource(dir, {
+  const rows = cap.rows ?? [];
+  const source = {
     origin: "interactive",
     url,
     captured_at: new Date().toISOString(),
     selections: cap.selections ?? {},
     tool_engine_version: engineVersion,
-  });
-  return dir;
+  };
+  const files = [
+    ["chart.yaml", toYaml({ ...cap.spec, data: "data.csv" })],
+    ["data.csv", toCsv(rows)],
+    ["source.json", JSON.stringify(source, null, 2) + "\n"],
+  ];
+  for (const [name] of files) assertOutsideArchive(join(dir, name));
+  mkdirSync(dir, { recursive: true });
+  for (const [name, text] of files) writeFileSync(join(dir, name), text, "utf-8");
+  const warnings = rows.length ? [] : [`captured 0 rows for ${cap.downloadName ?? "this figure"}; the render will fail.`];
+  return { dir, warnings };
 }
 
 export async function main(argv = process.argv.slice(2)) {
@@ -208,7 +212,8 @@ export async function main(argv = process.argv.slice(2)) {
   const cap = pickCapture(captures, opts.pick);
   const name = cap.downloadName ?? `#${opts.pick}`;
   if (cap.kind !== "chart") fail(`"${name}" is a table; tables are not supported as slide charts.`);
-  const dir = writeCapture(opts.to, cap, { url: opts.url, engineVersion });
+  const { dir, warnings } = writeCapture(opts.to, cap, { url: opts.url, engineVersion });
+  for (const w of warnings) console.error(`Warning: ${w}`);
   console.log(`Captured ${name} (tool engine ${engineVersion ?? "unknown"}) -> ${dir}`);
 }
 
