@@ -6,6 +6,7 @@ $ErrorActionPreference = 'Stop'
 if (-not (Test-Path -LiteralPath $Template)) { Write-Host "SKIP: template not found: $Template"; exit 0 }
 
 $insert = Join-Path $PSScriptRoot 'insert-slide.ps1'
+$script:qas = @()
 $root = Join-Path $env:TEMP 'slide-charts-test'
 $deckDir = Join-Path $root "Budget Lab Sharepoint\O'Neil $([char]0x2014) deck"
 $deck = Join-Path $deckDir 'deck.pptx'
@@ -53,7 +54,9 @@ function Expect-Throw([string]$case, [string[]]$argList, [string]$pattern) {
 function Expect-Ok([string]$case, [string[]]$argList) {
   $r = Run-Insert $argList
   Check $case ($r.code -eq 0) "script failed: $($r.err) $($r.out)"
-  return ($r.out | ConvertFrom-Json)
+  $j = $r.out | ConvertFrom-Json
+  if ($j.qa) { $script:qas += $j.qa }
+  return $j
 }
 function Slide-Info($slide) {
   $pics = @(); foreach ($s in @($slide.Shapes)) { if ($s.Type -eq 13) { $pics += $s } }
@@ -79,7 +82,16 @@ try {
     try { return (& $body $p) } finally { $p.Close() }
   }
 
+  # Flip slide 1's slide-number visibility so the copy onto the new slide is actually exercised.
+  $p0 = $pp.Presentations.Open($deck, 0, 0, 0)
+  try {
+    $cur = [bool]$p0.Slides.Item(1).HeadersFooters.SlideNumber.Visible
+    $p0.Slides.Item(1).HeadersFooters.SlideNumber.Visible = -not $cur
+    $p0.Save()
+  } finally { $p0.Close() }
   $before = Inspect { param($p) @{ n = $p.Slides.Count; num1 = (Slide-Info $p.Slides.Item(1)).num } }
+  Check '1' ($null -ne $before.num1) 'slide 1 slide-number visibility could not be read'
+  Check '1' ($before.num1 -ne $cur) 'fixture flip of slide 1 slide-number visibility did not take'
 
   # Case 1
   $r = Expect-Ok '1' @('-Deck', $deck, '-Frame', 'below-title', '-Image', $a, '-Title', 'T1', '-After', '1')
@@ -91,13 +103,19 @@ try {
     @{ n = $p.Slides.Count; title = $i.title; num = $i.num; count = $i.pics.Count
        l = $pic.Left; t = $pic.Top; w = $pic.Width; h = $pic.Height; alt = $pic.AlternativeText }
   }
+  Check '1' ($info.n -eq $before.n + 1) "independent slide count $($info.n), expected $($before.n + 1)"
   Check '1' ($info.title -eq 'T1') "title '$($info.title)'"
   Check '1' ($info.count -eq 1) "picture count $($info.count)"
   Check '1' ((Near $info.l 0) -and (Near $info.t 76.707) -and (Near $info.w 960) -and (Near $info.h 463.5)) "picture at ($($info.l), $($info.t), $($info.w), $($info.h))"
   Check '1' ($info.alt -eq 'Alt text for chart A') "alt text '$($info.alt)'"
   Check '1' (@(Get-ChildItem -LiteralPath (Join-Path $sc '_backups') -Filter '*.pptx').Count -ge 1) 'no backup in Slide charts\_backups'
   Check '1' (Test-Path -LiteralPath $r.qa) "QA PNG missing: $($r.qa)"
+  Check '1' ($null -ne $info.num) 'new slide slide-number visibility could not be read'
   Check '1' ($info.num -eq $before.num1) "slide-number visibility $($info.num) differs from slide 1 ($($before.num1))"
+  Check '1' (Test-Path -LiteralPath $r.backup) "backup missing: $($r.backup)"
+  $pb = $pp.Presentations.Open($r.backup, -1, 0, 0)
+  try { $bn = $pb.Slides.Count } finally { $pb.Close() }
+  Check '1' ($bn -eq $before.n) "backup has $bn slides, expected the pre-insert count $($before.n)"
 
   # Case 2
   Expect-Throw '2' @('-Deck', $deck, '-Frame', 'below-title', '-Image', $a, '-Title', 'T2', '-Onto', '2') 'already has'
@@ -112,7 +130,7 @@ try {
   $r = Expect-Ok '4' @('-Deck', $deck, '-Frame', 'half', '-Image', $a, '-Image2', $b, '-Title', 'Two-up', '-After', '2')
   $info = Inspect { param($p)
     $i = Slide-Info $p.Slides.Item(3)
-    $o = @(); foreach ($pic in $i.pics) { $o += , @($pic.Left, $pic.Top, $pic.Width, $pic.Height) }
+    $o = @(); foreach ($pic in $i.pics) { $o += , @($pic.Left, $pic.Top, $pic.Width, $pic.Height, $pic.AlternativeText) }
     @{ count = $i.pics.Count; pos = $o; title = $i.title }
   }
   Check '4' ($info.count -eq 2) "picture count $($info.count)"
@@ -121,8 +139,10 @@ try {
   for ($k = 0; $k -lt 2; $k++) {
     $got = $null
     foreach ($p in $info.pos) { if (Near $p[0] $want[$k][0]) { $got = $p } }
-    Check '4' ($got -ne $null) "no picture at left $($want[$k][0])"
+    Check '4' ($null -ne $got) "no picture at left $($want[$k][0])"
     Check '4' ((Near $got[1] $want[$k][1]) -and (Near $got[2] $want[$k][2]) -and (Near $got[3] $want[$k][3])) "half placement $k is ($($got -join ', '))"
+    $wantAlt = @('Alt text for chart A', 'Alt text for chart B')[$k]
+    Check '4' ($got[4] -eq $wantAlt) "picture $k (left $($want[$k][0])) has alt '$($got[4])', expected '$wantAlt' (image a left, b right)"
   }
 
   # Case 5
@@ -154,6 +174,9 @@ try {
   Write-Host 'PASS: all insert-slide cases'
 } finally {
   foreach ($o in $opened) { try { $o.Close() } catch { } }
-  if ($started -and $pp.Presentations.Count -eq 0) { try { $pp.Quit() } catch { } }
-  if (Test-Path -LiteralPath $root) { try { Remove-Item -LiteralPath $root -Recurse -Force } catch { } }
+  if ($started) { try { if ($pp.Presentations.Count -eq 0) { $pp.Quit() } } catch { } }
+  foreach ($q in $script:qas) { try { Remove-Item -LiteralPath $q -Force -ErrorAction Stop } catch { Write-Warning "could not remove QA PNG ${q}: $($_.Exception.Message)" } }
+  $ef = Join-Path $env:TEMP 'slide-charts-test-stderr.txt'
+  if (Test-Path -LiteralPath $ef) { try { Remove-Item -LiteralPath $ef -Force -ErrorAction Stop } catch { Write-Warning "could not remove ${ef}: $($_.Exception.Message)" } }
+  if (Test-Path -LiteralPath $root) { try { Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction Stop } catch { Write-Warning "could not remove temp tree ${root}: $($_.Exception.Message)" } }
 }
