@@ -1,0 +1,11 @@
+chartType: bar
+orientation: horizontal
+xAxisType: categorical
+columns:
+  x: category
+  value: value
+title: Three Short Bars
+subtitle: Billions of dollars
+value_prefix: "$"
+source: The Budget Lab
+data: data.csv

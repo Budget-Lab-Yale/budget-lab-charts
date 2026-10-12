@@ -1,0 +1,8 @@
+chartType: line
+xAxisType: numeric
+columns:
+  x: year
+  value: value
+title: A Spec With an Unknown Field
+colour_scheme: blue
+data: data.csv
