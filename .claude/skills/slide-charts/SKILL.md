@@ -34,8 +34,9 @@ Name the folder after the figure in kebab-case: `<deck folder>\Slide charts\<nam
   copy the URL, then run `node scripts/slides/capture-interactive.mjs "<url>"` to list the
   figures, and rerun it with `--pick <name> --to "<folder>"`. Taxes at the Top and the deficit
   calculator don't keep their state in the URL, so only their default view can be captured. Say so.
-- **New data:** run a short intake: chart type (line, area, bar, stacked, scatter, dotplot,
-  small-multiples), title, subtitle with units, series order, colors. Colors come from the
+- **New data:** run a short intake: chart type (line, area, bar, stacked, scatter, dotplot;
+  small multiples are `columns.facet` on one of these, not a chart type), title, subtitle with
+  units, series order, colors. Colors come from the
   categorical ramp only (`blue amber violet green red rose russet`; never `navy`/`sky`/`grey`/`black`
   as series colors). Write `chart.yaml` and `data.csv` in the working folder. The schema is
   `ENGINE-CONFIG-SPEC.md`, which is strict, so never invent a field.
@@ -47,8 +48,8 @@ issues in `chart.yaml` and re-render. If it reports that the chart is taller tha
 its suggestion. Don't work around it.
 
 ## 4. Insert
-`powershell -NoProfile -File scripts/slides/insert-slide.ps1 -Deck "<deck>" -Frame <frame> -Image "<folder>\<name>.png" [-Image2 …] -Title "<user's title>" (-After N | -Onto N [-Replace]) [-Layout "<layout name>"]`.
-`-Image2` is for `half` only; omit `-Title` for `full`. `-Replace` is required when slide N already has pictures. `-Layout` is only needed if the deck's
+`powershell -NoProfile -ExecutionPolicy Bypass -File scripts/slides/insert-slide.ps1 -Deck "<deck>" -Frame <frame> -Image "<folder>\<name>.png" [-Image2 …] -Title "<user's title>" (-After N | -Onto N [-Replace]) [-Layout "<layout name>"]`.
+`-Image2` is for `half` only; omit `-Title` for `full`. Each image must be rendered with the same `--frame` as `-Frame`, or the script refuses it. `-Replace` is required when slide N already has pictures. `-Layout` is only needed if the deck's
 layout name differs from the frame's default; the script lists the available names when it fails.
 It backs up the deck to `Slide charts\_backups\` first and works on the deck even if it's open in
 PowerPoint. Open the QA PNG it prints and compare it with a neighbouring chart slide.
