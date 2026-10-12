@@ -22,11 +22,12 @@ function New-Png([string]$path, [int]$w, [int]$h) {
   $bmp.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
   $bmp.Dispose()
 }
-function New-Fixture([string]$name, [int]$w, [int]$h, [string]$alt) {
+# A render-slide working folder: <name>.png plus a source.json naming the frame it was rendered for.
+function New-Fixture([string]$name, [int]$w, [int]$h, [string]$alt, [string]$frame) {
   $d = Join-Path $sc $name
   New-Item -ItemType Directory -Force -Path $d | Out-Null
   New-Png (Join-Path $d "$name.png") $w $h
-  $json = (@{ alt_text = $alt } | ConvertTo-Json)
+  $json = (@{ alt_text = $alt; frame = $frame } | ConvertTo-Json)
   [IO.File]::WriteAllText((Join-Path $d 'source.json'), $json, (New-Object System.Text.UTF8Encoding($false)))
   return (Join-Path $d "$name.png")
 }
@@ -73,8 +74,11 @@ try {
   if (Test-Path -LiteralPath $root) { Remove-Item -LiteralPath $root -Recurse -Force }
   New-Item -ItemType Directory -Force -Path $deckDir | Out-Null
   Copy-Item -LiteralPath $Template -Destination $deck
-  $a = New-Fixture 'a' 1280 618 'Alt text for chart A'
-  $b = New-Fixture 'b' 640 618 'Alt text for chart B'
+  # Pixel sizes only need the frame's aspect (below-title 1280x618, half 640x618).
+  $a = New-Fixture 'a' 1280 618 'Alt text for chart A' 'below-title'
+  $b = New-Fixture 'b' 640 618 'Alt text for chart B' 'half'
+  $c = New-Fixture 'c' 640 618 'Alt text for chart C' 'half'
+  $liar = New-Fixture 'liar' 1280 618 'Alt text for a mislabelled chart' 'half'
 
   # Inspect the saved deck read-only, without a window, unless the test has it open.
   function Inspect([scriptblock]$body) {
@@ -135,7 +139,7 @@ try {
   Check '3' ($info.title -eq 'T2') "title '$($info.title)'"
 
   # Case 4
-  $r = Expect-Ok '4' @('-Deck', $deck, '-Frame', 'half', '-Image', $a, '-Image2', $b, '-Title', 'Two-up', '-After', '2')
+  $r = Expect-Ok '4' @('-Deck', $deck, '-Frame', 'half', '-Image', $c, '-Image2', $b, '-Title', 'Two-up', '-After', '2')
   $info = Inspect { param($p)
     $i = Slide-Info $p.Slides.Item(3)
     $o = @(); foreach ($pic in $i.pics) { $o += , @($pic.Left, $pic.Top, $pic.Width, $pic.Height, $pic.AlternativeText) }
@@ -149,14 +153,20 @@ try {
     foreach ($p in $info.pos) { if (Near $p[0] $want[$k][0]) { $got = $p } }
     Check '4' ($null -ne $got) "no picture at left $($want[$k][0])"
     Check '4' ((Near $got[1] $want[$k][1]) -and (Near $got[2] $want[$k][2]) -and (Near $got[3] $want[$k][3])) "half placement $k is ($($got -join ', '))"
-    $wantAlt = @('Alt text for chart A', 'Alt text for chart B')[$k]
-    Check '4' ($got[4] -eq $wantAlt) "picture $k (left $($want[$k][0])) has alt '$($got[4])', expected '$wantAlt' (image a left, b right)"
+    $wantAlt = @('Alt text for chart C', 'Alt text for chart B')[$k]
+    Check '4' ($got[4] -eq $wantAlt) "picture $k (left $($want[$k][0])) has alt '$($got[4])', expected '$wantAlt' (image c left, b right)"
   }
 
   # Case 5
   Expect-Throw '5a' @('-Deck', $deck, '-Frame', 'half', '-Image', $a, '-Title', 'x', '-After', '1') 'takes 2 image'
   Expect-Throw '5b' @('-Deck', $deck, '-Frame', 'below-title', '-Image', $a, '-After', '1') 'needs -Title'
   Expect-Throw '5c' @('-Deck', $deck, '-Frame', 'full', '-Image', $a, '-Title', 'x', '-After', '1') 'no title bar'
+  # Frame/image mismatches and the archive guard refuse before any COM call. Patterns stay short:
+  # the child shell wraps a long error at the console width.
+  Expect-Throw '5d' @('-Deck', $deck, '-Frame', 'half', '-Image', $a, '-Image2', $b, '-Title', 'x', '-After', '1') 'rendered for the below-title frame, not the half'
+  Expect-Throw '5e' @('-Deck', $deck, '-Frame', 'half', '-Image', $liar, '-Image2', $b, '-Title', 'x', '-After', '1') 'does not fit the half frame'
+  Expect-Throw '5f' @('-Deck', $deck, '-Frame', 'quarter', '-Image', $a, '-Title', 'x', '-After', '1') 'Unknown frame .quarter.\. Valid frames: below-title, full, half'
+  Expect-Throw '5g' @('-Deck', (Join-Path $PSScriptRoot '..\..\charts'), '-Frame', 'below-title', '-Image', $a, '-Title', 'x', '-After', '1') 'published archive'
 
   # Case 6: deck already open with a window
   $open = $pp.Presentations.Open($deck, 0, 0, -1)

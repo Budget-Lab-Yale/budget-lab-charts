@@ -1,6 +1,6 @@
 ﻿param(
   [Parameter(Mandatory = $true)][string]$Deck,
-  [Parameter(Mandatory = $true)][ValidateSet('below-title', 'full', 'half')][string]$Frame,
+  [Parameter(Mandatory = $true)][string]$Frame,
   [Parameter(Mandatory = $true)][string]$Image,
   [string]$Image2,
   [string]$Title,
@@ -11,23 +11,46 @@
 )
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'match-presentation.ps1')
+. (Join-Path $PSScriptRoot 'insert-checks.ps1')
+$repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $frames = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot 'frames.json') | ConvertFrom-Json
+$frameNames = @($frames.PSObject.Properties | ForEach-Object { $_.Name })
+$known = @($frameNames | Where-Object { $_ -ieq $Frame })
+if ($known.Count -ne 1) { throw "Unknown frame '$Frame'. Valid frames: $($frameNames -join ', ')." }
+$Frame = $known[0]
 $f = $frames.$Frame
 if (($After -gt 0) -eq ($Onto -gt 0)) { throw 'Pass exactly one of -After N or -Onto N.' }
 if ($f.titled -and [string]::IsNullOrWhiteSpace($Title)) { throw "The $Frame frame needs -Title (the takeaway in the navy bar). Ask the user for it; never draft one." }
 if ((-not $f.titled) -and $Title) { throw 'The full frame has no title bar; drop -Title.' }
 $images = @($Image); if ($Image2) { $images += $Image2 }
 if ($images.Count -ne @($f.place).Count) { throw "The $Frame frame takes $(@($f.place).Count) image(s)." }
-$alts = @()
-foreach ($i in $images) {
-  if (-not (Test-Path -LiteralPath $i)) { throw "Image not found: $i" }
-  $sj = Join-Path (Split-Path -Parent $i) 'source.json'
-  if (-not (Test-Path -LiteralPath $sj)) { throw "No source.json beside $i. Render it with render-slide.mjs first." }
-  $alt = (Get-Content -Raw -Encoding UTF8 -LiteralPath $sj | ConvertFrom-Json).alt_text
-  if ([string]::IsNullOrWhiteSpace($alt)) { throw "source.json beside $i has no alt_text. Re-render it with render-slide.mjs." }
-  $alts += $alt
+
+# Nothing under the repo's charts/ is read or written (the scripts/slides invariant in CLAUDE.md).
+for ($k = 0; $k -lt $images.Count; $k++) {
+  if (-not (Test-Path -LiteralPath $images[$k])) { throw "Image not found: $($images[$k])" }
+  $images[$k] = (Resolve-Path -LiteralPath $images[$k]).Path
+  Assert-OutsideArchive $images[$k] $repoRoot
+  Assert-OutsideArchive (Join-Path (Split-Path -Parent $images[$k]) 'source.json') $repoRoot
 }
 $deckPath = (Resolve-Path -LiteralPath $Deck).Path
+$bdir = Join-Path (Split-Path -Parent $deckPath) 'Slide charts\_backups'
+Assert-OutsideArchive $deckPath $repoRoot
+Assert-OutsideArchive $bdir $repoRoot
+
+# Each image must have been rendered for this frame: AddPicture forces the slot's width and height,
+# so a render for another frame would be squashed or stretched.
+$alts = @()
+for ($k = 0; $k -lt $images.Count; $k++) {
+  $i = $images[$k]
+  $sj = Join-Path (Split-Path -Parent $i) 'source.json'
+  if (-not (Test-Path -LiteralPath $sj)) { throw "No source.json beside $i. Render it with render-slide.mjs first." }
+  $src = Get-Content -Raw -Encoding UTF8 -LiteralPath $sj | ConvertFrom-Json
+  if ([string]::IsNullOrWhiteSpace($src.alt_text)) { throw "source.json beside $i has no alt_text. Re-render it with render-slide.mjs." }
+  $place = @($f.place)[$k]
+  $why = Get-FrameMismatch (Split-Path -Leaf $i) ([string]$src.frame) $Frame (Get-PngSize $i) $place
+  if ($why) { throw $why }
+  $alts += $src.alt_text
+}
 
 # Pictures the chart replaces: msoPicture (13), msoLinkedPicture (11), and picture-filled placeholders.
 function Get-SlidePictures($slide) {
@@ -88,46 +111,36 @@ try {
     if ($f.titled -and -not $slide.Shapes.HasTitle) { throw "Slide $Onto has no title placeholder, and the $Frame frame needs one." }
   }
 
-  $bdir = Join-Path (Split-Path -Parent $deckPath) 'Slide charts\_backups'
   New-Item -ItemType Directory -Force -Path $bdir | Out-Null
   $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
   $backup = Join-Path $bdir ('{0}-{1}.pptx' -f [IO.Path]::GetFileNameWithoutExtension($deckPath), $stamp)
   $pres.SaveCopyAs($backup)
 
-  $added = $null; $saved = $false
+  $added = $null; $deleted = 0
   try {
     if ($After -gt 0) {
       $slide = $pres.Slides.AddSlide($After + 1, $cl)
       $added = $slide
       try { $slide.HeadersFooters.SlideNumber.Visible = $pres.Slides.Item($After).HeadersFooters.SlideNumber.Visible } catch { }
     } else {
-      foreach ($s in $pics) { $s.Delete() }
+      foreach ($s in $pics) { $s.Delete(); $deleted++ }
     }
     if ($f.titled) { $slide.Shapes.Title.TextFrame.TextRange.Text = $Title }
     for ($k = 0; $k -lt $images.Count; $k++) {
       $g = @($f.place)[$k]
-      $pic = $slide.Shapes.AddPicture((Resolve-Path -LiteralPath $images[$k]).Path, 0, -1, $g.left, $g.top, $g.width, $g.height)
+      $pic = $slide.Shapes.AddPicture($images[$k], 0, -1, $g.left, $g.top, $g.width, $g.height)
       $pic.AlternativeText = $alts[$k]
       $pic.Name = "Slide chart $($k + 1)"
     }
-    $pres.Save()
-    $saved = $true
   } catch {
     $reason = $_.Exception.Message
-    if ($saved) {
-      if ($openedHere) { throw "Insert failed while saving: $reason. Backup of the original: $backup" }
-      throw "Insert failed while saving: $reason. The deck is open in your PowerPoint window with the edits unsaved; the original is backed up at $backup"
-    }
-    if ($After -gt 0) {
-      if ($added) {
-        $removed = $false
-        try { $added.Delete(); $removed = $true } catch { }
-        if ($removed) { throw "Insert failed and the added slide was removed (the deck file was not saved): $reason" }
-        throw "Insert failed and the added slide could not be removed; delete it by hand or restore the backup at ${backup}: $reason"
-      }
-      throw "Insert failed before a slide was added (the deck is unchanged): $reason"
-    }
-    throw "Insert failed after editing slide $Onto; restore the deck from the backup at ${backup}: $reason"
+    $removed = $false
+    if ($added) { try { $added.Delete(); $removed = $true } catch { } }
+    throw (Get-InsertFailureMessage -Stage edit -After $After -Onto $Onto -OpenedHere $openedHere -Added ($null -ne $added) -Removed $removed -Deleted $deleted -Backup $backup -Reason $reason)
+  }
+  try { $pres.Save() }
+  catch {
+    throw (Get-InsertFailureMessage -Stage save -After $After -Onto $Onto -OpenedHere $openedHere -Added ($null -ne $added) -Deleted $deleted -Backup $backup -Reason $_.Exception.Message)
   }
   # The insert is saved; a QA export failure warns and does not roll it back.
   $qa = $null
