@@ -29,7 +29,13 @@ Ok 'local wins over matching cloud deck listed later' ((Select-OpenPresentation 
 Ok 'https with %20 %27 and encoded em dash' ((Select-OpenPresentation @($cloud) $deck) -eq $cloud)
 Ok 'two same-name https decks: only the matching folder' ((Select-OpenPresentation @($otherUrl, $cloud) $deck) -eq $cloud)
 Throws 'two that both match throw' { Select-OpenPresentation @($cloud, (Stub $url)) $deck } 'ambiguous: 2 open presentations match deck.pptx; close the others'
-Ok 'none (same name, other folder)' ($null -eq (Select-OpenPresentation @($otherUrl, $otherLocal) $deck))
+$rootDeck = Join-Path $env:TEMP 'match-test\Budget Lab Sharepoint\deck.pptx'
+New-Item -ItemType Directory -Force -Path (Split-Path -Parent $rootDeck) | Out-Null
+[IO.File]::WriteAllText($rootDeck, 'x')
+$rootUrl = Stub 'https://yale.sharepoint.com/sites/x/Shared%20Documents/deck.pptx'
+Ok 'root-level deck, mismatched parent, one https candidate' ((Select-OpenPresentation @($rootUrl, $otherLocal) $rootDeck) -eq $rootUrl)
+Throws 'root-level deck, two same-name https decks, neither parent matches' { Select-OpenPresentation @($rootUrl, $otherUrl) $rootDeck } 'ambiguous: 2 open presentations match deck.pptx'
+Ok 'none (same name, other folder)' ($null -eq (Select-OpenPresentation @($otherLocal) $deck))
 Ok 'none (empty list)' ($null -eq (Select-OpenPresentation @() $deck))
 
 Remove-Item -LiteralPath (Join-Path $env:TEMP 'match-test') -Recurse -Force

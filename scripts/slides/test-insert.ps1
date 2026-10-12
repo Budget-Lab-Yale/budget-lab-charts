@@ -82,16 +82,23 @@ try {
     try { return (& $body $p) } finally { $p.Close() }
   }
 
-  # Flip slide 1's slide-number visibility so the copy onto the new slide is actually exercised.
+  # Set slide 1's slide-number visibility to the OPPOSITE of what a new below-title slide gets from
+  # its layout, so the copy from slide 1 is actually exercised. The layout default is read from a
+  # throwaway slide that is deleted again.
   $p0 = $pp.Presentations.Open($deck, 0, 0, 0)
   try {
-    $cur = [bool]$p0.Slides.Item(1).HeadersFooters.SlideNumber.Visible
-    $p0.Slides.Item(1).HeadersFooters.SlideNumber.Visible = -not $cur
+    $cl0 = $null
+    foreach ($d in @($p0.Designs)) { foreach ($l in @($d.SlideMaster.CustomLayouts)) { if ((-not $cl0) -and $l.Name -eq '1_Title - no content') { $cl0 = $l } } }
+    Check 'setup' ($null -ne $cl0) 'layout "1_Title - no content" not found in the template'
+    $tmp = $p0.Slides.AddSlide($p0.Slides.Count + 1, $cl0)
+    $layoutDefault = [bool]$tmp.HeadersFooters.SlideNumber.Visible
+    $tmp.Delete()
+    $p0.Slides.Item(1).HeadersFooters.SlideNumber.Visible = -not $layoutDefault
     $p0.Save()
   } finally { $p0.Close() }
   $before = Inspect { param($p) @{ n = $p.Slides.Count; num1 = (Slide-Info $p.Slides.Item(1)).num } }
   Check '1' ($null -ne $before.num1) 'slide 1 slide-number visibility could not be read'
-  Check '1' ($before.num1 -ne $cur) 'fixture flip of slide 1 slide-number visibility did not take'
+  Check '1' ($before.num1 -ne $layoutDefault) "slide 1 visibility $($before.num1) was not set opposite to the layout default $layoutDefault"
 
   # Case 1
   $r = Expect-Ok '1' @('-Deck', $deck, '-Frame', 'below-title', '-Image', $a, '-Title', 'T1', '-After', '1')
@@ -112,6 +119,7 @@ try {
   Check '1' (Test-Path -LiteralPath $r.qa) "QA PNG missing: $($r.qa)"
   Check '1' ($null -ne $info.num) 'new slide slide-number visibility could not be read'
   Check '1' ($info.num -eq $before.num1) "slide-number visibility $($info.num) differs from slide 1 ($($before.num1))"
+  Check '1' ($info.num -ne $layoutDefault) "inserted slide kept the layout default $layoutDefault, so the copy from slide 1 is unproven"
   Check '1' (Test-Path -LiteralPath $r.backup) "backup missing: $($r.backup)"
   $pb = $pp.Presentations.Open($r.backup, -1, 0, 0)
   try { $bn = $pb.Slides.Count } finally { $pb.Close() }

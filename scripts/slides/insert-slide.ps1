@@ -82,7 +82,7 @@ try {
   $backup = Join-Path $bdir ('{0}-{1}.pptx' -f [IO.Path]::GetFileNameWithoutExtension($deckPath), $stamp)
   $pres.SaveCopyAs($backup)
 
-  $added = $null
+  $added = $null; $saved = $false
   try {
     if ($After -gt 0) {
       $slide = $pres.Slides.AddSlide($After + 1, $cl)
@@ -99,17 +99,28 @@ try {
       $pic.Name = "Slide chart $($k + 1)"
     }
     $pres.Save()
-    $qa = Join-Path $env:TEMP ('slide-charts-qa-{0}-{1}.png' -f $slide.SlideIndex, $stamp)
-    $slide.Export($qa, 'PNG', 1600, 900)
-    [pscustomobject]@{ slide = $slide.SlideIndex; slides = $pres.Slides.Count; backup = $backup; qa = $qa } | ConvertTo-Json
+    $saved = $true
   } catch {
     $reason = $_.Exception.Message
-    if ($added) {
-      try { $added.Delete() } catch { }
-      throw "Insert failed and the added slide was removed: $reason"
+    if ($saved) { throw "Insert failed while saving: $reason. Backup of the original: $backup" }
+    if ($After -gt 0) {
+      if ($added) {
+        $removed = $false
+        try { $added.Delete(); $removed = $true } catch { }
+        if ($removed) { throw "Insert failed and the added slide was removed (the deck file was not saved): $reason" }
+        throw "Insert failed and the added slide could not be removed; delete it by hand or restore the backup at ${backup}: $reason"
+      }
+      throw "Insert failed before a slide was added (the deck is unchanged): $reason"
     }
-    throw "Insert failed after editing slide $Onto; restore it from the backup at $backup : $reason"
+    throw "Insert failed after editing slide $Onto; restore the deck from the backup at ${backup}: $reason"
   }
+  # The insert is saved; a QA export failure warns and does not roll it back.
+  $qa = $null
+  try {
+    $qa = Join-Path $env:TEMP ('slide-charts-qa-{0}-{1}.png' -f $slide.SlideIndex, $stamp)
+    $slide.Export($qa, 'PNG', 1600, 900)
+  } catch { Write-Warning "QA export failed (the insert is saved): $($_.Exception.Message)"; $qa = $null }
+  [pscustomobject]@{ slide = $slide.SlideIndex; slides = $pres.Slides.Count; backup = $backup; qa = $qa } | ConvertTo-Json
 } finally {
   if ($openedHere -and $pres) { try { $pres.Close() } catch { } }
   if ($started) { try { if ($pp.Presentations.Count -eq 0) { $pp.Quit() } } catch { } }

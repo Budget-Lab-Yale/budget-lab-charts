@@ -28,6 +28,16 @@ function Select-OpenPresentation {
       if ($segs.Count -ge 2 -and $segs[$segs.Count - 1] -ieq $leaf -and $segs[$segs.Count - 2] -ieq $parent) { $hits += $c }
     }
   }
+  # A deck at the library root has a local parent ("Budget Lab Sharepoint") unlike the URL's
+  # ("Shared Documents"): fall back to the file name alone, still refusing ambiguity.
+  if ($hits.Count -eq 0) {
+    foreach ($c in @($Candidates)) {
+      if ($c.FullName -match '^https?://') {
+        $segs = @([Uri]::UnescapeDataString($c.FullName).Split('/'))
+        if ($segs[$segs.Count - 1] -ieq $leaf) { $hits += $c }
+      }
+    }
+  }
   if ($hits.Count -gt 1) { throw "ambiguous: $($hits.Count) open presentations match $leaf; close the others" }
   if ($hits.Count -eq 1) { return $hits[0] }
   return $null
