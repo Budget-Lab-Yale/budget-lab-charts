@@ -1,6 +1,6 @@
 ---
 name: publishing-figures
-description: Use when adding or changing content in this repo — creating a new article collection, creating a new tracker, adding charts/figures/tables to an existing collection, or updating an existing tracker's data in place. Triggers include "add an article", "add a chart/figure/graph/table", "publish these figures", "new tracker", "update the tracker", "put this data on the site".
+description: Use when adding or changing content in this repo — creating a new article collection, creating a new tracker, adding charts/figures/tables to an existing collection, or updating an existing tracker's data in place. Triggers include "add an article", "add a chart/figure/graph/table", "publish these figures", "new tracker", "update the tracker", "put this data on the site". Not for charts going onto PowerPoint slides or decks — use slide-charts.
 ---
 
 # Publishing figures in budget-lab-charts
@@ -10,6 +10,8 @@ This repo is the Budget Lab's published-figures archive: one folder per figure
 and built automatically by CI. Folder names and slugs are **permanent public ids** — the
 central risk in this workflow is writing identity or data you had to guess at. When in doubt,
 ask before writing files.
+
+For slides or decks, stop and use the slide-charts skill. Nothing for a slide belongs in charts/.
 
 ## Route by task
 

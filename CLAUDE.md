@@ -3,6 +3,7 @@
 The Budget Lab's published-figures archive: chart/table specs + data, built and published by
 CI. The chart engine is a pinned dependency; this repo is content only.
 
+- **Charts for slides/decks**: use the slide-charts skill (.claude/skills/slide-charts/). It never writes to charts/.
 - **Adding or updating content** (articles, trackers, figures, tables, tracker data): use the
   `publishing-figures` skill (`.claude/skills/publishing-figures/`). It covers the interview,
   data reshaping, and verification workflow.
@@ -77,3 +78,4 @@ prompts (see the `gpt-review` skill). Add to it when a bug or a review reveals a
   The reason this matters: `loading="lazy"` on the chart iframe was a silent archive-wide defect,
   because a non-scrolling renderer (Doppio PDF builds, card scrapers) never brings a below-fold
   iframe near the viewport. See the comment at that assignment for the measurements.
+- **scripts/slides/ never reads the working tree under charts/, never writes under charts/, never runs git writes against the archive, and its outputs never enter the archive.** Archived figures are read from origin/main with `git show` (after a `git fetch origin main`). Working files live beside the deck. Enforced by assertOutsideArchive in scripts/slides/paths.mjs (tested by paths.test.mjs), which every script that writes files calls before writing.
