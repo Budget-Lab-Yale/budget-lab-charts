@@ -21,7 +21,8 @@
     "test": "node --test --test-concurrency=1"
   },
   "dependencies": {
-    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v1.16.3"
+    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v1.16.3",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "playwright": "^1.61.0"
