@@ -31,15 +31,20 @@ export function checkEngineVersion(version) {
   const ok = !!version && compareVersions(version, MIN_ENGINE) >= 0;
   return result(`Engine version >= ${MIN_ENGINE}`, ok, ENGINE_FIX, version ? `found ${version}` : "version unreadable");
 }
-export function checkBundle(js, error) {
-  const ok = typeof js === "string" && js.includes("buildExportSvg");
-  return result("Engine bundle exposes buildExportSvg", ok, ENGINE_FIX, error);
+// `exposed` is the runtime result of `typeof BudgetLabChart.buildExportSvg === "function"`.
+export function checkBundle(exposed, error) {
+  return result("Engine bundle exposes buildExportSvg", exposed === true, ENGINE_FIX, error);
 }
 export function checkChromium(probe) {
   return result("Playwright Chromium launches", !!probe?.ok, "npx playwright install chromium", probe?.error);
 }
+// `probe.faces` is the statuses of the faces `document.fonts.load("800 22px Figtree")` returned.
+// An empty list means no Figtree face matched, which `document.fonts.check()` would call a pass.
+export function figtreeLoaded(faces) {
+  return Array.isArray(faces) && faces.length > 0 && faces.every((s) => s === "loaded");
+}
 export function checkFigtree(probe) {
-  const ok = !!probe?.ok && !!probe.loaded;
+  const ok = !!probe?.ok && figtreeLoaded(probe.faces);
   return result("Figtree loads", ok, "chart CSS failed to load Figtree — rerun npm ci", probe?.error);
 }
 export function checkPowerPoint(probe) {
@@ -88,29 +93,52 @@ function readBundle(repoRoot) {
   }
 }
 
-async function probeBrowser(css) {
+const firstLine = (e) => String(e.message).split(/\r?\n/)[0];
+
+async function probeBrowser(js, css) {
   let browser;
   try {
     const { chromium } = await import("playwright");
     browser = await chromium.launch({ args: ["--no-sandbox"] });
   } catch (e) {
-    return { chromium: { ok: false, error: e.message.split("\n")[0] }, figtree: { ok: false, error: "Chromium unavailable" } };
+    const error = firstLine(e);
+    return {
+      chromium: { ok: false, error },
+      figtree: { ok: false, error: "Chromium unavailable" },
+      bundle: { exposed: false, error: "Chromium unavailable" },
+    };
   }
+  const out = { chromium: { ok: true } };
   try {
-    if (!css) return { chromium: { ok: true }, figtree: { ok: false, error: "chart CSS unavailable" } };
     const page = await browser.newPage();
-    await page.setContent(`<style>${css}</style><span style="font:800 22px Figtree">Warm-up 123</span>`);
-    const loaded = await page.evaluate(async () => {
-      await document.fonts.load("800 22px Figtree");
-      await document.fonts.ready;
-      return document.fonts.check("800 22px Figtree");
-    });
-    return { chromium: { ok: true }, figtree: { ok: true, loaded } };
+    if (css) {
+      await page.setContent(`<style>${css}</style><span style="font:800 22px Figtree">Warm-up 123</span>`);
+      try {
+        const faces = await page.evaluate(async () => (await document.fonts.load("800 22px Figtree")).map((f) => f.status));
+        out.figtree = { ok: true, faces };
+      } catch (e) {
+        out.figtree = { ok: false, error: firstLine(e) };
+      }
+    } else {
+      out.figtree = { ok: false, error: "chart CSS unavailable" };
+    }
+    if (js) {
+      try {
+        await page.addScriptTag({ content: js });
+        const exposed = await page.evaluate(
+          () => typeof BudgetLabChart !== "undefined" && typeof BudgetLabChart.buildExportSvg === "function",
+        );
+        out.bundle = { exposed };
+      } catch (e) {
+        out.bundle = { exposed: false, error: firstLine(e) };
+      }
+    }
   } catch (e) {
-    return { chromium: { ok: true }, figtree: { ok: false, error: e.message.split("\n")[0] } };
+    out.figtree ??= { ok: false, error: firstLine(e) };
   } finally {
     await browser.close();
   }
+  return out;
 }
 
 function probePowerPoint() {
@@ -121,12 +149,12 @@ function probePowerPoint() {
 export async function runPreflight(repoRoot = REPO_ROOT) {
   const installed = existsSync(join(repoRoot, "node_modules", "budget-lab-chart-engine"));
   const bundle = installed ? readBundle(repoRoot) : { error: "engine not installed" };
-  const browser = await probeBrowser(bundle.css);
+  const browser = await probeBrowser(bundle.js, bundle.css);
   return [
     checkNode(process.version),
     checkEngineInstalled(installed),
     checkEngineVersion(readEngineVersion(repoRoot)),
-    checkBundle(bundle.js, bundle.error),
+    checkBundle(browser.bundle?.exposed ?? false, bundle.error ?? browser.bundle?.error),
     checkChromium(browser.chromium),
     checkFigtree(browser.figtree),
     checkPowerPoint(probePowerPoint()),

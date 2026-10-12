@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   checkNode, checkEngineInstalled, checkEngineVersion, checkBundle,
   checkChromium, checkFigtree, checkPowerPoint, checkPlatform,
-  compareVersions, formatResults, exitCode,
+  compareVersions, figtreeLoaded, formatResults, exitCode,
 } from "./preflight.mjs";
 
 test("compareVersions", () => {
@@ -38,12 +38,13 @@ test("checkEngineVersion", () => {
 });
 
 test("checkBundle", () => {
-  assert.equal(checkBundle("var x=1;function buildExportSvg(){}").ok, true);
-  const bad = checkBundle("var x=1;");
+  assert.equal(checkBundle(true).ok, true);
+  const bad = checkBundle(false);
   assert.equal(bad.ok, false);
-  assert.match(bad.fix, /git pull, then npm ci/);
-  assert.equal(checkBundle(null, "boom").ok, false);
-  assert.match(checkBundle(null, "boom").detail, /boom/);
+  assert.match(bad.fix, /git pull, then npm ci \(the repo must pin v1\.17\.0\+\)/);
+  assert.equal(checkBundle(undefined).ok, false);
+  assert.equal(checkBundle(false, "boom").ok, false);
+  assert.match(checkBundle(false, "boom").detail, /boom/);
 });
 
 test("checkChromium", () => {
@@ -54,9 +55,11 @@ test("checkChromium", () => {
 });
 
 test("checkFigtree", () => {
-  assert.equal(checkFigtree({ ok: true, loaded: true }).ok, true);
-  const bad = checkFigtree({ ok: true, loaded: false });
+  assert.equal(checkFigtree({ ok: true, faces: ["loaded", "loaded"] }).ok, true);
+  const bad = checkFigtree({ ok: true, faces: [] });
   assert.equal(bad.ok, false);
+  assert.equal(checkFigtree({ ok: true, faces: ["loaded", "error"] }).ok, false);
+  assert.equal(checkFigtree({ ok: true, faces: ["loading"] }).ok, false);
   assert.match(bad.fix, /Figtree — rerun npm ci/);
   assert.equal(checkFigtree({ ok: false, error: "x" }).ok, false);
 });
@@ -88,4 +91,11 @@ test("formatResults and exitCode", () => {
   assert.match(out, /do the thing/);
   assert.equal(exitCode(results), 1);
   assert.equal(exitCode([results[0]]), 0);
+});
+
+test("figtreeLoaded requires a non-empty list of loaded faces", () => {
+  assert.equal(figtreeLoaded(["loaded"]), true);
+  assert.equal(figtreeLoaded([]), false);
+  assert.equal(figtreeLoaded(undefined), false);
+  assert.equal(figtreeLoaded(["loaded", "unloaded"]), false);
 });
