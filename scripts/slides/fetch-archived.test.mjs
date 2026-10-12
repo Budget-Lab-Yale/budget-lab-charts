@@ -35,6 +35,26 @@ test("resolves <slug>/<figure> by search", () => {
   } finally { rmSync(base, { recursive: true, force: true }); }
 });
 
+test("resolves <collection slug>/<figure> when the slug differs from the folder name", () => {
+  // article.yaml says slug: "emp-dispersion"; the folder is emp-dispersion-graphs.
+  const base = mkdtempSync(join(tmpdir(), "slides fetch "));
+  try {
+    const r = run(["emp-dispersion/lfp-by-education", "--to", join(base, "e")]);
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(readSource(join(base, "e")).ref, "articles/2026/09/emp-dispersion-graphs/lfp-by-education");
+    assert.ok(existsSync(join(base, "e", "data.csv")));
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});
+
+test("a slug match still needs the figure to exist", () => {
+  const base = mkdtempSync(join(tmpdir(), "slides fetch "));
+  try {
+    const r = run(["emp-dispersion/no-such-figure", "--to", join(base, "e")]);
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /No figure matches/);
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});
+
 test("rejects table figures", () => {
   const base = mkdtempSync(join(tmpdir(), "slides fetch "));
   try {

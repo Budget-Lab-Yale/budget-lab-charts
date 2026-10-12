@@ -16,6 +16,28 @@ function exists(rev) {
   try { git(["cat-file", "-e", rev]); return true; } catch { return false; }
 }
 
+// <slug> as a collection's `slug:` (the gallery id), which can differ from its folder name:
+// emp-dispersion lives in emp-dispersion-graphs/.
+function bySlug(ref, files) {
+  const cut = ref.indexOf("/");
+  if (cut <= 0) return [];
+  const slug = ref.slice(0, cut);
+  const figure = ref.slice(cut + 1);
+  const have = new Set(files);
+  const hits = [];
+  for (const f of files) {
+    const m = f.match(/^charts\/(.+)\/(?:article|tracker)\.yaml$/);
+    if (!m) continue;
+    let meta;
+    try { meta = parse(gitText(["show", `origin/main:${f}`])); } catch { continue; }
+    if (meta?.slug !== slug) continue;
+    for (const kind of ["chart", "table"]) {
+      if (have.has(`charts/${m[1]}/${figure}/${kind}.yaml`)) hits.push({ ref: `${m[1]}/${figure}`, kind });
+    }
+  }
+  return hits;
+}
+
 export function resolveRef(input) {
   const ref = input.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "").replace(/^charts\//, "");
   if (exists(`origin/main:charts/${ref}/chart.yaml`)) return { ref, kind: "chart" };
@@ -26,6 +48,7 @@ export function resolveRef(input) {
     const m = f.match(/^charts\/(.+)\/(chart|table)\.yaml$/);
     if (m && (`/${m[1]}`).endsWith(`/${ref}`)) hits.push({ ref: m[1], kind: m[2] });
   }
+  if (hits.length === 0) hits.push(...bySlug(ref, files));
   if (hits.length === 0) throw new Error(`No figure matches "${input}" on origin/main.`);
   if (hits.length > 1) throw new Error(`"${input}" is ambiguous; matches:\n  ${hits.map((h) => h.ref).join("\n  ")}`);
   return hits[0];
