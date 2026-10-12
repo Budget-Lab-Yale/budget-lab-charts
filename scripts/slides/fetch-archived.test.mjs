@@ -68,3 +68,79 @@ test("writeSource merges", () => {
     assert.deepEqual(readSource(base), { a: 1, b: 2 });
   } finally { rmSync(base, { recursive: true, force: true }); }
 });
+
+import { writeFileSync, readFileSync, symlinkSync } from "node:fs";
+import { localDataFile, writeFigure } from "./fetch-archived.mjs";
+
+const bytes = (s) => Buffer.from(s, "utf-8");
+
+test("localDataFile: string and { file } are local; URL and other objects are not", () => {
+  assert.equal(localDataFile("data.csv"), "data.csv");
+  assert.equal(localDataFile({ file: "data.csv" }), "data.csv");
+  assert.equal(localDataFile("https://example.com/x.csv"), null);
+  assert.equal(localDataFile({ url: "https://example.com/x.csv" }), null);
+  assert.equal(localDataFile(undefined), null);
+  assert.throws(() => localDataFile({ file: "../secret.csv" }), /bare filename/);
+  assert.throws(() => localDataFile("a/b.csv"), /bare filename/);
+  assert.throws(() => localDataFile(".."), /bare filename/);
+});
+
+test("writeFigure copies object-form data and keeps the spec as-is", () => {
+  const base = mkdtempSync(join(tmpdir(), "slides wf — it's "));
+  try {
+    const spec = "data:\n  file: data.csv\n";
+    writeFigure(join(base, "w"), bytes(spec), () => bytes("a,b\n1,2\n"), { origin: "archived" });
+    assert.equal(readFileSync(join(base, "w", "chart.yaml"), "utf-8"), spec);
+    assert.equal(readFileSync(join(base, "w", "data.csv"), "utf-8"), "a,b\n1,2\n");
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});
+
+test("writeFigure refuses { file: ../secret.csv } and leaves an existing chart.yaml untouched", () => {
+  const base = mkdtempSync(join(tmpdir(), "slides wf "));
+  try {
+    const w = join(base, "w");
+    mkdirSync(w);
+    writeFileSync(join(w, "chart.yaml"), "original");
+    assert.throws(() => writeFigure(w, bytes("data:\n  file: ../secret.csv\n"), () => bytes("x"), {}), /bare filename/);
+    assert.equal(readFileSync(join(w, "chart.yaml"), "utf-8"), "original");
+    // a failing blob read also leaves it untouched
+    assert.throws(() => writeFigure(w, bytes("data: data.csv\n"), () => { throw new Error("missing blob"); }, {}), /missing blob/);
+    assert.equal(readFileSync(join(w, "chart.yaml"), "utf-8"), "original");
+    assert.equal(readSource(w), null);
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});
+
+function linkOrSkip(t, target, path) {
+  try { symlinkSync(target, path); return true; }
+  catch (e) { t.skip(`cannot create symlinks here (${e.code})`); return false; }
+}
+
+test("writeFigure refuses to write through a symlink into the archive", (t) => {
+  const base = mkdtempSync(join(tmpdir(), "slides link "));
+  try {
+    const fakeRoot = join(base, "repo");
+    const archived = join(fakeRoot, "charts", "a", "chart.yaml");
+    mkdirSync(join(fakeRoot, "charts", "a"), { recursive: true });
+    writeFileSync(archived, "published");
+    const w = join(base, "w");
+    mkdirSync(w);
+    if (!linkOrSkip(t, archived, join(w, "chart.yaml"))) return;
+    assert.throws(() => writeFigure(w, bytes("x: 1\n"), () => bytes(""), {}, fakeRoot), /archive/);
+    assert.equal(readFileSync(archived, "utf-8"), "published");
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});
+
+test("writeSource refuses to write through a symlink into the archive", (t) => {
+  const base = mkdtempSync(join(tmpdir(), "slides link "));
+  try {
+    const fakeRoot = join(base, "repo");
+    const archived = join(fakeRoot, "charts", "a", "source.json");
+    mkdirSync(join(fakeRoot, "charts", "a"), { recursive: true });
+    writeFileSync(archived, "{}");
+    const w = join(base, "w");
+    mkdirSync(w);
+    if (!linkOrSkip(t, archived, join(w, "source.json"))) return;
+    assert.throws(() => writeSource(w, { a: 1 }, fakeRoot), /archive/);
+    assert.equal(readFileSync(archived, "utf-8"), "{}");
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});

@@ -21,7 +21,7 @@ export function resolveRef(input) {
   const ref = input.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "").replace(/^charts\//, "");
   if (exists(`origin/main:charts/${ref}/chart.yaml`)) return { ref, kind: "chart" };
   if (exists(`origin/main:charts/${ref}/table.yaml`)) return { ref, kind: "table" };
-  const files = gitText(["ls-tree", "-r", "--name-only", "origin/main", "charts"]).split("\n");
+  const files = gitText(["ls-tree", "-r", "-z", "--name-only", "origin/main", "charts"]).split("\0");
   const hits = [];
   for (const f of files) {
     const m = f.match(/^charts\/(.+)\/(chart|table)\.yaml$/);
@@ -32,23 +32,39 @@ export function resolveRef(input) {
   return hits[0];
 }
 
-export function fetchArchived(input, to) {
-  assertOutsideArchive(to);
+// A string or { file } names a local file; a URL string or any other object is left for loadData.
+export function localDataFile(data) {
+  const name = typeof data === "string" ? data
+    : (data && typeof data === "object" && typeof data.file === "string" ? data.file : null);
+  if (name === null || /^[a-z][a-z0-9+.-]*:\/\//i.test(name)) return null;
+  if (name === "" || name === "." || name === ".." || /[\\/]/.test(name)) {
+    throw new Error(`Unsupported data path "${name}": only a bare filename in the figure's folder is allowed.`);
+  }
+  return name;
+}
+
+// Validate the spec's data reference and read every blob before creating the folder or writing anything.
+export function writeFigure(to, specText, readData, source, repoRoot = REPO_ROOT) {
+  const spec = parse(specText.toString("utf-8"));
+  const dataName = localDataFile(spec?.data);
+  const targets = [["chart.yaml", specText]];
+  if (dataName) targets.push([dataName, readData(dataName)]);
+  const dir = resolve(to);
+  for (const [name] of targets) assertOutsideArchive(join(dir, name), repoRoot);
+  mkdirSync(dir, { recursive: true });
+  for (const [name, bytes] of targets) writeFileSync(join(dir, name), bytes);
+  writeSource(dir, source, repoRoot);
+  return dir;
+}
+
+export function fetchArchived(input, to, repoRoot = REPO_ROOT) {
+  assertOutsideArchive(to, repoRoot);
   git(["fetch", "origin", "main", "--quiet"]);
   const commit = gitText(["rev-parse", "origin/main"]).trim();
   const { ref, kind } = resolveRef(input);
   if (kind === "table") throw new Error(`${ref} is a table figure; tables are not supported as slide charts.`);
   const specText = git(["show", `origin/main:charts/${ref}/chart.yaml`]);
-  const spec = parse(specText.toString("utf-8"));
-  const dir = resolve(to);
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "chart.yaml"), specText);
-  const data = spec?.data;
-  if (typeof data === "string" && !/^[a-z][a-z0-9+.-]*:\/\//i.test(data)) {
-    if (/[\\\/]/.test(data) || data === "..") throw new Error(`Unsupported data path "${data}" in ${ref}.`);
-    writeFileSync(join(dir, data), git(["show", `origin/main:charts/${ref}/${data}`]));
-  }
-  writeSource(dir, { origin: "archived", ref, commit });
+  const dir = writeFigure(to, specText, (name) => git(["show", `origin/main:charts/${ref}/${name}`]), { origin: "archived", ref, commit }, repoRoot);
   return { dir, ref, commit };
 }
 

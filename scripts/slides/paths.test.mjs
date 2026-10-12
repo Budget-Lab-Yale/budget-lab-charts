@@ -31,3 +31,12 @@ test("accepts a SharePoint-style path with em dash and apostrophe", () => {
     rmSync(base, { recursive: true, force: true });
   }
 });
+
+test("rejects a directory whose name merely starts with '..' inside charts/", () => {
+  assert.throws(() => assertOutsideArchive(join(REPO_ROOT, "charts", "..slide-work", "new")), /archive/);
+  assert.throws(() => assertOutsideArchive(join(REPO_ROOT, "charts", "..foo", "x")), /archive/);
+});
+
+test("rejects a raw path reaching charts/ via .. (not normalised by join)", () => {
+  assert.throws(() => assertOutsideArchive(REPO_ROOT + "/scripts/../charts/x"), /archive/);
+});
