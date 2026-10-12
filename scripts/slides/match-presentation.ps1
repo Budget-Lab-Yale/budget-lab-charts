@@ -1,5 +1,8 @@
-﻿# Pure matcher (no COM): pick which open presentation is the deck at $DeckPath.
-# Candidates are objects with FullName and Name (PowerPoint Presentation objects, or test stubs).
+﻿# Pure matcher (no COM, no registry): pick which open presentation is the deck at $DeckPath.
+# Candidates: objects with FullName and Name (PowerPoint Presentation objects, or test stubs).
+# Mappings: objects with MountPoint (local synced root) and UrlNamespace (its https root), as
+# OneDrive records them under HKCU:\Software\SyncEngines\Providers\OneDrive\<id>.
+# No name-only or parent-only matching: a same-name deck elsewhere must never be picked.
 function Get-NormalizedLocalPath([string]$p) {
   $full = $p
   try { $full = [IO.Path]::GetFullPath($p) } catch { }
@@ -8,34 +11,35 @@ function Get-NormalizedLocalPath([string]$p) {
 }
 
 function Select-OpenPresentation {
-  param($Candidates, [string]$DeckPath)
+  param($Candidates, [string]$DeckPath, $Mappings = @())
   $local = Get-NormalizedLocalPath $DeckPath
   $leaf = Split-Path -Leaf $local
-  $parent = Split-Path -Leaf (Split-Path -Parent $local)
 
-  # An exact local match wins outright.
+  # 1. An exact local match wins outright.
   foreach ($c in @($Candidates)) {
     if ($c.FullName -notmatch '^https?://') {
       if ((Get-NormalizedLocalPath $c.FullName) -ieq $local) { return $c }
     }
   }
 
-  # Cloud-synced decks report an https URL: require the parent folder and file name to match.
+  # 2. Longest MountPoint that is a path-segment prefix of the deck path.
+  $best = $null; $bestMount = ''
+  foreach ($m in @($Mappings)) {
+    if (-not $m.MountPoint -or -not $m.UrlNamespace) { continue }
+    $mp = (Get-NormalizedLocalPath ([string]$m.MountPoint)).TrimEnd('\')
+    if ($local.Length -gt $mp.Length -and $local.StartsWith($mp + '\', [StringComparison]::OrdinalIgnoreCase)) {
+      if ($mp.Length -gt $bestMount.Length) { $best = $m; $bestMount = $mp }
+    }
+  }
+  if (-not $best) { return $null }
+
+  $rel = $local.Substring($bestMount.Length + 1).Replace('\', '/')
+  $expected = ([string]$best.UrlNamespace).TrimEnd('/') + '/' + $rel
+  $expected = [Uri]::UnescapeDataString($expected).TrimEnd('/')
   $hits = @()
   foreach ($c in @($Candidates)) {
     if ($c.FullName -match '^https?://') {
-      $segs = @([Uri]::UnescapeDataString($c.FullName).Split('/'))
-      if ($segs.Count -ge 2 -and $segs[$segs.Count - 1] -ieq $leaf -and $segs[$segs.Count - 2] -ieq $parent) { $hits += $c }
-    }
-  }
-  # A deck at the library root has a local parent ("Budget Lab Sharepoint") unlike the URL's
-  # ("Shared Documents"): fall back to the file name alone, still refusing ambiguity.
-  if ($hits.Count -eq 0) {
-    foreach ($c in @($Candidates)) {
-      if ($c.FullName -match '^https?://') {
-        $segs = @([Uri]::UnescapeDataString($c.FullName).Split('/'))
-        if ($segs[$segs.Count - 1] -ieq $leaf) { $hits += $c }
-      }
+      if ([Uri]::UnescapeDataString($c.FullName).TrimEnd('/') -ieq $expected) { $hits += $c }
     }
   }
   if ($hits.Count -gt 1) { throw "ambiguous: $($hits.Count) open presentations match $leaf; close the others" }

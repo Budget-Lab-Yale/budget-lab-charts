@@ -46,12 +46,24 @@ function Test-HasTitlePlaceholder($shapes) {
   return $false
 }
 
+# OneDrive records each synced root (local MountPoint <-> https UrlNamespace) in the registry.
+function Get-OneDriveMappings {
+  $out = @()
+  $root = 'HKCU:\Software\SyncEngines\Providers\OneDrive'
+  if (-not (Test-Path -LiteralPath $root)) { return , $out }
+  foreach ($k in @(Get-ChildItem -LiteralPath $root -ErrorAction SilentlyContinue)) {
+    $v = Get-ItemProperty -LiteralPath $k.PSPath -ErrorAction SilentlyContinue
+    if ($v -and $v.MountPoint -and $v.UrlNamespace) { $out += [pscustomobject]@{ MountPoint = [string]$v.MountPoint; UrlNamespace = [string]$v.UrlNamespace } }
+  }
+  return , $out
+}
+
 $started = $false
 try { $pp = [Runtime.InteropServices.Marshal]::GetActiveObject('PowerPoint.Application') }
 catch { $pp = New-Object -ComObject PowerPoint.Application; $started = $true }
 $pres = $null; $openedHere = $false
 try {
-  $pres = Select-OpenPresentation -Candidates @($pp.Presentations) -DeckPath $deckPath
+  $pres = Select-OpenPresentation -Candidates @($pp.Presentations) -DeckPath $deckPath -Mappings (Get-OneDriveMappings)
   if (-not $pres) { $pres = $pp.Presentations.Open($deckPath, $false, $false, $false); $openedHere = $true }
   if ([math]::Abs($pres.PageSetup.SlideWidth - 960) -gt 1 -or [math]::Abs($pres.PageSetup.SlideHeight - 540) -gt 1) {
     throw 'This deck is not 16:9 (13.333 x 7.5 in). Only TBL 16:9 decks are supported.'
@@ -102,7 +114,10 @@ try {
     $saved = $true
   } catch {
     $reason = $_.Exception.Message
-    if ($saved) { throw "Insert failed while saving: $reason. Backup of the original: $backup" }
+    if ($saved) {
+      if ($openedHere) { throw "Insert failed while saving: $reason. Backup of the original: $backup" }
+      throw "Insert failed while saving: $reason. The deck is open in your PowerPoint window with the edits unsaved; the original is backed up at $backup"
+    }
     if ($After -gt 0) {
       if ($added) {
         $removed = $false
