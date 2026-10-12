@@ -3,13 +3,14 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { REPO_ROOT } from "../lib.mjs";
-import { altText, resolveTitle } from "./alt-text.mjs";
-import { overflowError, widthError } from "./render-slide.mjs";
+import { altText, effectiveSelections, resolveTitle } from "./alt-text.mjs";
+import { overflowError, paletteFindings, widthError } from "./render-slide.mjs";
+import { buildPalette } from "../palette-lint.mjs";
 
 const SCRIPT = fileURLToPath(new URL("./render-slide.mjs", import.meta.url));
 const FIXTURES = fileURLToPath(new URL("./fixtures/", import.meta.url));
@@ -54,12 +55,17 @@ const JOBS = {
   unknown: ["unknown-field", ["--frame", "full"]],
   short: ["short-bars", ["--frame", "full", "--keep-source"]],
   timeline: ["timeline", ["--frame", "half"]],
+  accent: ["accent", ["--frame", "below-title"]],
+  navyNew: ["navy-new-data", ["--frame", "full"]],
+  navyTool: ["navy-interactive", ["--frame", "full"]],
 };
 
 before(async () => {
   root = mkdtempSync(join(tmpdir(), "Budget Lab Sharepoint — Russell Sage's deck "));
   await Promise.all(Object.entries(JOBS).map(async ([key, [fixture, args]]) => {
     const dir = stage(fixture);
+    // An earlier render that a failed re-render must not leave behind.
+    if (key === "tall" || key === "navyNew") for (const ext of ["png", "svg"]) writeFileSync(join(dir, `${fixture}.${ext}`), "stale");
     runs[key] = { dir, name: fixture, ...(await run([dir, ...args])) };
   }));
 }, { timeout: 240_000 });
@@ -91,19 +97,34 @@ test("2. half frame, 30 horizontal bars: exit 1, both heights, row-count advice,
   assert.ok(+r.stderr.match(/\((\d+) > 618 px\)/)[1] > 720);
   assert.doesNotMatch(r.stderr, /--frame full/);
   assert.doesNotMatch(r.stderr, NO_STACK);
-  assert.equal(existsSync(out("tall", "png")), false, "no clipped PNG is written");
+  assert.equal(existsSync(out("tall", "png")), false, "no clipped PNG is written, and the stale one is gone");
   assert.equal(existsSync(out("tall", "svg")), false);
+  assert.match(r.stderr, /The earlier tall-bars\.png and tall-bars\.svg were removed/);
 });
 
-test("3. title token resolves to the option label in the SVG and alt_text", () => {
+test("3. title token resolves to the stored selection's label in the SVG and alt_text", () => {
   const r = runs.token;
   assert.equal(r.code, 0, r.stderr);
   const text = svgText(readFileSync(out("token", "svg"), "utf8"));
-  assert.match(text, /by Sector/);
-  assert.doesNotMatch(text, /\{/);
+  assert.match(text, /by Trading Partner/);
+  assert.doesNotMatch(text, /\{|by Sector|by country/);
   const alt = source(r.dir).alt_text;
-  assert.match(alt, /by Sector/);
-  assert.doesNotMatch(alt, /\{|by sector/);
+  assert.match(alt, /by Trading Partner/);
+  assert.doesNotMatch(alt, /\{|by Sector|by country/);
+});
+
+test("3b. no stored selection: default label in title and alt_text, and the option's colour accent", () => {
+  const r = runs.accent;
+  assert.equal(r.code, 0, r.stderr);
+  const svg = readFileSync(out("accent", "svg"), "utf8");
+  assert.match(svgText(svg), /by Sector/);
+  assert.match(source(r.dir).alt_text, /by Sector/);
+  const palette = buildPalette(REPO_ROOT);
+  const red = [...palette.hexToNames].find(([, names]) => names.includes("red"))[0];
+  const blue = [...palette.hexToNames].find(([, names]) => names.includes("blue"))[0];
+  const strokes = [...svg.matchAll(/stroke="(#[0-9a-fA-F]{6})"/g)].map((m) => m[1].toLowerCase());
+  assert.ok(strokes.includes(red), `the line takes the default option's red accent (${red}); strokes: ${[...new Set(strokes)]}`);
+  assert.ok(!strokes.includes(blue), "the line is not the ramp's default blue");
 });
 
 test("4. unknown field: exit 1 with the validator message and the engine-version sentence", () => {
@@ -168,7 +189,59 @@ test("overflow and width messages depend on the case", () => {
   assert.match(overflowError(line, [], 800, "full", full, frames), /Try fewer categories, or small_multiples\.columns\./);
   const faceted = { ...hbar, columns: { ...hbar.columns, facet: "f" } };
   assert.match(overflowError(faceted, [{ f: "a", c: "x" }, { f: "b", c: "x" }], 700, "half", half, frames), /\(2 rows\)/);
-  assert.equal(widthError({ chartType: "timeline" }, 640.5, "half", half), null);
+  assert.equal(widthError({ chartType: "timeline" }, 640, "half", half), null);
   assert.equal(widthError({ chartType: "timeline" }, 1000, "half", half),
     "Timeline charts keep their own width (1000 px) and can't be fitted to the half frame (640 px).");
+});
+
+test("8. palette: new data with bar_color navy fails; the same spec from an interactive tool warns", () => {
+  const bad = runs.navyNew;
+  assert.equal(bad.code, 1);
+  assert.match(bad.stderr, /house palette.*bar_color is "navy"/);
+  assert.doesNotMatch(bad.stderr, NO_STACK);
+  assert.equal(existsSync(out("navyNew", "png")), false, "the stale PNG is removed");
+  const ok = runs.navyTool;
+  assert.equal(ok.code, 0, ok.stderr);
+  assert.match(ok.stderr, /Warning: .*bar_color is "navy".*interactive tool/);
+  assert.equal(existsSync(out("navyTool", "png")), true);
+});
+
+test("palette findings by origin", () => {
+  const palette = buildPalette(REPO_ROOT);
+  const spec = { chartType: "bar", bar_color: "navy" };
+  assert.match(paletteFindings(spec, {}, "f", palette).error, /bar_color is "navy"/);
+  assert.match(paletteFindings(spec, { origin: "something" }, "f", palette).error, /bar_color/);
+  for (const origin of ["interactive", "archived"]) {
+    const r = paletteFindings(spec, { origin }, "f", palette);
+    assert.equal(r.error, null);
+    assert.match(r.warnings.join(" "), /bar_color is "navy"/);
+  }
+  assert.deepEqual(paletteFindings({ chartType: "bar", bar_color: "blue" }, {}, "f", palette), { error: null, warnings: [] });
+});
+
+test("strict frame bounds: 619 overflows a 618 frame, 618 fits; widths compare after rounding", () => {
+  const half = { width: 640, height: 618 };
+  const line = { chartType: "line" };
+  assert.match(overflowError(line, [], 619, "half", half), /\(619 > 618 px\)/);
+  assert.equal(overflowError(line, [], 618, "half", half), null);
+  assert.equal(widthError(line, 640, "half", half), null);
+  assert.equal(widthError(line, 640.4, "half", half), null);
+  assert.match(widthError(line, 641, "half", half), /\(641 px\)/);
+});
+
+test("row count uses the engine's column roles: columns.category wins over x", () => {
+  const half = { width: 640, height: 618 }, frames = { half, full: { width: 1280, height: 720 } };
+  const spec = { chartType: "bar", orientation: "horizontal", columns: { category: "cat", x: "other", value: "v" } };
+  const rows = Array.from({ length: 30 }, (_, i) => ({ cat: `C${i}`, other: "same", v: "1" }));
+  assert.match(overflowError(spec, rows, 845, "half", half, frames), /\(30 rows\)/);
+});
+
+test("effectiveSelections falls back per key", () => {
+  const spec = { title: "{a} {b}", title_selectors: {
+    a: { options: [{ id: "a1" }, { id: "a2" }], default: "a2" },
+    b: { options: [{ id: "b1" }, { id: "b2" }] },
+  } };
+  assert.deepEqual(effectiveSelections(spec, { a: "nope", b: "b2" }), { a: "a2", b: "b2" });
+  assert.deepEqual(effectiveSelections(spec, {}), { a: "a2", b: "b1" });
+  assert.equal(effectiveSelections({ title: "x" }, { a: "a1" }), undefined);
 });

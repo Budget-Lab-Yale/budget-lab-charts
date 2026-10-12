@@ -23,6 +23,19 @@ function activeOption(selector, selected) {
   return byId(selected) ?? byId(selector?.default) ?? options[0];
 }
 
+// The selections the engine resolves itself when given none: per key, a stored id that names a real
+// option, else the valid default, else the first option. Undefined without title_selectors.
+export function effectiveSelections(spec, stored = {}) {
+  const selectors = spec?.title_selectors;
+  if (!selectors || !Object.keys(selectors).length) return undefined;
+  const out = {};
+  for (const [key, selector] of Object.entries(selectors)) {
+    const option = activeOption(selector, stored?.[key]);
+    if (option) out[key] = option.id;
+  }
+  return out;
+}
+
 export const typeName = (chartType) => (Object.hasOwn(TYPE_NAMES, chartType) ? TYPE_NAMES[chartType] : null);
 
 export function resolveTitle(spec, selections = {}) {

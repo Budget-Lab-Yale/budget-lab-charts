@@ -1,0 +1,9 @@
+chartType: bar
+orientation: horizontal
+xAxisType: categorical
+columns:
+  x: category
+  value: value
+title: Navy Bars
+bar_color: navy
+data: data.csv

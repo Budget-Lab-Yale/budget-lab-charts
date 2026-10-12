@@ -15,13 +15,15 @@ import { REPO_ROOT, buildTblChartCmd } from "../lib.mjs";
 import { FRAMES, getFrame } from "./frames.mjs";
 import { assertOutsideArchive } from "./paths.mjs";
 import { readSource, writeSource } from "./source-json.mjs";
-import { altText, typeName } from "./alt-text.mjs";
+import { altText, effectiveSelections, typeName } from "./alt-text.mjs";
+import { buildPalette, lintPaletteUse } from "../palette-lint.mjs";
 
 const USAGE = `Usage: node scripts/slides/render-slide.mjs <working folder> --frame <${Object.keys(FRAMES).join("|")}> [--keep-source]`;
 
-// An error whose message is already the one paragraph the user should see.
+// An error whose message is already the one paragraph the user should see. `stale` marks a failure
+// of the spec or its render, after which an earlier <name>.png/.svg no longer matches the folder.
 class SlideError extends Error {}
-const fail = (msg) => { throw new SlideError(msg); };
+const fail = (msg, { stale = false } = {}) => { throw Object.assign(new SlideError(msg), { stale }); };
 const oneLine = (s) => String(s ?? "").replace(/\s*\r?\n\s*/g, " ").trim();
 const firstLine = (e) => String(e?.message ?? e).split(/\r?\n/)[0];
 
@@ -68,7 +70,7 @@ async function loadSpecAndRows(folder) {
   try {
     spec = parseYaml(readFileSync(specPath, "utf8"));
   } catch (e) {
-    fail(`chart.yaml in ${folder} is not valid YAML: ${oneLine(e.message)}`);
+    fail(`chart.yaml in ${folder} is not valid YAML: ${oneLine(e.message)}`, { stale: true });
   }
   if (!spec || typeof spec !== "object" || Array.isArray(spec)) fail(`chart.yaml in ${folder} is not a chart spec (expected a YAML mapping).`);
   if (spec.data == null) fail(`chart.yaml in ${folder} has no data field.`);
@@ -77,7 +79,7 @@ async function loadSpecAndRows(folder) {
   try {
     rows = await loadData(spec.data, { baseDir: folder });
   } catch (e) {
-    fail(`Could not load the chart's data (${typeof spec.data === "string" ? spec.data : JSON.stringify(spec.data)}) from ${folder}: ${oneLine(e.message)}`);
+    fail(`Could not load the chart's data (${typeof spec.data === "string" ? spec.data : JSON.stringify(spec.data)}) from ${folder}: ${oneLine(e.message)}`, { stale: true });
   }
   return { spec, rows };
 }
@@ -91,7 +93,26 @@ async function validate(spec, rows, source, pinned) {
   if (source?.origin === "interactive") {
     msg += ` This spec was captured from a tool that vendors engine ${source.tool_engine_version ?? "(unknown version)"}; the charts repo pins ${pinned}. Edit chart.yaml to the pinned engine's schema (ENGINE-CONFIG-SPEC.md) and rerun.`;
   }
-  fail(msg);
+  fail(msg, { stale: true });
+}
+
+// The archive's palette lint never sees a working folder, so it runs here. New data (no recognised
+// origin) must meet the house palette; an interactive capture keeps its tool's colours and an
+// archived figure was already gated by validate-all, so for those a finding is only a warning.
+export function paletteFindings(spec, source, name, palette) {
+  const { errors, warnings } = lintPaletteUse(spec, `${name}/chart.yaml`, palette);
+  const origin = source?.origin;
+  if (origin === "archived" || origin === "interactive") {
+    const why = origin === "interactive"
+      ? " (kept: the interactive tool chose this colour)"
+      : " (unexpected: archived figures already pass the archive's palette gate)";
+    return { error: null, warnings: [...errors.map((e) => `${e}${why}`), ...warnings] };
+  }
+  if (!errors.length) return { error: null, warnings };
+  return {
+    error: `chart.yaml does not meet the house palette: ${errors.map(oneLine).join(" ")} New figures take series colours from the categorical ramp (the series-colour rule in the charts repo's CLAUDE.md).`,
+    warnings,
+  };
 }
 
 // Runs in the page. Returns the export's natural size and, when it fits, the framed SVG + PNG.
@@ -107,8 +128,8 @@ async function renderInPage({ spec, rows, selections, frame }) {
   }
   const w = +svg.getAttribute("width");
   const h = +svg.getAttribute("height");
-  if (Math.abs(w - frame.width) > 1 || h > frame.height + 1) return { w, h };
-  // Pad (or round) to the frame. The export paints a white background rect over its own height;
+  if (Math.round(w) !== frame.width || h > frame.height) return { w, h };
+  // Pad to the frame. The export paints a white background rect over its own height;
   // stretch it too so the padding matches the chart's ground instead of showing as a seam.
   svg.setAttribute("width", String(frame.width));
   svg.setAttribute("height", String(frame.height));
@@ -168,7 +189,7 @@ async function renderInChromium({ js, css }, payload) {
 // A timeline keeps its own width whatever the frame says; rasterising it onto the frame's canvas
 // would clip it or leave a gap, so it is refused.
 export function widthError(spec, w, frameName, frame) {
-  if (Math.abs(w - frame.width) <= 1) return null;
+  if (Math.round(w) === frame.width) return null;
   return `${typeName(spec.chartType) ?? "These"} charts keep their own width (${w} px) and can't be fitted to the ${frameName} frame (${frame.width} px).`;
 }
 
@@ -179,17 +200,18 @@ function rowSized(spec) {
   return spec.chartType === "dumbbell" && spec.orientation !== "vertical";
 }
 function rowCount(spec, rows) {
+  // Same column roles as the engine's resolveColumns (src/spec/columns.ts).
   const c = spec.columns ?? {};
-  const x = (spec.chartType === "dumbbell" && c.category) || c.x || "time";
-  const group = c.section ?? c.facet;
+  const x = c.category ?? c.x ?? "time";
+  const group = (c.section != null && c.section !== "" ? c.section : null) ?? c.facet ?? null;
   return new Set(rows.map((r) => (group ? JSON.stringify([r[group], r[x]]) : String(r[x])))).size;
 }
 
 export function overflowError(spec, rows, h, frameName, frame, frames = FRAMES) {
-  if (h <= frame.height + 1) return null;
+  if (h <= frame.height) return null;
   const head = `Rendered chart is taller than the ${frameName} frame (${h} > ${frame.height} px).`;
   const full = frames.full;
-  const fitsFull = frameName !== "full" && full && h <= full.height + 1;
+  const fitsFull = frameName !== "full" && full && h <= full.height;
   if (rowSized(spec)) {
     const n = rowCount(spec, rows);
     return `${head} A horizontal ${typeName(spec.chartType).toLowerCase()} chart's height comes from its number of rows (${n} rows), not the frame, so it needs fewer categories or splitting across two slides.` +
@@ -228,19 +250,45 @@ export async function renderSlide({ folder: folderArg, frame: frameName, keepSou
   } catch (e) {
     fail(`source.json in ${folder} is not valid JSON: ${oneLine(e.message)}`);
   }
-  const selections = source.selections && typeof source.selections === "object" ? source.selections : {};
+  try {
+    return await renderInto({ folder, name, pngPath, svgPath, frameName, frame, keepSource, source, pinned }, repoRoot);
+  } catch (e) {
+    if (!(e instanceof SlideError && e.stale)) throw e;
+    const removed = [pngPath, svgPath].filter((p) => existsSync(p));
+    for (const p of removed) rmSync(p, { force: true });
+    if (removed.length) {
+      e.message += ` The earlier ${removed.map((p) => basename(p)).join(" and ")} ${removed.length > 1 ? "were" : "was"} removed so a stale render can't be inserted.`;
+    }
+    throw e;
+  }
+}
+
+async function renderInto({ folder, name, pngPath, svgPath, frameName, frame, keepSource, source, pinned }, repoRoot) {
+  const stored = source.selections && typeof source.selections === "object" ? source.selections : {};
   const { spec, rows } = await loadSpecAndRows(folder);
   await validate(spec, rows, source, pinned);
+  const warnings = [];
+  let palette;
+  try {
+    palette = buildPalette(repoRoot);
+  } catch (e) {
+    fail(`The house palette could not be read for the palette check: ${oneLine(e.message)}`);
+  }
+  const lint = paletteFindings(spec, source, name, palette);
+  if (lint.error) fail(lint.error, { stale: true });
+  warnings.push(...lint.warnings);
+  // Resolved here, not left to the engine: an explicit {} stops the engine resolving the default
+  // option, and with it that option's colour accent.
+  const selections = effectiveSelections(spec, stored);
   const alt = altText(spec, selections);
   if (!keepSource) { delete spec.source; delete spec.note; }
 
   const bundle = readBundle(repoRoot);
   const out = await renderInChromium(bundle, { spec, rows, selections, frame });
-  if (out.error) fail(`The engine could not render the chart: ${oneLine(out.error)}`);
+  if (out.error) fail(`The engine could not render the chart: ${oneLine(out.error)}`, { stale: true });
   const sizeError = widthError(spec, out.w, frameName, frame) ?? overflowError(spec, rows, out.h, frameName, frame);
-  if (sizeError) fail(sizeError);
-  const warnings = [];
-  if (out.h < frame.height - 1) warnings.push(`padded ${frame.height - out.h} px below the chart (it renders ${out.h} px tall in the ${frame.height} px ${frameName} frame).`);
+  if (sizeError) fail(sizeError, { stale: true });
+  if (out.h < frame.height) warnings.push(`padded ${frame.height - out.h} px below the chart (it renders ${out.h} px tall in the ${frame.height} px ${frameName} frame).`);
 
   const png = Buffer.from(out.png, "base64");
   const dims = pngDimensions(png);
