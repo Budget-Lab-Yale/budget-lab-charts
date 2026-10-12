@@ -22,7 +22,7 @@
     "slides:preflight": "node scripts/slides/preflight.mjs"
   },
   "dependencies": {
-    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#2cacc3a64eec4cca7263d53fbda0d8fa1a052fc8",
+    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#bda588f91ddfad168d396136b446cb19d3d744f7",
     "yaml": "^2.9.0"
   },
   "devDependencies": {
