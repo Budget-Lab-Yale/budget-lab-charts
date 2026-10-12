@@ -73,7 +73,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const i = args.indexOf("--to");
   const to = i >= 0 ? args[i + 1] : undefined;
   const input = args.find((a, j) => j !== i && j !== i + 1);
-  if (!input || !to) { console.error("Usage: node scripts/slides/fetch-archived.mjs <collection-path>/<figure> --to <working folder>"); process.exit(2); }
+  if (!input || !to) { console.error("Usage: node scripts/slides/fetch-archived.mjs <slug>/<figure> (or <collection-path>/<figure>) --to <working folder>"); process.exit(2); }
   try {
     const r = fetchArchived(input, to);
     console.log(`Fetched ${r.ref} @ ${r.commit.slice(0, 7)} -> ${r.dir}`);

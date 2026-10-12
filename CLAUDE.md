@@ -78,4 +78,9 @@ prompts (see the `gpt-review` skill). Add to it when a bug or a review reveals a
   The reason this matters: `loading="lazy"` on the chart iframe was a silent archive-wide defect,
   because a non-scrolling renderer (Doppio PDF builds, card scrapers) never brings a below-fold
   iframe near the viewport. See the comment at that assignment for the measurements.
-- **scripts/slides/ never reads the working tree under charts/, never writes under charts/, never runs git writes against the archive, and its outputs never enter the archive.** Archived figures are read from origin/main with `git show` (after a `git fetch origin main`). Working files live beside the deck. Enforced by assertOutsideArchive in scripts/slides/paths.mjs (tested by paths.test.mjs), which every script that writes files calls before writing.
+- **scripts/slides/ never reads the working tree under charts/, never writes under charts/, never
+  commits, checks out, or otherwise changes the working tree or branches (it only fetches
+  origin/main to read published figures), and its outputs never enter the archive.** Archived
+  figures are read from origin/main with `git show`. Working files live beside the deck. Enforced
+  by assertOutsideArchive in scripts/slides/paths.mjs (tested by paths.test.mjs), which every
+  script that writes files calls before writing.
