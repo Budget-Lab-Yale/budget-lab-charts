@@ -3,13 +3,13 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { REPO_ROOT } from "../lib.mjs";
 import { altText, effectiveSelections, resolveTitle } from "./alt-text.mjs";
-import { overflowError, paletteFindings, widthError } from "./render-slide.mjs";
+import { loadSpecAndRows, overflowError, paletteFindings, widthError } from "./render-slide.mjs";
 import { buildPalette } from "../palette-lint.mjs";
 
 const SCRIPT = fileURLToPath(new URL("./render-slide.mjs", import.meta.url));
@@ -244,4 +244,99 @@ test("effectiveSelections falls back per key", () => {
   assert.deepEqual(effectiveSelections(spec, { a: "nope", b: "b2" }), { a: "a2", b: "b2" });
   assert.deepEqual(effectiveSelections(spec, {}), { a: "a2", b: "b1" });
   assert.equal(effectiveSelections({ title: "x" }, { a: "a1" }), undefined);
+});
+
+// Input reads: chart.yaml and its data file are read only from the working folder, never the archive.
+const ARCHIVED_CSV = join(REPO_ROOT, "charts", "articles", "2026", "10", "revenue-potential-top-taxes", "capital-gains-laffer-curve", "data.csv");
+const LAFFER_SPEC = readFileSync(join(FIXTURES, "laffer", "chart.yaml"), "utf8").replace(/^data:.*$/m, "");
+
+function inputFolder(data) {
+  const dir = join(mkdtempSync(join(tmpdir(), "slides input — it's ")), "w");
+  mkdirSync(dir);
+  writeFileSync(join(dir, "chart.yaml"), `${LAFFER_SPEC}\ndata: ${JSON.stringify(data)}\n`);
+  return dir;
+}
+const cleanup = (dir) => rmSync(join(dir, ".."), { recursive: true, force: true });
+
+test("input: a bare data filename loads from the folder", async () => {
+  const dir = inputFolder("data.csv");
+  try {
+    copyFileSync(join(FIXTURES, "laffer", "data.csv"), join(dir, "data.csv"));
+    const { rows } = await loadSpecAndRows(dir);
+    assert.ok(rows.length > 0);
+  } finally { cleanup(dir); }
+});
+
+test("input: an absolute data path into the archive is refused", async () => {
+  for (const data of [ARCHIVED_CSV, { file: ARCHIVED_CSV }, ARCHIVED_CSV.replace(/\\/g, "/")]) {
+    const dir = inputFolder(data);
+    try {
+      await assert.rejects(loadSpecAndRows(dir), /only a bare filename/, JSON.stringify(data));
+    } finally { cleanup(dir); }
+  }
+});
+
+test("input: a ../ data path is refused", async () => {
+  for (const data of ["../data.csv", { file: "../data.csv" }, "..\\data.csv", "sub/data.csv"]) {
+    const dir = inputFolder(data);
+    try {
+      writeFileSync(join(dir, "..", "data.csv"), readFileSync(join(FIXTURES, "laffer", "data.csv")));
+      await assert.rejects(loadSpecAndRows(dir), /only a bare filename/, JSON.stringify(data));
+    } finally { cleanup(dir); }
+  }
+});
+
+test("input: URL data is not treated as a local path", async () => {
+  // Port 9 on loopback refuses at once: the failure is the fetch, not a path refusal.
+  const dir = inputFolder({ url: "http://127.0.0.1:9/data.csv", format: "csv" });
+  try {
+    await assert.rejects(loadSpecAndRows(dir), (e) => /Could not load the chart's data/.test(e.message) && !/bare filename|archive/.test(e.message));
+  } finally { cleanup(dir); }
+});
+
+function linkOrSkip(t, target, path) {
+  try { symlinkSync(target, path); return true; }
+  catch (e) { t.skip(`cannot create symlinks here (${e.code})`); return false; }
+}
+
+test("input: a chart.yaml symlinked into a (fake) archive is refused", async (t) => {
+  const base = mkdtempSync(join(tmpdir(), "slides input link "));
+  try {
+    const fakeRoot = join(base, "repo");
+    mkdirSync(join(fakeRoot, "charts", "a"), { recursive: true });
+    writeFileSync(join(fakeRoot, "charts", "a", "chart.yaml"), `${LAFFER_SPEC}\ndata: data.csv\n`);
+    copyFileSync(join(FIXTURES, "laffer", "data.csv"), join(fakeRoot, "charts", "a", "data.csv"));
+    const w = join(base, "w");
+    mkdirSync(w);
+    copyFileSync(join(FIXTURES, "laffer", "data.csv"), join(w, "data.csv"));
+    if (!linkOrSkip(t, join(fakeRoot, "charts", "a", "chart.yaml"), join(w, "chart.yaml"))) return;
+    await assert.rejects(loadSpecAndRows(w, fakeRoot), /inside the published archive/);
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});
+
+test("input: a data file symlinked into a (fake) archive is refused", async (t) => {
+  const base = mkdtempSync(join(tmpdir(), "slides input link "));
+  try {
+    const fakeRoot = join(base, "repo");
+    mkdirSync(join(fakeRoot, "charts", "a"), { recursive: true });
+    copyFileSync(join(FIXTURES, "laffer", "data.csv"), join(fakeRoot, "charts", "a", "data.csv"));
+    const w = join(base, "w");
+    mkdirSync(w);
+    writeFileSync(join(w, "chart.yaml"), `${LAFFER_SPEC}\ndata: data.csv\n`);
+    if (!linkOrSkip(t, join(fakeRoot, "charts", "a", "data.csv"), join(w, "data.csv"))) return;
+    await assert.rejects(loadSpecAndRows(w, fakeRoot), /inside the published archive/);
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});
+
+test("input: the CLI refuses a ../ data path in one paragraph and removes the earlier render", async () => {
+  const dir = inputFolder("../data.csv");
+  try {
+    for (const ext of ["png", "svg"]) writeFileSync(join(dir, `w.${ext}`), "stale");
+    const r = await run([dir, "--frame", "full"]);
+    assert.equal(r.code, 1);
+    assert.match(r.stderr, /only a bare filename/);
+    assert.doesNotMatch(r.stderr, NO_STACK);
+    assert.equal(r.stderr.trim().split(/\r?\n/).length, 1, "one paragraph");
+    assert.equal(existsSync(join(dir, "w.png")), false);
+  } finally { cleanup(dir); }
 });

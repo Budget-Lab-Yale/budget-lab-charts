@@ -14,6 +14,7 @@ import { parse as parseYaml } from "yaml";
 import { REPO_ROOT, buildTblChartCmd } from "../lib.mjs";
 import { FRAMES, getFrame } from "./frames.mjs";
 import { assertOutsideArchive } from "./paths.mjs";
+import { localDataFile } from "./fetch-archived.mjs";
 import { readSource, writeSource } from "./source-json.mjs";
 import { altText, effectiveSelections, typeName } from "./alt-text.mjs";
 import { buildPalette, lintPaletteUse } from "../palette-lint.mjs";
@@ -63,8 +64,16 @@ function readBundle(repoRoot) {
   }
 }
 
-async function loadSpecAndRows(folder) {
+// Reading under charts/ is refused like writing there: chart.yaml is checked through any symlink,
+// and a local data source must be a bare filename in the folder (fetch-archived's rule), checked
+// again once resolved. URL data is left to loadData.
+const guardRead = (p, repoRoot) => {
+  try { assertOutsideArchive(p, repoRoot); } catch (e) { fail(e.message, { stale: true }); }
+};
+
+export async function loadSpecAndRows(folder, repoRoot = REPO_ROOT) {
   const specPath = join(folder, "chart.yaml");
+  guardRead(specPath, repoRoot);
   if (!existsSync(specPath)) fail(`No chart.yaml in ${folder}. Fetch or capture a figure into the folder first.`);
   let spec;
   try {
@@ -74,6 +83,13 @@ async function loadSpecAndRows(folder) {
   }
   if (!spec || typeof spec !== "object" || Array.isArray(spec)) fail(`chart.yaml in ${folder} is not a chart spec (expected a YAML mapping).`);
   if (spec.data == null) fail(`chart.yaml in ${folder} has no data field.`);
+  let dataName;
+  try {
+    dataName = localDataFile(spec.data);
+  } catch (e) {
+    fail(`chart.yaml in ${folder}: ${e.message} Copy the data file into the folder, or use a URL.`, { stale: true });
+  }
+  if (dataName) guardRead(resolve(folder, dataName), repoRoot);
   const { loadData } = await import("budget-lab-chart-engine/data");
   let rows;
   try {
@@ -244,6 +260,7 @@ export async function renderSlide({ folder: folderArg, frame: frameName, keepSou
   assertOutsideArchive(svgPath, repoRoot);
 
   const pinned = pinnedEngineVersion(repoRoot);
+  assertOutsideArchive(join(folder, "source.json"), repoRoot);
   let source;
   try {
     source = readSource(folder) ?? {};
@@ -265,7 +282,7 @@ export async function renderSlide({ folder: folderArg, frame: frameName, keepSou
 
 async function renderInto({ folder, name, pngPath, svgPath, frameName, frame, keepSource, source, pinned }, repoRoot) {
   const stored = source.selections && typeof source.selections === "object" ? source.selections : {};
-  const { spec, rows } = await loadSpecAndRows(folder);
+  const { spec, rows } = await loadSpecAndRows(folder, repoRoot);
   await validate(spec, rows, source, pinned);
   const warnings = [];
   let palette;
