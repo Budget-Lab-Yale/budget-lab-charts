@@ -1,9 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, rmSync, mkdirSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { REPO_ROOT } from "../lib.mjs";
 import { readSource, writeSource } from "./source-json.mjs";
 
@@ -59,17 +59,47 @@ test("unknown figure fails", () => {
   } finally { rmSync(base, { recursive: true, force: true }); }
 });
 
-test("writeSource merges", () => {
+// writeSource merges because render-slide adds its keys to what fetch or capture wrote; fetch and
+// capture themselves replace source.json (tested below).
+test("writeSource merges (render-slide's keys join the fetch/capture keys)", () => {
   const base = mkdtempSync(join(tmpdir(), "slides src "));
   try {
     assert.equal(readSource(base), null);
-    writeSource(base, { a: 1 });
-    writeSource(base, { b: 2 });
-    assert.deepEqual(readSource(base), { a: 1, b: 2 });
+    writeSource(base, { origin: "archived", ref: "r" });
+    writeSource(base, { frame: "full", alt_text: "a" });
+    assert.deepEqual(readSource(base), { origin: "archived", ref: "r", frame: "full", alt_text: "a" });
   } finally { rmSync(base, { recursive: true, force: true }); }
 });
 
-import { writeFileSync, readFileSync, symlinkSync } from "node:fs";
+// A folder that last held an interactive capture and a render of it.
+const PRIOR = {
+  origin: "interactive", url: "https://example.com/tool?x=1", captured_at: "2026-10-01T00:00:00.000Z",
+  selections: { dimension: "country" }, tool_engine_version: "1.13.0",
+  engine_version: "1.16.3", frame: "half", keep_source: true, alt_text: "Line chart: an older figure",
+};
+function seedPrior(dir) {
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "source.json"), JSON.stringify(PRIOR, null, 2));
+  for (const ext of ["png", "svg"]) writeFileSync(join(dir, `${basename(dir)}.${ext}`), "old render");
+}
+
+test("fetch replaces source.json and removes the earlier render", () => {
+  const base = mkdtempSync(join(tmpdir(), "slides fetch — it's "));
+  try {
+    const to = join(base, "Slide charts", "laffer");
+    seedPrior(to);
+    const r = run([LAFFER, "--to", to]);
+    assert.equal(r.status, 0, r.stderr);
+    const src = readSource(to);
+    assert.deepEqual(Object.keys(src).sort(), ["commit", "origin", "ref"], "replaced, not merged");
+    assert.equal(src.ref, LAFFER);
+    assert.equal(existsSync(join(to, "laffer.png")), false);
+    assert.equal(existsSync(join(to, "laffer.svg")), false);
+    assert.match(r.stderr, /Removed the earlier laffer\.png and laffer\.svg/);
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});
+
+import { readFileSync, symlinkSync } from "node:fs";
 import { localDataFile, writeFigure } from "./fetch-archived.mjs";
 
 const bytes = (s) => Buffer.from(s, "utf-8");
@@ -142,5 +172,22 @@ test("writeSource refuses to write through a symlink into the archive", (t) => {
     if (!linkOrSkip(t, archived, join(w, "source.json"))) return;
     assert.throws(() => writeSource(w, { a: 1 }, fakeRoot), /archive/);
     assert.equal(readFileSync(archived, "utf-8"), "{}");
+  } finally { rmSync(base, { recursive: true, force: true }); }
+});
+
+test("writeFigure writes source.json fresh and removes <folder>.png/.svg (no network)", () => {
+  const base = mkdtempSync(join(tmpdir(), "slides wf — it's "));
+  try {
+    const w = join(base, "my-chart");
+    seedPrior(w);
+    writeFileSync(join(w, "other.png"), "not this folder's render");
+    const r = writeFigure(w, bytes("data: data.csv\n"), () => bytes("a,b\n1,2\n"), { origin: "archived", ref: "x/y", commit: "c" });
+    assert.deepEqual(readSource(w), { origin: "archived", ref: "x/y", commit: "c" });
+    assert.deepEqual(r.removed, ["my-chart.png", "my-chart.svg"]);
+    assert.equal(existsSync(join(w, "my-chart.png")), false);
+    assert.equal(existsSync(join(w, "my-chart.svg")), false);
+    assert.equal(existsSync(join(w, "other.png")), true);
+    // Nothing to remove the second time.
+    assert.deepEqual(writeFigure(w, bytes("data: data.csv\n"), () => bytes("a,b\n"), { origin: "archived" }).removed, []);
   } finally { rmSync(base, { recursive: true, force: true }); }
 });

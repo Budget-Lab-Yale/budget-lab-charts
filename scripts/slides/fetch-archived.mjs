@@ -1,13 +1,12 @@
 // Copy an archived figure's spec (and local data file) from origin/main into a working folder.
 // Read-only against git: fetch + rev-parse + show. Never writes under charts/.
 import { execFileSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
-import { resolve, join } from "node:path";
+import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { basename, resolve, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import { REPO_ROOT } from "../lib.mjs";
 import { assertOutsideArchive } from "./paths.mjs";
-import { writeSource } from "./source-json.mjs";
 
 const git = (args, opts = {}) =>
   execFileSync("git", ["-C", REPO_ROOT, ...args], { encoding: "buffer", maxBuffer: 64 * 1024 * 1024, stdio: ["ignore", "pipe", "pipe"], ...opts });
@@ -44,17 +43,23 @@ export function localDataFile(data) {
 }
 
 // Validate the spec's data reference and read every blob before creating the folder or writing anything.
+// source.json is written fresh, not merged (writeSource merges): a fetch into a folder that held a
+// capture or an earlier render must not inherit its url/selections or alt_text/frame. The folder's
+// earlier <name>.png/.svg were rendered from what this replaces, so they are removed.
 export function writeFigure(to, specText, readData, source, repoRoot = REPO_ROOT) {
   const spec = parse(specText.toString("utf-8"));
   const dataName = localDataFile(spec?.data);
   const targets = [["chart.yaml", specText]];
   if (dataName) targets.push([dataName, readData(dataName)]);
+  targets.push(["source.json", JSON.stringify(source, null, 2) + "\n"]);
   const dir = resolve(to);
-  for (const [name] of targets) assertOutsideArchive(join(dir, name), repoRoot);
+  const renders = ["png", "svg"].map((ext) => `${basename(dir)}.${ext}`);
+  for (const name of [...targets.map(([n]) => n), ...renders]) assertOutsideArchive(join(dir, name), repoRoot);
+  const removed = renders.filter((name) => existsSync(join(dir, name)));
+  for (const name of removed) rmSync(join(dir, name), { force: true });
   mkdirSync(dir, { recursive: true });
   for (const [name, bytes] of targets) writeFileSync(join(dir, name), bytes);
-  writeSource(dir, source, repoRoot);
-  return dir;
+  return { dir, removed };
 }
 
 export function fetchArchived(input, to, repoRoot = REPO_ROOT) {
@@ -64,8 +69,8 @@ export function fetchArchived(input, to, repoRoot = REPO_ROOT) {
   const { ref, kind } = resolveRef(input);
   if (kind === "table") throw new Error(`${ref} is a table figure; tables are not supported as slide charts.`);
   const specText = git(["show", `origin/main:charts/${ref}/chart.yaml`]);
-  const dir = writeFigure(to, specText, (name) => git(["show", `origin/main:charts/${ref}/${name}`]), { origin: "archived", ref, commit }, repoRoot);
-  return { dir, ref, commit };
+  const { dir, removed } = writeFigure(to, specText, (name) => git(["show", `origin/main:charts/${ref}/${name}`]), { origin: "archived", ref, commit }, repoRoot);
+  return { dir, ref, commit, removed };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -76,6 +81,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   if (!input || !to) { console.error("Usage: node scripts/slides/fetch-archived.mjs <slug>/<figure> (or <collection-path>/<figure>) --to <working folder>"); process.exit(2); }
   try {
     const r = fetchArchived(input, to);
+    if (r.removed.length) console.error(`Removed the earlier ${r.removed.join(" and ")} (rendered from what this fetch replaced); re-render with render-slide.mjs.`);
     console.log(`Fetched ${r.ref} @ ${r.commit.slice(0, 7)} -> ${r.dir}`);
   } catch (e) {
     console.error(e.message);
