@@ -12,6 +12,13 @@ test("px aspect matches every placement aspect within 0.5%", () => {
   }
 });
 
+test("every frame carries boolean fillPanes and fitRows", () => {
+  for (const [name, f] of Object.entries(FRAMES)) {
+    assert.equal(typeof f.fillPanes, "boolean", `${name}.fillPanes`);
+    assert.equal(typeof f.fitRows, "boolean", `${name}.fitRows`);
+  }
+});
+
 test("getFrame throws naming the valid frames", () => {
   assert.throws(() => getFrame("nope"), (e) =>
     ["below-title", "full", "half"].every((n) => e.message.includes(n)));

@@ -50,7 +50,9 @@ const NO_STACK = /\n\s+at\s/;
 
 const JOBS = {
   laffer: ["laffer", ["--frame", "below-title"]],
-  tall: ["tall-bars", ["--frame", "half"]],
+  fit28: ["fit-bars", ["--frame", "below-title"]],
+  near30: ["tall-bars", ["--frame", "below-title"]],
+  tall: ["overflow-bars", ["--frame", "half"]],
   token: ["title-token", ["--frame", "below-title"]],
   unknown: ["unknown-field", ["--frame", "full"]],
   short: ["short-bars", ["--frame", "full", "--keep-source"]],
@@ -88,18 +90,34 @@ test("1. Laffer below-title: 3200x1545 PNG, 1280x618 SVG, alt_text and source.js
   assert.equal(s.keep_source, false);
 });
 
-test("2. half frame, 30 horizontal bars: exit 1, both heights, row-count advice, no PNG", () => {
+test("2. half frame, 60 horizontal bars: exit 1, both heights, minimum-spacing advice, no PNG", () => {
   const r = runs.tall;
   assert.equal(r.code, 1);
   assert.match(r.stderr, /taller than the half frame \(\d+ > 618 px\)/);
-  assert.match(r.stderr, /number of rows \(30 rows\)/);
-  // This fixture renders taller than the full frame too, so suggesting full would be wrong.
+  assert.match(r.stderr, /\(60 rows\)/);
+  assert.match(r.stderr, /minimum readable spacing/);
+  // Still taller than the full frame at the floor, so suggesting full would be wrong.
   assert.ok(+r.stderr.match(/\((\d+) > 618 px\)/)[1] > 720);
   assert.doesNotMatch(r.stderr, /--frame full/);
   assert.doesNotMatch(r.stderr, NO_STACK);
   assert.equal(existsSync(out("tall", "png")), false, "no clipped PNG is written, and the stale one is gone");
   assert.equal(existsSync(out("tall", "svg")), false);
-  assert.match(r.stderr, /The earlier tall-bars\.png and tall-bars\.svg were removed/);
+  assert.match(r.stderr, /The earlier overflow-bars\.png and overflow-bars\.svg were removed/);
+});
+
+test("2b. 28 horizontal bars fit below-title with fitRows: exactly 3200x1545, no overflow error", () => {
+  const r = runs.fit28;
+  assert.equal(r.code, 0, r.stderr);
+  assert.doesNotMatch(r.stderr, /taller/);
+  assert.deepEqual(pngSize(out("fit28", "png")), { width: 3200, height: 1545 });
+});
+
+test("2c. 30 bars at the row floor still overflow below-title by a few px; it fits full, and the message says so", () => {
+  const r = runs.near30;
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /taller than the below-title frame \(\d+ > 618 px\)/);
+  assert.match(r.stderr, /\(30 rows\).*minimum readable spacing.*--frame full/);
+  assert.equal(existsSync(out("near30", "png")), false);
 });
 
 test("3. title token resolves to the stored selection's label in the SVG and alt_text", () => {
@@ -148,6 +166,7 @@ test("6. shorter than the frame: padded to exactly 3200x1800 with a warning", ()
   assert.deepEqual(pngSize(out("short", "png")), { width: 3200, height: 1800 });
   assert.match(svgRoot(readFileSync(out("short", "svg"), "utf8")), /\bheight="720"/);
   assert.match(r.stderr, /padded \d+ px below the chart/);
+  // Few rows are padded, not stretched: fitRows never expands, so the SVG root stays at the frame.
 });
 
 test("alt-text: resolveTitle uses the selected option's label, then default, then first option", () => {
@@ -181,7 +200,7 @@ test("overflow and width messages depend on the case", () => {
   const rows = Array.from({ length: 22 }, (_, i) => ({ c: `C${i}`, v: "1" }));
   assert.equal(overflowError(hbar, rows, 618, "half", half, frames), null);
   const fits = overflowError(hbar, rows, 700, "half", half, frames);
-  assert.match(fits, /taller than the half frame \(700 > 618 px\).*\(22 rows\).*--frame full/);
+  assert.match(fits, /taller than the half frame \(700 > 618 px\).*\(22 rows\).*minimum readable spacing.*--frame full/);
   assert.doesNotMatch(overflowError(hbar, rows, 782, "half", half, frames), /--frame full/);
   assert.doesNotMatch(overflowError(hbar, rows, 782, "full", full, frames), /--frame full/);
   const line = { chartType: "line" };

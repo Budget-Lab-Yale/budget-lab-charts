@@ -137,7 +137,7 @@ async function renderInPage({ spec, rows, selections, frame }) {
   try {
     svg = BudgetLabChart.buildExportSvg(spec, rows, {
       selections,
-      frame: { width: frame.width, height: frame.height, logoTop: frame.logoTop, fillPanes: frame.fillPanes },
+      frame: { width: frame.width, height: frame.height, logoTop: frame.logoTop, fillPanes: frame.fillPanes, fitRows: frame.fitRows },
     });
   } catch (e) {
     return { error: String(e && e.message ? e.message : e) };
@@ -230,7 +230,7 @@ export function overflowError(spec, rows, h, frameName, frame, frames = FRAMES) 
   const fitsFull = frameName !== "full" && full && h <= full.height;
   if (rowSized(spec)) {
     const n = rowCount(spec, rows);
-    return `${head} A horizontal ${typeName(spec.chartType).toLowerCase()} chart's height comes from its number of rows (${n} rows), not the frame, so it needs fewer categories or splitting across two slides.` +
+    return `${head} A horizontal ${typeName(spec.chartType).toLowerCase()} chart's height comes from its number of rows (${n} rows), not the frame, and fitRows has already tightened them to the minimum readable spacing, so it needs fewer categories or splitting across two slides.` +
       (fitsFull ? ` At ${h} px it would fit the full frame (--frame full).` : "");
   }
   const tries = [frameName !== "full" ? "--frame full" : null, "fewer categories", "small_multiples.columns"].filter(Boolean);
