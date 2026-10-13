@@ -124,15 +124,38 @@ import { localDataFile, writeFigure } from "./fetch-archived.mjs";
 
 const bytes = (s) => Buffer.from(s, "utf-8");
 
-test("localDataFile: string and { file } are local; URL and other objects are not", () => {
+// The engine's loadData reads every string, and every object with a `file` key, from disk; only an
+// object without `file` is fetched, from its `url`. So only { url: "http(s)://..." } is remote.
+test("localDataFile follows loadData: strings and { file } are local, only { url: http(s) } is remote", () => {
   assert.equal(localDataFile("data.csv"), "data.csv");
   assert.equal(localDataFile({ file: "data.csv" }), "data.csv");
-  assert.equal(localDataFile("https://example.com/x.csv"), null);
   assert.equal(localDataFile({ url: "https://example.com/x.csv" }), null);
+  assert.equal(localDataFile({ url: "http://example.com/x.json", map: {} }), null);
   assert.equal(localDataFile(undefined), null);
   assert.throws(() => localDataFile({ file: "../secret.csv" }), /bare filename/);
   assert.throws(() => localDataFile("a/b.csv"), /bare filename/);
   assert.throws(() => localDataFile(".."), /bare filename/);
+  const archived = "C:\\dev\\GitHub\\budget-lab-charts\\charts\\a\\data.csv";
+  for (const s of [
+    "C://dev/GitHub/budget-lab-charts/charts/a/data.csv", // matched the old URL regex: read as a file
+    archived,
+    "file:///C:/dev/GitHub/budget-lab-charts/charts/a/data.csv",
+    "\\\\server\\share\\charts\\a\\data.csv",
+    "https://example.com/x.csv", // a string is a file path to loadData, never fetched
+    "C:data.csv", // drive-relative
+    "data.csv:stream",
+  ]) {
+    assert.throws(() => localDataFile(s), /bare filename/, s);
+    assert.throws(() => localDataFile({ file: s }), /bare filename/, `{ file: ${s} }`);
+  }
+  // { file } wins over url in loadData, so it is local even beside a url.
+  assert.throws(() => localDataFile({ file: archived, url: "https://example.com/x.csv" }), /bare filename/);
+  // Anything else the engine would fetch must be http(s).
+  for (const url of ["file:///C:/x/charts/a/data.csv", "C://x/charts/a/data.csv", "data:text/csv,a", undefined]) {
+    assert.throws(() => localDataFile({ url }), /http\(s\)/, String(url));
+  }
+  assert.throws(() => localDataFile({ file: 7 }), /bare filename/);
+  assert.throws(() => localDataFile(["a"]), /bare filename/);
 });
 
 test("writeFigure copies object-form data and keeps the spec as-is", () => {

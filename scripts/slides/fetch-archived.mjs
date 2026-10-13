@@ -54,13 +54,19 @@ export function resolveRef(input) {
   return hits[0];
 }
 
-// A string or { file } names a local file; a URL string or any other object is left for loadData.
+// Classified by the engine's loadData contract: a string, or any object with a `file` key, is read
+// from disk (resolved against the folder) whatever it looks like; only an object without `file` is
+// fetched, from `url`. So the one remote form is { url: "http(s)://..." }; anything else is local
+// and must be a bare filename. Returns that filename, or null for remote or absent data.
 export function localDataFile(data) {
-  const name = typeof data === "string" ? data
-    : (data && typeof data === "object" && typeof data.file === "string" ? data.file : null);
-  if (name === null || /^[a-z][a-z0-9+.-]*:\/\//i.test(name)) return null;
-  if (name === "" || name === "." || name === ".." || /[\\/]/.test(name)) {
-    throw new Error(`Unsupported data path "${name}": only a bare filename in the figure's folder is allowed.`);
+  if (data == null) return null;
+  if (typeof data === "object" && !Array.isArray(data) && !("file" in data)) {
+    if (typeof data.url === "string" && /^https?:\/\//i.test(data.url)) return null;
+    throw new Error(`Unsupported data source ${JSON.stringify(data)}: remote data must be { url: "http(s)://..." }; local data must be a bare filename in the figure's folder.`);
+  }
+  const name = typeof data === "string" ? data : (typeof data === "object" && !Array.isArray(data) ? data.file : data);
+  if (typeof name !== "string" || name === "" || name === "." || name === ".." || /[\\/:]/.test(name)) {
+    throw new Error(`Unsupported data path ${JSON.stringify(name)}: only a bare filename in the figure's folder is allowed.`);
   }
   return name;
 }

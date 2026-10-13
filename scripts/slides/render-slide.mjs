@@ -66,7 +66,7 @@ function readBundle(repoRoot) {
 
 // Reading under charts/ is refused like writing there: chart.yaml is checked through any symlink,
 // and a local data source must be a bare filename in the folder (fetch-archived's rule), checked
-// again once resolved. URL data is left to loadData.
+// again once resolved. Only { url: "http(s)://..." } data is left to loadData to fetch.
 const guardRead = (p, repoRoot) => {
   try { assertOutsideArchive(p, repoRoot); } catch (e) { fail(e.message, { stale: true }); }
 };
@@ -87,7 +87,7 @@ export async function loadSpecAndRows(folder, repoRoot = REPO_ROOT) {
   try {
     dataName = localDataFile(spec.data);
   } catch (e) {
-    fail(`chart.yaml in ${folder}: ${e.message} Copy the data file into the folder, or use a URL.`, { stale: true });
+    fail(`chart.yaml in ${folder}: ${e.message} Copy the data file into the folder, or give remote data as { url: "https://..." }.`, { stale: true });
   }
   if (dataName) guardRead(resolve(folder, dataName), repoRoot);
   const { loadData } = await import("budget-lab-chart-engine/data");

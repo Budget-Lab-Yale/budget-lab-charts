@@ -276,6 +276,23 @@ test("input: an absolute data path into the archive is refused", async () => {
   }
 });
 
+test("input: drive, file:// and UNC forms of an archive path are refused, never read", async () => {
+  const fwd = ARCHIVED_CSV.replace(/\\/g, "/");
+  for (const data of [
+    fwd.replace(/^([A-Za-z]):\//, "$1://"), // C://dev/... : looked like a URL, loadData read it as a file
+    `file:///${fwd}`,
+    { file: `file:///${fwd}` },
+    "\\\\localhost\\" + ARCHIVED_CSV.replace(/^([A-Za-z]):/, "$1$"), // \\localhost\C$\... (UNC)
+    "https://example.com/data.csv", // a string is a file to loadData
+    { url: `file:///${fwd}` },
+  ]) {
+    const dir = inputFolder(data);
+    try {
+      await assert.rejects(loadSpecAndRows(dir), /only a bare filename|http\(s\)/, JSON.stringify(data));
+    } finally { cleanup(dir); }
+  }
+});
+
 test("input: a ../ data path is refused", async () => {
   for (const data of ["../data.csv", { file: "../data.csv" }, "..\\data.csv", "sub/data.csv"]) {
     const dir = inputFolder(data);
