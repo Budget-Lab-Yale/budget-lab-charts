@@ -1,5 +1,7 @@
 ﻿param(
-  [string]$Template = "$env:USERPROFILE\OneDrive - Yale University\Documents\Budget Lab Sharepoint\Templates\Budget Lab Slides Template A (16x9 aspect) - Preferred.pptx"
+  [string]$Template = "$env:USERPROFILE\OneDrive - Yale University\Documents\Budget Lab Sharepoint\Templates\Budget Lab Slides Template A (16x9 aspect) - Preferred.pptx",
+  # Case 8 works in this OneDrive-synced folder, created fresh and deleted at the end.
+  [string]$OneDriveScratch = "$env:USERPROFILE\OneDrive - Yale University\Documents\Budget Lab\_slide-charts-smoke-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
 )
 # Smoke test for insert-slide.ps1. Drives PowerPoint through COM: close real decks first.
 $ErrorActionPreference = 'Stop'
@@ -7,6 +9,7 @@ if (-not (Test-Path -LiteralPath $Template)) { Write-Host "SKIP: template not fo
 
 $insert = Join-Path $PSScriptRoot 'insert-slide.ps1'
 $script:qas = @()
+$script:odScratch = $null; $script:cleanupFailed = $false
 $root = Join-Path $env:TEMP 'slide-charts-test'
 $deckDir = Join-Path $root "Budget Lab Sharepoint\O'Neil $([char]0x2014) deck"
 $deck = Join-Path $deckDir 'deck.pptx'
@@ -189,6 +192,44 @@ try {
     Write-Host "SKIP case 7: 4x3 template not found: $tpl43"
   }
 
+  # Case 8: a deck in a OneDrive-synced folder, open in PowerPoint, inserted into by its LOCAL path.
+  # PowerPoint may report such a deck by its https URL; insert-slide must still find the open copy
+  # (Select-OpenPresentation's OneDrive mapping) rather than open a second one.
+  $odParent = Split-Path -Parent $OneDriveScratch
+  if (-not (Test-Path -LiteralPath $odParent)) {
+    Write-Host "SKIP case 8: OneDrive folder not found: $odParent"
+  } elseif (Test-Path -LiteralPath $OneDriveScratch) {
+    Write-Host "SKIP case 8: $OneDriveScratch already exists; it is not this test's to delete"
+  } else {
+    $script:odScratch = $OneDriveScratch
+    $odSc = Join-Path $OneDriveScratch 'Slide charts'
+    New-Item -ItemType Directory -Force -Path $odSc | Out-Null
+    $odDeck = Join-Path $OneDriveScratch 'deck.pptx'
+    Copy-Item -LiteralPath $Template -Destination $odDeck
+    foreach ($n in @('a', 'b')) { Copy-Item -LiteralPath (Join-Path $sc $n) -Destination (Join-Path $odSc $n) -Recurse }
+    # Synced files become cloud reparse points once OneDrive has taken them; wait up to 60 s for the deck.
+    $synced = $false
+    for ($w = 0; $w -lt 60 -and -not $synced; $w++) {
+      if ((Get-Item -LiteralPath $odDeck -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { $synced = $true } else { Start-Sleep -Seconds 1 }
+    }
+    if ($synced) { Write-Host "case 8: OneDrive picked up the deck after about $w s" } else { Write-Host 'case 8: OneDrive had not picked up the deck after 60 s; continuing' }
+    $od = $pp.Presentations.Open($odDeck, 0, 0, -1)
+    $opened += $od
+    $odFull = $od.FullName
+    Write-Host "case 8: PowerPoint reports the open deck as FullName = $odFull"
+    if ($odFull -notmatch '^https?://') {
+      Write-Host 'case 8: FullName is a LOCAL path, not https, so this run exercises the exact-local match, not the OneDrive mapping'
+    }
+    $n0 = $pp.Presentations.Count
+    $s0 = $od.Slides.Count
+    $r = Expect-Ok '8' @('-Deck', $odDeck, '-Frame', 'below-title', '-Image', (Join-Path $odSc 'a\a.png'), '-Title', 'T8', '-After', '1')
+    Check '8' ($pp.Presentations.Count -eq $n0) "Presentations.Count grew from $n0 to $($pp.Presentations.Count): the open deck was not matched"
+    Check '8' ($od.Slides.Count -eq $s0 + 1) "the open deck has $($od.Slides.Count) slides, expected $($s0 + 1)"
+    Check '8' ((Slide-Info $od.Slides.Item(2)).title -eq 'T8') 'slide 2 of the open deck is not the new slide'
+    $od.Close()
+    $opened = @()
+  }
+
   Write-Host 'PASS: all insert-slide cases'
 } finally {
   foreach ($o in $opened) { try { $o.Close() } catch { } }
@@ -197,4 +238,19 @@ try {
   $ef = Join-Path $env:TEMP 'slide-charts-test-stderr.txt'
   if (Test-Path -LiteralPath $ef) { try { Remove-Item -LiteralPath $ef -Force -ErrorAction Stop } catch { Write-Warning "could not remove ${ef}: $($_.Exception.Message)" } }
   if (Test-Path -LiteralPath $root) { try { Remove-Item -LiteralPath $root -Recurse -Force -ErrorAction Stop } catch { Write-Warning "could not remove temp tree ${root}: $($_.Exception.Message)" } }
+  # The case 8 folder syncs to OneDrive, so a leftover is reported and fails the run.
+  if ($script:odScratch -and (Test-Path -LiteralPath $script:odScratch)) {
+    $why = ''
+    try { Remove-Item -LiteralPath $script:odScratch -Recurse -Force -ErrorAction Stop }
+    catch {
+      $why = $_.Exception.Message
+      $ErrorActionPreference = 'Continue'
+      try { cmd /c rd /s /q "$($script:odScratch)" 2>$null | Out-Null } catch { }
+    }
+    if (Test-Path -LiteralPath $script:odScratch) {
+      Write-Host "CLEANUP FAILED: could not delete the OneDrive scratch folder $($script:odScratch) ($why). Delete it by hand."
+      $script:cleanupFailed = $true
+    }
+  }
 }
+if ($script:cleanupFailed) { exit 1 }
