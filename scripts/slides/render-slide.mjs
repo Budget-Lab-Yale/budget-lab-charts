@@ -74,15 +74,15 @@ const guardRead = (p, repoRoot) => {
 export async function loadSpecAndRows(folder, repoRoot = REPO_ROOT) {
   const specPath = join(folder, "chart.yaml");
   guardRead(specPath, repoRoot);
-  if (!existsSync(specPath)) fail(`No chart.yaml in ${folder}. Fetch or capture a figure into the folder first.`);
+  if (!existsSync(specPath)) fail(`No chart.yaml in ${folder}. Fetch or capture a figure into the folder first.`, { stale: true });
   let spec;
   try {
     spec = parseYaml(readFileSync(specPath, "utf8"));
   } catch (e) {
     fail(`chart.yaml in ${folder} is not valid YAML: ${oneLine(e.message)}`, { stale: true });
   }
-  if (!spec || typeof spec !== "object" || Array.isArray(spec)) fail(`chart.yaml in ${folder} is not a chart spec (expected a YAML mapping).`);
-  if (spec.data == null) fail(`chart.yaml in ${folder} has no data field.`);
+  if (!spec || typeof spec !== "object" || Array.isArray(spec)) fail(`chart.yaml in ${folder} is not a chart spec (expected a YAML mapping).`, { stale: true });
+  if (spec.data == null) fail(`chart.yaml in ${folder} has no data field.`, { stale: true });
   let dataName;
   try {
     dataName = localDataFile(spec.data);

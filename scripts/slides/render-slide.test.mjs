@@ -369,6 +369,24 @@ test("input: a data file symlinked into a (fake) archive is refused", async (t) 
   } finally { rmSync(base, { recursive: true, force: true }); }
 });
 
+for (const [what, yaml, msg] of [
+  ["a non-mapping chart.yaml", "- just\n- a list\n", /expected a YAML mapping/],
+  ["a chart.yaml with no data field", `${LAFFER_SPEC}\n`, /no data field/],
+]) {
+  test(`input: ${what} removes the earlier render`, async () => {
+    const dir = inputFolder("data.csv");
+    try {
+      writeFileSync(join(dir, "chart.yaml"), yaml);
+      for (const ext of ["png", "svg"]) writeFileSync(join(dir, `w.${ext}`), "stale");
+      const r = await run([dir, "--frame", "full"]);
+      assert.equal(r.code, 1);
+      assert.match(r.stderr, msg);
+      assert.equal(existsSync(join(dir, "w.png")), false);
+      assert.equal(existsSync(join(dir, "w.svg")), false);
+    } finally { cleanup(dir); }
+  });
+}
+
 test("input: the CLI refuses a ../ data path in one paragraph and removes the earlier render", async () => {
   const dir = inputFolder("../data.csv");
   try {
