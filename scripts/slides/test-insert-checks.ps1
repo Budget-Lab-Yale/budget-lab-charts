@@ -66,8 +66,11 @@ try {
   $gone = Join-Path $fake 'charts\gone'
   New-Item -ItemType Directory -Force -Path $gone | Out-Null
   $dang = Join-Path $tmp 'mk-dangling'
-  cmd /c mklink /J "$mk" "$(Join-Path $fake 'charts\a')" | Out-Null
-  cmd /c mklink /J "$dang" "$gone" | Out-Null
+  # Native stderr under 'Stop' throws in 5.1; a failed mklink must skip, not crash.
+  $ErrorActionPreference = 'Continue'
+  cmd /c mklink /J "$mk" "$(Join-Path $fake 'charts\a')" 2>$null | Out-Null
+  cmd /c mklink /J "$dang" "$gone" 2>$null | Out-Null
+  $ErrorActionPreference = 'Stop'
   if ((Test-Path -LiteralPath $mk) -and (Test-Path -LiteralPath $dang)) {
     $links += $mk; $links += $dang
     Remove-Item -LiteralPath $gone -Force
@@ -77,7 +80,9 @@ try {
 
   # A relative directory symlink (needs the symlink privilege; skipped without it).
   $rel = Join-Path $tmp 'rel-link'
+  $ErrorActionPreference = 'Continue'
   cmd /c mklink /D "$rel" "repo\charts" 2>$null | Out-Null
+  $ErrorActionPreference = 'Stop'
   if (Test-Path -LiteralPath $rel) {
     $links += $rel
     Ok 'a relative symlink into charts is refused' (Test-InsideArchive (Join-Path $rel 'a\deck.pptx') $fake)
