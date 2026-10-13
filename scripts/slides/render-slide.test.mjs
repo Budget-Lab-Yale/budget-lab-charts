@@ -112,7 +112,7 @@ test("2b. 28 horizontal bars fit below-title with fitRows: exactly 3200x1545, no
   assert.deepEqual(pngSize(out("fit28", "png")), { width: 3200, height: 1545 });
 });
 
-// Measured against the engine pin 011cb5f (below-title, 618 px): 28 rows fit, 30 render 627, 34 render 691
+// Measured against engine v1.17.0 (below-title, 618 px): 28 rows fit, 30 render 627, 34 render 691
 // (about 16 px per row at the floor), and full is 720. 34 is far enough over that a small engine metric
 // change cannot flip it, and under 720 so the --frame full advice still applies.
 test("2c. 34 bars at the row floor still overflow below-title; it fits full, and the message says so", () => {
