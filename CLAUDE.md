@@ -64,6 +64,8 @@ prompts (see the `gpt-review` skill). Add to it when a bug or a review reveals a
   color. Gated by `scripts/palette-lint.mjs`; a genuine exception goes in `PALETTE_EXCEPTIONS` with
   a reason. Note the engine deliberately accepts raw hex and 147 CSS keywords — `colorRefError`
   checks only that a color *resolves*, so "the engine accepts it" says nothing about house style.
+  Slide renders under scripts/slides warn instead of fail for specs captured from an interactive
+  tool or fetched from the archive (owner decision 2026-10-13); new data is held to the ramp.
 - **The spec schema is strict — unknown fields fail the build.** Never invent a field. The
   authoritative field list is the engine's own `colorErrors`/schema, not the prose doc: three
   waterfall color fields exist in the schema and are absent from `ENGINE-CONFIG-SPEC.md` entirely,

@@ -45,7 +45,9 @@ Name the folder after the figure in kebab-case: `<deck folder>\Slide charts\<nam
 `node scripts/slides/render-slide.mjs "<folder>" --frame <frame> [--keep-source]`. Open the PNG and
 check it: overlapping labels, labels sitting on bars, cramped panes, a title that wraps badly. Fix
 issues in `chart.yaml` and re-render. If it reports that the chart is taller than the frame, take
-its suggestion. Don't work around it.
+its suggestion. Don't work around it. An off-ramp series colour fails the render for new data, but
+only warns for a figure fetched from the archive or captured from an interactive tool, which keep
+their colours (owner decision 2026-10-13). Pass the warning on in the report.
 
 ## 4. Insert
 `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/slides/insert-slide.ps1 -Deck "<deck>" -Frame <frame> -Image "<folder>\<name>.png" [-Image2 …] -Title "<user's title>" (-After N | -Onto N [-Replace]) [-Layout "<layout name>"]`.
