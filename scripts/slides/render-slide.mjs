@@ -211,6 +211,10 @@ export function widthError(spec, w, frameName, frame) {
 
 // Horizontal bar/stacked (and dumbbell) charts take their height from their row count, not the
 // frame, so a bigger frame only helps when the rendered height already fits it.
+// Mirrors the engine's growsWithRows (src/engine/figure.ts), which the package does not export.
+// small_multiples is deliberately not checked: on these chart types normalizeSpec draws the facets
+// as groups of one chart (spec/facet-groups.ts), so export-png's `!isFigure && growsWithRows` holds
+// for them too (probed: a faceted horizontal bar compresses identically with fitRows).
 function rowSized(spec) {
   if (spec.chartType === "bar" || spec.chartType === "stacked") return spec.orientation === "horizontal";
   return spec.chartType === "dumbbell" && spec.orientation !== "vertical";
@@ -230,7 +234,7 @@ export function overflowError(spec, rows, h, frameName, frame, frames = FRAMES) 
   const fitsFull = frameName !== "full" && full && h <= full.height;
   if (rowSized(spec)) {
     const n = rowCount(spec, rows);
-    return `${head} A horizontal ${typeName(spec.chartType).toLowerCase()} chart's height comes from its number of rows (${n} rows), not the frame, and fitRows has already tightened them to the minimum readable spacing, so it needs fewer categories or splitting across two slides.` +
+    return `${head} A horizontal ${typeName(spec.chartType).toLowerCase()} chart's height comes from its number of rows (${n} rows), not the frame${frame.fitRows ? ", and fitRows has already tightened them to the minimum readable spacing," : ","} so it needs fewer categories or splitting across two slides.` +
       (fitsFull ? ` At ${h} px it would fit the full frame (--frame full).` : "");
   }
   const tries = [frameName !== "full" ? "--frame full" : null, "fewer categories", "small_multiples.columns"].filter(Boolean);

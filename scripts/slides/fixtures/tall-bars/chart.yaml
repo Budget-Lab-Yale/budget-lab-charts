@@ -4,7 +4,7 @@ xAxisType: categorical
 columns:
   x: category
   value: value
-title: Thirty Categories
+title: Thirty-Four Categories
 subtitle: Percent
 value_suffix: "%"
 data: data.csv

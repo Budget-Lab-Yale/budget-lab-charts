@@ -112,11 +112,14 @@ test("2b. 28 horizontal bars fit below-title with fitRows: exactly 3200x1545, no
   assert.deepEqual(pngSize(out("fit28", "png")), { width: 3200, height: 1545 });
 });
 
-test("2c. 30 bars at the row floor still overflow below-title by a few px; it fits full, and the message says so", () => {
+// Measured against the engine pin 011cb5f (below-title, 618 px): 28 rows fit, 30 render 627, 34 render 691
+// (about 16 px per row at the floor), and full is 720. 34 is far enough over that a small engine metric
+// change cannot flip it, and under 720 so the --frame full advice still applies.
+test("2c. 34 bars at the row floor still overflow below-title; it fits full, and the message says so", () => {
   const r = runs.near30;
   assert.equal(r.code, 1);
   assert.match(r.stderr, /taller than the below-title frame \(\d+ > 618 px\)/);
-  assert.match(r.stderr, /\(30 rows\).*minimum readable spacing.*--frame full/);
+  assert.match(r.stderr, /\(34 rows\).*minimum readable spacing.*--frame full/);
   assert.equal(existsSync(out("near30", "png")), false);
 });
 
@@ -160,13 +163,13 @@ test("5. source line: dropped by default, kept with --keep-source", () => {
   assert.equal(source(runs.short.dir).keep_source, true);
 });
 
+// Few rows are padded, not stretched: fitRows never expands, so the SVG root stays at the frame.
 test("6. shorter than the frame: padded to exactly 3200x1800 with a warning", () => {
   const r = runs.short;
   assert.equal(r.code, 0, r.stderr);
   assert.deepEqual(pngSize(out("short", "png")), { width: 3200, height: 1800 });
   assert.match(svgRoot(readFileSync(out("short", "svg"), "utf8")), /\bheight="720"/);
   assert.match(r.stderr, /padded \d+ px below the chart/);
-  // Few rows are padded, not stretched: fitRows never expands, so the SVG root stays at the frame.
 });
 
 test("alt-text: resolveTitle uses the selected option's label, then default, then first option", () => {
@@ -194,7 +197,7 @@ test("7. a timeline keeps its own width: exit 1 in half, no PNG", () => {
 });
 
 test("overflow and width messages depend on the case", () => {
-  const half = { width: 640, height: 618 }, full = { width: 1280, height: 720 };
+  const half = { width: 640, height: 618, fitRows: true }, full = { width: 1280, height: 720, fitRows: true };
   const frames = { half, full };
   const hbar = { chartType: "bar", orientation: "horizontal", columns: { x: "c", value: "v" } };
   const rows = Array.from({ length: 22 }, (_, i) => ({ c: `C${i}`, v: "1" }));
@@ -202,12 +205,14 @@ test("overflow and width messages depend on the case", () => {
   const fits = overflowError(hbar, rows, 700, "half", half, frames);
   assert.match(fits, /taller than the half frame \(700 > 618 px\).*\(22 rows\).*minimum readable spacing.*--frame full/);
   assert.doesNotMatch(overflowError(hbar, rows, 782, "half", half, frames), /--frame full/);
+  // Without fitRows nothing was tightened, so the message must not claim it.
+  assert.doesNotMatch(overflowError(hbar, rows, 700, "half", { ...half, fitRows: false }, frames), /already tightened|minimum readable/);
   assert.doesNotMatch(overflowError(hbar, rows, 782, "full", full, frames), /--frame full/);
   const line = { chartType: "line" };
   assert.match(overflowError(line, [], 700, "half", half, frames), /Try --frame full, fewer categories, or small_multiples\.columns\./);
   assert.match(overflowError(line, [], 800, "full", full, frames), /Try fewer categories, or small_multiples\.columns\./);
-  const faceted = { ...hbar, columns: { ...hbar.columns, facet: "f" } };
-  assert.match(overflowError(faceted, [{ f: "a", c: "x" }, { f: "b", c: "x" }], 700, "half", half, frames), /\(2 rows\)/);
+  const faceted = { ...hbar, columns: { ...hbar.columns, facet: "f" }, small_multiples: { columns: 1 } };
+  assert.match(overflowError(faceted, [{ f: "a", c: "x" }, { f: "b", c: "x" }], 700, "half", half, frames), /\(2 rows\).*already tightened/);
   assert.equal(widthError({ chartType: "timeline" }, 640, "half", half), null);
   assert.equal(widthError({ chartType: "timeline" }, 1000, "half", half),
     "Timeline charts keep their own width (1000 px) and can't be fitted to the half frame (640 px).");
