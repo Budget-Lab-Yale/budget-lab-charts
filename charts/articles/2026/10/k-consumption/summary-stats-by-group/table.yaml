@@ -28,6 +28,6 @@ format:
   default: { decimals: 2, thousands: true }
   rows:
     Observations: { decimals: 0, thousands: true }
-notes: "Characteristics are pooled across all SCF survey years."
+notes: "Characteristics are pooled across all SCF survey years. The N value counts the unweighted number of households in the sample, not the number of implicates."
 source: "Federal Reserve, Survey of Consumer Finance"
 
