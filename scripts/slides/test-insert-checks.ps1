@@ -49,12 +49,53 @@ try {
     Ok 'a junction into charts is refused (new folder below it)' (Test-InsideArchive (Join-Path $toCharts 'new\Slide charts\_backups') $fake)
     Ok 'charts reached through a junctioned repo root is refused' (Test-InsideArchive (Join-Path $fake 'charts\a\deck.pptx') $toRepo)
     Ok 'the junctioned repo root, outside charts, is accepted' (-not (Test-InsideArchive (Join-Path $toRepo 'deck.pptx') $fake))
+
+    # Fail closed: a resolver that cannot read a link refuses instead of falling back to the
+    # lexical path (which, here, is outside the fake charts/).
+    $broken = { param($p) throw 'injected resolver failure' }
+    Throws 'resolver failure on a junction refuses (Assert)' { Assert-OutsideArchive (Join-Path $toCharts 'a\deck.pptx') $fake -LinkTarget $broken } "can't verify this path is outside the archive"
+    Throws 'resolver failure on a junction throws (Test)' { Test-InsideArchive (Join-Path $toCharts 'a\deck.pptx') $fake -LinkTarget $broken } 'injected resolver failure'
+    Throws 'resolver failure on a junctioned repo root refuses' { Assert-OutsideArchive (Join-Path $tmp 'elsewhere\deck.pptx') $toRepo -LinkTarget $broken } "can't verify"
+    $plain = Join-Path $tmp 'plain\deck.pptx'
+    $okPlain = $true; try { Assert-OutsideArchive $plain $fake -LinkTarget $broken } catch { $okPlain = $false }
+    Ok 'no reparse point on the path: the resolver is never asked' $okPlain
   }
+
+  # cmd's mklink /J into a fake archive root, and a dangling one.
+  $mk = Join-Path $tmp 'mk-junction'
+  $gone = Join-Path $fake 'charts\gone'
+  New-Item -ItemType Directory -Force -Path $gone | Out-Null
+  $dang = Join-Path $tmp 'mk-dangling'
+  cmd /c mklink /J "$mk" "$(Join-Path $fake 'charts\a')" | Out-Null
+  cmd /c mklink /J "$dang" "$gone" | Out-Null
+  if ((Test-Path -LiteralPath $mk) -and (Test-Path -LiteralPath $dang)) {
+    $links += $mk; $links += $dang
+    Remove-Item -LiteralPath $gone -Force
+    Ok 'mklink /J into charts is refused' (Test-InsideArchive (Join-Path $mk 'deck.pptx') $fake)
+    Ok 'a dangling junction into charts is refused' (Test-InsideArchive (Join-Path $dang 'new\deck.pptx') $fake)
+  } else { Write-Host 'SKIP mklink /J cases: mklink failed' }
+
+  # A relative directory symlink (needs the symlink privilege; skipped without it).
+  $rel = Join-Path $tmp 'rel-link'
+  cmd /c mklink /D "$rel" "repo\charts" 2>$null | Out-Null
+  if (Test-Path -LiteralPath $rel) {
+    $links += $rel
+    Ok 'a relative symlink into charts is refused' (Test-InsideArchive (Join-Path $rel 'a\deck.pptx') $fake)
+  } else { Write-Host 'SKIP relative symlink case: mklink /D failed (no symlink privilege)' }
 } finally {
   $left = 0
   foreach ($l in $links) { try { [IO.Directory]::Delete($l) } catch { $left++; Write-Warning "could not remove junction ${l}: $($_.Exception.Message)" } }
   if ($left -eq 0 -and (Test-Path -LiteralPath $tmp)) { Remove-Item -LiteralPath $tmp -Recurse -Force }
 }
+
+# OneDrive folders and files are reparse points too (cloud-file tags, not links). They must not be
+# refused as unverifiable, or no synced deck could ever be used.
+if ($env:OneDrive -and (Test-Path -LiteralPath $env:OneDrive)) {
+  $odDeck = Join-Path $env:OneDrive 'Documents\no-such-folder\deck.pptx'
+  $odMsg = $null; $odIn = $null
+  try { $odIn = Test-InsideArchive $odDeck $repo } catch { $odMsg = $_.Exception.Message }
+  Ok "a OneDrive path (cloud reparse points) is accepted: $odMsg" (($null -eq $odMsg) -and ($odIn -eq $false))
+} else { Write-Host 'SKIP OneDrive case: $env:OneDrive is not set' }
 
 # --- PNG size ------------------------------------------------------------------------------------
 $pngDir = Join-Path $env:TEMP ("slide-charts-png-" + [guid]::NewGuid().ToString('N').Substring(0, 8))

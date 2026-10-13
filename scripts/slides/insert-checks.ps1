@@ -1,65 +1,83 @@
 ﻿# Pure checks for insert-slide.ps1 (no COM, no registry), unit-tested by test-insert-checks.ps1.
 
-# Final path of an existing file or folder, through junctions and symlinks (the same Win32 call
-# Node's realpathSync.native makes). Compiled once per session; if it can't be, links are not
-# resolved and the guard falls back to the lexical path alone.
-if (-not ('SlideCharts.RealPath' -as [type])) {
-  try {
-    Add-Type -ErrorAction Stop -TypeDefinition @'
-using System;
-using System.Runtime.InteropServices;
-using System.Text;
-using Microsoft.Win32.SafeHandles;
-namespace SlideCharts {
-  public static class RealPath {
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    static extern SafeFileHandle CreateFileW(string name, uint access, uint share, IntPtr sec, uint disposition, uint flags, IntPtr template);
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    static extern uint GetFinalPathNameByHandleW(SafeFileHandle h, StringBuilder buf, uint len, uint flags);
-    // No access rights, share everything, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS (needed for folders).
-    public static string Get(string path) {
-      using (SafeFileHandle h = CreateFileW(path, 0, 7, IntPtr.Zero, 3, 0x02000000, IntPtr.Zero)) {
-        if (h.IsInvalid) return null;
-        StringBuilder sb = new StringBuilder(1024);
-        uint n = GetFinalPathNameByHandleW(h, sb, (uint)sb.Capacity, 0);
-        if (n >= sb.Capacity) { sb = new StringBuilder((int)n + 1); n = GetFinalPathNameByHandleW(h, sb, (uint)sb.Capacity, 0); }
-        if (n == 0 || n >= sb.Capacity) return null;
-        string s = sb.ToString();
-        if (s.StartsWith(@"\\?\UNC\")) return @"\" + s.Substring(7);
-        if (s.StartsWith(@"\\?\")) return s.Substring(4);
-        return s;
-      }
-    }
-  }
-}
-'@
-  } catch { }
+# The archive guard resolves paths through junctions and symlinks by walking each existing
+# component with Get-Item (nothing compiled). It fails closed: a link whose target can't be read
+# refuses the path instead of falling back to the lexical one.
+$script:SlideChartsTagCache = @{}
+
+# The reparse tag of an existing entry, read by fsutil; throws if it can't be read.
+function Get-ReparseTag([string]$Path) {
+  if ($script:SlideChartsTagCache.ContainsKey($Path)) { return $script:SlideChartsTagCache[$Path] }
+  $prev = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+  try { $out = (& fsutil.exe reparsepoint query $Path 2>&1 | Out-String); $code = $LASTEXITCODE }
+  finally { $ErrorActionPreference = $prev }
+  if ($code -ne 0 -or $out -notmatch '0x([0-9a-fA-F]{8})') { throw "fsutil could not read the reparse tag of $Path" }
+  $tag = [Convert]::ToUInt32($Matches[1], 16)
+  $script:SlideChartsTagCache[$Path] = $tag
+  return $tag
 }
 
-# paths.mjs realish: the deepest existing ancestor resolved through links, plus the rest as written.
-function Resolve-RealishPath([string]$Path) {
-  $full = [IO.Path]::GetFullPath($Path)
-  $probe = $full
-  while (-not (Test-Path -LiteralPath $probe)) {
-    $up = Split-Path -Parent $probe
-    if ([string]::IsNullOrEmpty($up) -or $up -eq $probe) { return $full }
-    $probe = $up
+# Default link resolver for an existing reparse point: the full path a junction or symlink points
+# at, or $null for a reparse point that is not a link. OneDrive files and folders are reparse
+# points with cloud tags, so only the name-surrogate bit (0x20000000, set on every tag that
+# redirects a path) makes an unrecognised one a link. Throws when the target can't be determined.
+function Get-LinkTarget([string]$Path) {
+  $item = Get-Item -LiteralPath $Path -Force -ErrorAction Stop
+  $type = [string]$item.LinkType
+  if ($type -eq 'Junction' -or $type -eq 'SymbolicLink') {
+    $t = [string](@($item.Target | Where-Object { $_ }) | Select-Object -First 1)
+    if (-not $t) { throw "the $type at $Path has no readable target" }
+    if ($t -match 'Volume\{') { throw "the $type at $Path points at a volume ($t)" }
+    if (-not [IO.Path]::IsPathRooted($t)) { $t = [IO.Path]::Combine((Split-Path -Parent $Path), $t) }
+    return [IO.Path]::GetFullPath($t)
   }
-  $real = $null
-  if ('SlideCharts.RealPath' -as [type]) { try { $real = [SlideCharts.RealPath]::Get($probe) } catch { } }
-  if (-not $real) { return $full }
-  $rest = $full.Substring($probe.Length).TrimStart('\')
-  if ($rest) { return [IO.Path]::Combine($real, $rest) }
-  return $real
+  if ((Get-ReparseTag $Path) -band 0x20000000) { throw "$Path is a link PowerShell can't resolve" }
+  return $null
+}
+
+# paths.mjs realish: the path with every existing component resolved through links, plus the
+# components that don't exist yet as written. $LinkTarget replaces Get-LinkTarget (tests inject one).
+function Resolve-RealishPath([string]$Path, [scriptblock]$LinkTarget) {
+  if (-not $LinkTarget) { $LinkTarget = ${function:Get-LinkTarget} }
+  $full = [IO.Path]::GetFullPath($Path)
+  for ($hop = 0; $hop -lt 40; $hop++) {
+    $root = [IO.Path]::GetPathRoot($full)
+    $parts = @($full.Substring($root.Length).Split([char]'\') | Where-Object { $_ })
+    $cur = $root
+    $redirect = $null
+    $i = 0
+    for (; $i -lt $parts.Count; $i++) {
+      if (-not [IO.Directory]::Exists($cur)) { break }
+      $entry = @(([IO.DirectoryInfo]::new($cur)).GetFileSystemInfos($parts[$i])) | Select-Object -First 1
+      if (-not $entry) { break }
+      $next = [IO.Path]::Combine($cur, $entry.Name)
+      if ($entry.Attributes -band [IO.FileAttributes]::ReparsePoint) {
+        $t = & $LinkTarget $next
+        if ($t) {
+          $redirect = $t
+          if ($i + 1 -lt $parts.Count) { $redirect = [IO.Path]::Combine($t, ($parts[($i + 1)..($parts.Count - 1)] -join '\')) }
+          break
+        }
+      }
+      $cur = $next
+    }
+    if ($null -eq $redirect) {
+      if ($i -lt $parts.Count) { return [IO.Path]::Combine($cur, ($parts[$i..($parts.Count - 1)] -join '\')) }
+      return $cur
+    }
+    $full = [IO.Path]::GetFullPath($redirect)
+  }
+  throw "more than 40 links resolving $Path"
 }
 
 # True when $Path is the repo's charts/ folder or inside it: case-insensitive, on path-segment
 # boundaries, after `..` and `/` normalisation. Both the path and charts/ are compared as written
-# and as resolved through junctions/symlinks, so a link either way round is caught.
-function Test-InsideArchive([string]$Path, [string]$RepoRoot) {
+# and as resolved through links, so a link either way round is caught. Throws if a link on either
+# path can't be resolved.
+function Test-InsideArchive([string]$Path, [string]$RepoRoot, [scriptblock]$LinkTarget) {
   $charts = [IO.Path]::Combine([IO.Path]::GetFullPath($RepoRoot), 'charts')
-  $roots = @($charts, (Resolve-RealishPath $charts))
-  $paths = @([IO.Path]::GetFullPath($Path), (Resolve-RealishPath $Path))
+  $roots = @($charts, (Resolve-RealishPath $charts $LinkTarget))
+  $paths = @([IO.Path]::GetFullPath($Path), (Resolve-RealishPath $Path $LinkTarget))
   foreach ($r in $roots) {
     $r = $r.TrimEnd('\')
     foreach ($p in $paths) {
@@ -70,8 +88,11 @@ function Test-InsideArchive([string]$Path, [string]$RepoRoot) {
   return $false
 }
 
-function Assert-OutsideArchive([string]$Path, [string]$RepoRoot) {
-  if (Test-InsideArchive $Path $RepoRoot) {
+function Assert-OutsideArchive([string]$Path, [string]$RepoRoot, [scriptblock]$LinkTarget) {
+  $inside = $false
+  try { $inside = Test-InsideArchive $Path $RepoRoot $LinkTarget }
+  catch { throw "Refusing ${Path}: can't verify this path is outside the archive (charts/): $($_.Exception.Message)" }
+  if ($inside) {
     throw "Refusing ${Path}: it is inside the published archive (charts/). Slide charts live beside the deck, in `"Slide charts\`"."
   }
 }
