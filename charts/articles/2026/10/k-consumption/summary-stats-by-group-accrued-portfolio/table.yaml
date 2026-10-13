@@ -32,5 +32,5 @@ format:
   default: { decimals: 2, thousands: true }
   rows:
     Observations: { decimals: 0, thousands: true }
-notes: "Portfolio includes bonds, corporate equities, and real estate accrued values. Characteristics are pooled across all SCF survey years."                
+notes: "Portfolio includes bonds, corporate equities, and real estate accrued values. Characteristics are pooled across all SCF survey years. The N values count the unweighted number of households, not the number of implicates in the sample."                
 source: "Federal Reserve, Survey of Consumer Finance"
