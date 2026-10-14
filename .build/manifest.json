@@ -194,6 +194,15 @@
     "revenue-potential-top-taxes/revenue-by-tax-step-up": {
       "hash": "3f8ba0da4811fd2a9fec5d8b7be0c07435ce29ff010d7e6374bae253b837b49f"
     },
+    "scf-2025-tax-takeaways/estate-tax-exemption": {
+      "hash": "4cbc1b8dd6039632f58d222491a6d827f7d90548657886c3e9cbf1063160fe21"
+    },
+    "scf-2025-tax-takeaways/home-sale-exclusion": {
+      "hash": "21db11a138ae3155506d06aaf84d07d0e447b0143482e955870fc7c79ed43736"
+    },
+    "scf-2025-tax-takeaways/roth-ira": {
+      "hash": "2ecbe48bfeb9e96cd320799ce201cfcfc3f18aac220b72a3b46b166e419ca842"
+    },
     "tariff-model-update-july2026/eta-effect": {
       "hash": "1e4a3b2e54d651821801e27d59ff38f994d56395874218fc5409ec16d660b68f"
     },
