@@ -1,6 +1,6 @@
 chartType: line
 title: " Financial Accounts data from the Federal Reserve shows us that there is more volatility in asset holdings that the CE does not capture."                 
-subtitle: "Percent change since 2014, Index: 2014 = 100"
+subtitle: "Indexed change since 2014, Index: 2014 = 100"
 
 xAxisType: temporal
 columns:
