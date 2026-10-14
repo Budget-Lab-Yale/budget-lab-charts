@@ -5,7 +5,7 @@ note: Gain is current value of the primary residence less purchase price and imp
   Married couples are compared against $500,000. Total home gains exclude owners with
   losses. Indexed exclusion adjusted with CPI-U-RS. Shaded areas are 95 percent confidence
   intervals.
-xAxisType: numeric
+xAxisType: temporal
 columns:
   x: year
   value: value

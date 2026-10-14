@@ -5,7 +5,7 @@ note: Exemption in effect in the survey year; married couples are compared again
   twice the per-person exemption. Indexed exemption is the 1998 exemption ($625,000)
   adjusted with CPI-U-RS. SCF excludes the Forbes 400. Age is of the household head.
   Shaded areas are 95 percent confidence intervals.
-xAxisType: numeric
+xAxisType: temporal
 columns:
   x: year
   value: value
