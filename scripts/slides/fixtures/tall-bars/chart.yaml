@@ -1,0 +1,10 @@
+chartType: bar
+orientation: horizontal
+xAxisType: categorical
+columns:
+  x: category
+  value: value
+title: Thirty-Four Categories
+subtitle: Percent
+value_suffix: "%"
+data: data.csv

@@ -1,0 +1,16 @@
+chartType: line
+xAxisType: numeric
+columns:
+  x: year
+  value: value
+title: "Long-Run Change in Real GDP by {dimension}"
+subtitle: Percent change from baseline
+value_suffix: "%"
+title_selectors:
+  dimension:
+    options:
+      - id: sector
+        label: Sector
+      - id: country
+        label: Trading Partner
+data: data.csv

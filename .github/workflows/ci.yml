@@ -54,11 +54,12 @@ jobs:
           git config --global url."https://github.com/".insteadOf ssh://git@github.com/
           git config --global url."https://github.com/".insteadOf git@github.com:
           npm ci
-      # Scoped to this one file rather than `npm test`: the palette lint is pure and fast, while
+      # Scoped to named files rather than `npm test`: these are pure, fast and network-free, while
       # dev-server.test.mjs boots a real HTTP server and has never been a required check. Widening
-      # the gate to all tests is a separate decision.
-      - name: Unit tests (palette lint)
-        run: node --test --test-concurrency=1 scripts/palette-lint.test.mjs
+      # the gate to all tests is a separate decision. The slides files gate the CLAUDE.md invariant
+      # that scripts/slides/ never touches charts/ (assertOutsideArchive) and the frame geometry.
+      - name: Unit tests (palette lint, slides archive guard and frames)
+        run: node --test --test-concurrency=1 scripts/palette-lint.test.mjs scripts/slides/paths.test.mjs scripts/slides/frames.test.mjs
       - run: npm run validate
 
   # ── Per-PR live preview ───────────────────────────────────────────────────

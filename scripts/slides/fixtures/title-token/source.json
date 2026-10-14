@@ -1,0 +1,6 @@
+{
+  "origin": "interactive",
+  "url": "https://interactives.budgetlab.yale.edu/tools/example/",
+  "selections": { "dimension": "country" },
+  "tool_engine_version": "1.13.0"
+}
