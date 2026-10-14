@@ -1,0 +1,34 @@
+chartType: line
+title: Roth IRA holders and balances
+source: The Budget Lab analysis of the Federal Reserve Survey of Consumer Finances.
+note: IRAs include Keogh plans. Retirement accounts are IRAs, Keoghs, and employer
+  defined contribution plans such as 401(k)s; defined benefit pensions are excluded.
+  Roth 401(k)s cannot be identified and are counted as non-Roth. Balances by IRA type
+  are not available before 2004. Shaded areas are 95 percent confidence intervals.
+xAxisType: numeric
+columns:
+  x: year
+  value: value
+  series: series
+  facet: panel
+small_multiples:
+  columns: 2
+  mode: per-pane
+  pane_order:
+  - Share of account holders with a Roth IRA
+  - Share of balances held in Roth IRAs
+series_order:
+- IRAs
+- All retirement accounts
+confidence_bands:
+- series: IRAs
+  lower: lower
+  upper: upper
+- series: All retirement accounts
+  lower: lower
+  upper: upper
+value_suffix: '%'
+yAxisPolicy:
+  min: 0
+tooltip_decimals: 1
+data: data.csv
