@@ -6,6 +6,12 @@ note: Gain is current value of the primary residence less purchase price and imp
   losses. Indexed exclusion adjusted with CPI-U-RS. Shaded areas are 95 percent confidence
   intervals.
 xAxisType: temporal
+x_ticks:
+- '2001'
+- '2007'
+- '2013'
+- '2019'
+- '2025'
 columns:
   x: year
   value: value
