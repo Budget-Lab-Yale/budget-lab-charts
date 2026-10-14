@@ -1,6 +1,6 @@
 chartType: stacked
 title: "The addition of realized gains does not lead to massive shifts in the people in the top decile. While more impactful than realized gains, accrued gains also do not lead to massive changes in who compose the top decile."
-subtitle: "Percentage points of the top decile of income"
+subtitle: "Percentage points of the top decile"
 xAxisType: categorical
 columns:
   x: bar
