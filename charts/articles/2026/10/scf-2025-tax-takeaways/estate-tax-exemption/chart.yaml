@@ -1,0 +1,34 @@
+chartType: line
+title: Households age 75+ and their wealth above the estate tax exemption
+source: The Budget Lab analysis of the Federal Reserve Survey of Consumer Finances.
+note: Exemption in effect in the survey year; married couples are compared against
+  twice the per-person exemption. Indexed exemption is the 1998 exemption ($625,000)
+  adjusted with CPI-U-RS. SCF excludes the Forbes 400. Age is of the household head.
+  Shaded areas are 95 percent confidence intervals.
+xAxisType: temporal
+columns:
+  x: year
+  value: value
+  series: series
+  facet: panel
+small_multiples:
+  columns: 2
+  mode: per-pane
+  pane_order:
+  - Share of households above the exemption
+  - Share of their net worth above the exemption
+series_order:
+- Actual exemption
+- 1998 exemption indexed to inflation
+confidence_bands:
+- series: Actual exemption
+  lower: lower
+  upper: upper
+- series: 1998 exemption indexed to inflation
+  lower: lower
+  upper: upper
+value_suffix: '%'
+yAxisPolicy:
+  min: 0
+tooltip_decimals: 1
+data: data.csv

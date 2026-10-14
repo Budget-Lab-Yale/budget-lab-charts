@@ -1,0 +1,37 @@
+year,panel,series,value,lower,upper
+2001,Share of account holders with a Roth IRA,IRAs,25.84,23.53,28.15
+2004,Share of account holders with a Roth IRA,IRAs,27.35,25.17,29.52
+2007,Share of account holders with a Roth IRA,IRAs,31.46,29.49,33.43
+2010,Share of account holders with a Roth IRA,IRAs,34.12,32.18,36.05
+2013,Share of account holders with a Roth IRA,IRAs,37.44,35.37,39.5
+2016,Share of account holders with a Roth IRA,IRAs,39.99,37.86,42.13
+2019,Share of account holders with a Roth IRA,IRAs,46.68,44.46,48.9
+2022,Share of account holders with a Roth IRA,IRAs,51.93,49.23,54.64
+2025,Share of account holders with a Roth IRA,IRAs,58.24,55.6,60.87
+2001,Share of account holders with a Roth IRA,All retirement accounts,15.34,13.83,16.84
+2004,Share of account holders with a Roth IRA,All retirement accounts,15.91,14.49,17.33
+2007,Share of account holders with a Roth IRA,All retirement accounts,18.16,16.83,19.49
+2010,Share of account holders with a Roth IRA,All retirement accounts,18.98,17.69,20.27
+2013,Share of account holders with a Roth IRA,All retirement accounts,21.37,20.07,22.67
+2016,Share of account holders with a Roth IRA,All retirement accounts,22.99,21.5,24.48
+2019,Share of account holders with a Roth IRA,All retirement accounts,23.52,22.23,24.82
+2022,Share of account holders with a Roth IRA,All retirement accounts,29.61,27.67,31.54
+2025,Share of account holders with a Roth IRA,All retirement accounts,32.36,30.6,34.13
+2001,Share of balances held in Roth IRAs,IRAs,,,
+2004,Share of balances held in Roth IRAs,IRAs,7.36,5.3,9.41
+2007,Share of balances held in Roth IRAs,IRAs,8.1,6.6,9.6
+2010,Share of balances held in Roth IRAs,IRAs,11.05,8.77,13.33
+2013,Share of balances held in Roth IRAs,IRAs,13.12,10.82,15.42
+2016,Share of balances held in Roth IRAs,IRAs,14.54,12.29,16.79
+2019,Share of balances held in Roth IRAs,IRAs,14.23,12.04,16.42
+2022,Share of balances held in Roth IRAs,IRAs,17.12,14.8,19.43
+2025,Share of balances held in Roth IRAs,IRAs,17.38,14.4,20.37
+2001,Share of balances held in Roth IRAs,All retirement accounts,,,
+2004,Share of balances held in Roth IRAs,All retirement accounts,3.62,2.63,4.61
+2007,Share of balances held in Roth IRAs,All retirement accounts,3.72,3,4.43
+2010,Share of balances held in Roth IRAs,All retirement accounts,5.35,4.25,6.45
+2013,Share of balances held in Roth IRAs,All retirement accounts,7.22,5.95,8.49
+2016,Share of balances held in Roth IRAs,All retirement accounts,7.45,6.23,8.68
+2019,Share of balances held in Roth IRAs,All retirement accounts,7.16,6.09,8.23
+2022,Share of balances held in Roth IRAs,All retirement accounts,9.03,7.73,10.33
+2025,Share of balances held in Roth IRAs,All retirement accounts,9.6,7.89,11.31

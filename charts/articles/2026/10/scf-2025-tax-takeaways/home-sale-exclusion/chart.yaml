@@ -1,0 +1,34 @@
+chartType: line
+title: Home gains above the capital gains exclusion
+source: The Budget Lab analysis of the Federal Reserve Survey of Consumer Finances.
+note: Gain is current value of the primary residence less purchase price and improvements.
+  Married couples are compared against $500,000. Total home gains exclude owners with
+  losses. Indexed exclusion adjusted with CPI-U-RS. Shaded areas are 95 percent confidence
+  intervals.
+xAxisType: temporal
+columns:
+  x: year
+  value: value
+  series: series
+  facet: panel
+small_multiples:
+  columns: 2
+  mode: per-pane
+  pane_order:
+  - Share of homeowners with gains above the exclusion
+  - Share of home gains above the exclusion
+series_order:
+- Actual exclusion ($250,000 / $500,000)
+- Exclusion indexed to inflation since 1998
+confidence_bands:
+- series: Actual exclusion ($250,000 / $500,000)
+  lower: lower
+  upper: upper
+- series: Exclusion indexed to inflation since 1998
+  lower: lower
+  upper: upper
+value_suffix: '%'
+yAxisPolicy:
+  min: 0
+tooltip_decimals: 1
+data: data.csv
