@@ -1,0 +1,19 @@
+chartType: stacked
+orientation: horizontal
+xAxisType: categorical
+columns: { x: policy, series: series, value: value }
+series_order: [immediate, career, children]
+series_labels:
+  immediate: "Parents’ immediate work response"
+  career: "Parents’ career effects"
+  children: "Children’s adult earnings"
+series_colors: { immediate: blue, career: blue-light, children: amber }
+barStack: { netDisplay: text, hover: pills }
+valueLabels: { show: true, decimals: 2 }
+title: "Long-Run Potential GDP Under the Universal Subsidy, by Source"
+subtitle: "Percent change from baseline once every worker aged 27–65 has grown up under the policy"
+note: "Uses the same assumptions as Figure 2. Parents’ contribution is held at its 2055 value. Components may not sum to totals because of rounding."
+source: "The Budget Lab analysis."
+value_suffix: "%"
+tooltip_decimals: 2
+data: data.csv
