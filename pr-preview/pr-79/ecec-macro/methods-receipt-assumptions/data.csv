@@ -1,0 +1,16 @@
+row,column,value
+Labor tax rate,c1,\(t_L\)
+Labor tax rate,c2,"About 27% near the start, 31% in 2055"
+Labor tax rate,c3,"Tax-Simulator marginal rate on wages, multiplied by 86.47% tax-data wage coverage and a 94.57% wage share of a compensation change"
+Capital tax rate,c1,\(t_K\)
+Capital tax rate,c2,10%
+Capital tax rate,c3,"Budgetary Feedback Model component rates weighted by 2024 national-accounts income (10.17%, rounded)"
+GDP-linked rate,c1,\(\beta\)
+GDP-linked rate,c2,"3% in 2026, declining to 2% in 2036 and constant thereafter"
+GDP-linked rate,c3,Budgetary Feedback Model rates for capital-gains realizations and corporate loss positions
+Parent earnings-to-compensation factor,c1,
+Parent earnings-to-compensation factor,c2,1.20
+Parent earnings-to-compensation factor,c3,94.58% wage share raised by 2024 national-accounts ratios of employer social insurance (7.0%) and other supplements (14.3%) to wages
+Employer payroll on career earnings,c1,
+Employer payroll on career earnings,c2,7.65%
+Employer payroll on career earnings,c3,Statutory rate applied to the 94.58% wage share; no taxable-maximum adjustment
