@@ -1,0 +1,43 @@
+measure,group,quantity,unit,value
+AGI,Top 1%,Threshold,Millions of dollars,0.71
+AGI,Top 1%,Total income,Billions of dollars,4323
+AGI,Top 1%,Total income,Percent of GDP,12.8
+AGI,Top 1%,Income above threshold,Billions of dollars,2991
+AGI,Top 1%,Income above threshold,Percent of GDP,8.9
+AGI,Top 1%,After-tax income above threshold,Billions of dollars,2072
+AGI,Top 1%,After-tax income above threshold,Percent of GDP,6.2
+AGI,Top 0.1%,Threshold,Millions of dollars,3.54
+AGI,Top 0.1%,Total income,Billions of dollars,2196
+AGI,Top 0.1%,Total income,Percent of GDP,6.5
+AGI,Top 0.1%,Income above threshold,Billions of dollars,1535
+AGI,Top 0.1%,Income above threshold,Percent of GDP,4.6
+AGI,Top 0.1%,After-tax income above threshold,Billions of dollars,1095
+AGI,Top 0.1%,After-tax income above threshold,Percent of GDP,3.3
+AGI,Top 0.01%,Threshold,Millions of dollars,18.52
+AGI,Top 0.01%,Total income,Billions of dollars,1041
+AGI,Top 0.01%,Total income,Percent of GDP,3.1
+AGI,Top 0.01%,Income above threshold,Billions of dollars,696
+AGI,Top 0.01%,Income above threshold,Percent of GDP,2.1
+AGI,Top 0.01%,After-tax income above threshold,Billions of dollars,510
+AGI,Top 0.01%,After-tax income above threshold,Percent of GDP,1.5
+Accrual,Top 1%,Threshold,Millions of dollars,1.46
+Accrual,Top 1%,Total income,Billions of dollars,7959
+Accrual,Top 1%,Total income,Percent of GDP,23.6
+Accrual,Top 1%,Income above threshold,Billions of dollars,5217
+Accrual,Top 1%,Income above threshold,Percent of GDP,15.5
+Accrual,Top 1%,After-tax income above threshold,Billions of dollars,4413
+Accrual,Top 1%,After-tax income above threshold,Percent of GDP,13.1
+Accrual,Top 0.1%,Threshold,Millions of dollars,7.1
+Accrual,Top 0.1%,Total income,Billions of dollars,3568
+Accrual,Top 0.1%,Total income,Percent of GDP,10.6
+Accrual,Top 0.1%,Income above threshold,Billions of dollars,2238
+Accrual,Top 0.1%,Income above threshold,Percent of GDP,6.6
+Accrual,Top 0.1%,After-tax income above threshold,Billions of dollars,1912
+Accrual,Top 0.1%,After-tax income above threshold,Percent of GDP,5.7
+Accrual,Top 0.01%,Threshold,Millions of dollars,26.43
+Accrual,Top 0.01%,Total income,Billions of dollars,1589
+Accrual,Top 0.01%,Total income,Percent of GDP,4.7
+Accrual,Top 0.01%,Income above threshold,Billions of dollars,1094
+Accrual,Top 0.01%,Income above threshold,Percent of GDP,3.3
+Accrual,Top 0.01%,After-tax income above threshold,Billions of dollars,979
+Accrual,Top 0.01%,After-tax income above threshold,Percent of GDP,2.9
