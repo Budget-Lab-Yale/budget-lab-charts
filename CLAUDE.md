@@ -3,6 +3,7 @@
 The Budget Lab's published-figures archive: chart/table specs + data, built and published by
 CI. The chart engine is a pinned dependency; this repo is content only.
 
+- **Charts for slides/decks**: use the slide-charts skill (.claude/skills/slide-charts/). It never writes to charts/.
 - **Adding or updating content** (articles, trackers, figures, tables, tracker data): use the
   `publishing-figures` skill (`.claude/skills/publishing-figures/`). It covers the interview,
   data reshaping, and verification workflow.
@@ -63,6 +64,8 @@ prompts (see the `gpt-review` skill). Add to it when a bug or a review reveals a
   color. Gated by `scripts/palette-lint.mjs`; a genuine exception goes in `PALETTE_EXCEPTIONS` with
   a reason. Note the engine deliberately accepts raw hex and 147 CSS keywords — `colorRefError`
   checks only that a color *resolves*, so "the engine accepts it" says nothing about house style.
+  Slide renders under scripts/slides warn instead of fail for specs captured from an interactive
+  tool or fetched from the archive (owner decision 2026-10-13); new data is held to the ramp.
 - **The spec schema is strict — unknown fields fail the build.** Never invent a field. The
   authoritative field list is the engine's own `colorErrors`/schema, not the prose doc: three
   waterfall color fields exist in the schema and are absent from `ENGINE-CONFIG-SPEC.md` entirely,
@@ -77,3 +80,13 @@ prompts (see the `gpt-review` skill). Add to it when a bug or a review reveals a
   The reason this matters: `loading="lazy"` on the chart iframe was a silent archive-wide defect,
   because a non-scrolling renderer (Doppio PDF builds, card scrapers) never brings a below-fold
   iframe near the viewport. See the comment at that assignment for the measurements.
+- **scripts/slides/ never reads the working tree under charts/, never writes under charts/, never
+  commits, checks out, or otherwise changes the working tree or branches (it only fetches
+  origin/main to read published figures), and its outputs never enter the archive.** Archived
+  figures are read from origin/main with `git show`. Working files live beside the deck. Enforced
+  in Node by assertOutsideArchive in scripts/slides/paths.mjs, which every script calls before it
+  reads a working file (chart.yaml, its data file, source.json) or writes one; paths.test.mjs
+  covers it and CI's Validate job runs it. insert-slide.ps1 enforces the same rule with
+  Assert-OutsideArchive in scripts/slides/insert-checks.ps1, on the deck, its `_backups` folder,
+  each image and its source.json, before any PowerPoint call; test-insert-checks.ps1 covers it
+  COM-free, but it is Windows PowerShell, so CI does not run it.

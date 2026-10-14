@@ -18,10 +18,12 @@
     "thumbs": "node scripts/thumbs.mjs",
     "all": "npm run catalog && npm run vendor-spec && npm run validate && npm run build && npm run site && npm run assets && npm run thumbs",
     "dev": "node scripts/dev-server.mjs",
-    "test": "node --test --test-concurrency=1"
+    "test": "node --test --test-concurrency=1",
+    "slides:preflight": "node scripts/slides/preflight.mjs"
   },
   "dependencies": {
-    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v1.16.3"
+    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v1.17.0",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "playwright": "^1.61.0"
