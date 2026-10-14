@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The debt-to-GDP ratio falls more when AI adoption is faster</title>
+<link rel="stylesheet" href="../../embed/v1/chart-1.16.3.css">
+<style>html.tbl-embedded body{margin:0 !important}html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style><script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}catch(e){document.documentElement.classList.add("tbl-embedded")}</script>
+</head>
+<body>
+<div id="chart" style="max-width:760px;margin:32px auto;padding:0 16px"></div>
+<script src="../../embed/v1/engine-1.16.3.js"></script>
+<script>
+var el = document.getElementById("chart");
+if (typeof BudgetLabChart === "undefined") {
+  renderUnavailable(el, "The debt-to-GDP ratio falls more when AI adoption is faster", "Appendix Figure 4");
+} else {
+BudgetLabChart.mountChart(el, {
+  spec: {"chartType":"bar","title":"The debt-to-GDP ratio falls more when AI adoption is faster","subtitle":"Federal debt, percent of GDP, FY 2030","value_suffix":"%","xAxisType":"categorical","orientation":"vertical","columns":{"x":"ai_speed","value":"blsmm_debt_to_gdp_year_pct","series":"labor_dist"},"series_order":["Compressive","Proportional","Expansive"],"valueLabels":{"show":false},"yAxisPolicy":{"min":98,"max":110,"markers":[{"y":107.4,"label":"BLSMM baseline","style":"dashed","color":"gray"}]},"source":"The Budget Lab AI-Revenue Microsimulation Model and The Budget Lab Small Macro Model (BLSMM)","data":"data.csv"},
+  rows: [{"ai_speed":"Slow","share_mode":"Reallocated","labor_dist":"Compressive","Scenario":"Slow AI · Reallocated shares · Compressive labor","r_ai_annual_target":"0.02","delta_rev_to_gdp_cbo_pp":"-0.0914296837163459","prod_bump_pp_per_yr":"0.0718416241189225","blsmm_gstar_year_pct":"2.12847240803236","blsmm_annualized_growth_horizon":"0.0199999999925828","blsmm_year_real_growth":"0.0188414846906613","blsmm_rgfr_year_pct":"17.5516005836445","blsmm_rgfop_year_pct":"19.634462198743","blsmm_debt_year_B":"40262.9124978303","blsmm_gdp_nominal_year_B":"37579.0323915506","blsmm_debt_to_gdp_year_pct":"107.141961715021","delta_debt_to_gdp_vs_baseline_pp":"-0.22131836795927"},{"ai_speed":"Slow","share_mode":"Reallocated","labor_dist":"Proportional","Scenario":"Slow AI · Reallocated shares · Proportional labor","r_ai_annual_target":"0.02","delta_rev_to_gdp_cbo_pp":"-0.0823070036456097","prod_bump_pp_per_yr":"0.071978338639114","blsmm_gstar_year_pct":"2.12860977778824","blsmm_annualized_growth_horizon":"0.0200000000031326","blsmm_year_real_growth":"0.0188454989168403","blsmm_rgfr_year_pct":"17.5607232637152","blsmm_rgfop_year_pct":"19.6343369682425","blsmm_debt_year_B":"40251.6861354858","blsmm_gdp_nominal_year_B":"37578.4309795631","blsmm_debt_to_gdp_year_pct":"107.113801950317","delta_debt_to_gdp_vs_baseline_pp":"-0.249478132663015"},{"ai_speed":"Slow","share_mode":"Reallocated","labor_dist":"Expansive","Scenario":"Slow AI · Reallocated shares · Expansive labor","r_ai_annual_target":"0.02","delta_rev_to_gdp_cbo_pp":"-0.0730899773545152","prod_bump_pp_per_yr":"0.0721164671411194","blsmm_gstar_year_pct":"2.12874856830276","blsmm_annualized_growth_horizon":"0.0200000000002025","blsmm_year_real_growth":"0.0188495547058967","blsmm_rgfr_year_pct":"17.5699402900063","blsmm_rgfop_year_pct":"19.6342104425347","blsmm_debt_year_B":"40240.3440093889","blsmm_gdp_nominal_year_B":"37577.8233558097","blsmm_debt_to_gdp_year_pct":"107.085350921922","delta_debt_to_gdp_vs_baseline_pp":"-0.277929161057557"},{"ai_speed":"Moderate","share_mode":"Reallocated","labor_dist":"Compressive","Scenario":"Moderate AI · Reallocated shares · Compressive labor","r_ai_annual_target":"0.026","delta_rev_to_gdp_cbo_pp":"-0.370439628117808","prod_bump_pp_per_yr":"0.680312455264255","blsmm_gstar_year_pct":"2.73985947517528","blsmm_annualized_growth_horizon":"0.0259999999795177","blsmm_year_real_growth":"0.0250932159873469","blsmm_rgfr_year_pct":"17.272590639243","blsmm_rgfop_year_pct":"19.0771029174139","blsmm_debt_year_B":"40168.1718420757","blsmm_gdp_nominal_year_B":"38682.0378896213","blsmm_debt_to_gdp_year_pct":"103.841922591294","delta_debt_to_gdp_vs_baseline_pp":"-3.52135749168555"},{"ai_speed":"Moderate","share_mode":"Reallocated","labor_dist":"Proportional","Scenario":"Moderate AI · Reallocated shares · Proportional labor","r_ai_annual_target":"0.026","delta_rev_to_gdp_cbo_pp":"-0.317923206285625","prod_bump_pp_per_yr":"0.68110471768988","blsmm_gstar_year_pct":"2.74065553470024","blsmm_annualized_growth_horizon":"0.0259999999969089","blsmm_year_real_growth":"0.0251164899936909","blsmm_rgfr_year_pct":"17.3251070610752","blsmm_rgfop_year_pct":"19.076377205032","blsmm_debt_year_B":"40102.1821610345","blsmm_gdp_nominal_year_B":"38678.473559463","blsmm_debt_to_gdp_year_pct":"103.68088104455","delta_debt_to_gdp_vs_baseline_pp":"-3.68239903843002"},{"ai_speed":"Moderate","share_mode":"Reallocated","labor_dist":"Expansive","Scenario":"Moderate AI · Reallocated shares · Expansive labor","r_ai_annual_target":"0.026","delta_rev_to_gdp_cbo_pp":"-0.261422843576262","prod_bump_pp_per_yr":"0.681957121290771","blsmm_gstar_year_pct":"2.7415120236409","blsmm_annualized_growth_horizon":"0.0259999999806146","blsmm_year_real_growth":"0.0251415319984967","blsmm_rgfr_year_pct":"17.3816074237845","blsmm_rgfop_year_pct":"19.0755964033336","blsmm_debt_year_B":"40031.1990153855","blsmm_gdp_nominal_year_B":"38674.6391059965","blsmm_debt_to_gdp_year_pct":"103.507621378628","delta_debt_to_gdp_vs_baseline_pp":"-3.85565870435232"},{"ai_speed":"Rapid","share_mode":"Reallocated","labor_dist":"Compressive","Scenario":"Rapid AI · Reallocated shares · Compressive labor","r_ai_annual_target":"0.033","delta_rev_to_gdp_cbo_pp":"-0.776554092394349","prod_bump_pp_per_yr":"1.38913158131778","blsmm_gstar_year_pct":"3.4520757794424","blsmm_annualized_growth_horizon":"0.0329999999773796","blsmm_year_real_growth":"0.0323551188574007","blsmm_rgfr_year_pct":"16.8664761749664","blsmm_rgfop_year_pct":"18.4278245979488","blsmm_debt_year_B":"40148.3948390993","blsmm_gdp_nominal_year_B":"40006.8681748826","blsmm_debt_to_gdp_year_pct":"100.353755919104","delta_debt_to_gdp_vs_baseline_pp":"-7.00952416387608"},{"ai_speed":"Rapid","share_mode":"Reallocated","labor_dist":"Proportional","Scenario":"Rapid AI · Reallocated shares · Proportional labor","r_ai_annual_target":"0.033","delta_rev_to_gdp_cbo_pp":"-0.678426174659694","prod_bump_pp_per_yr":"1.39062326594584","blsmm_gstar_year_pct":"3.45357461331113","blsmm_annualized_growth_horizon":"0.0329999999967665","blsmm_year_real_growth":"0.0323989620357821","blsmm_rgfr_year_pct":"16.9646040927011","blsmm_rgfop_year_pct":"18.4264582148295","blsmm_debt_year_B":"40022.0256744747","blsmm_gdp_nominal_year_B":"39999.9789491081","blsmm_debt_to_gdp_year_pct":"100.055116842423","delta_debt_to_gdp_vs_baseline_pp":"-7.30816324055688"},{"ai_speed":"Rapid","share_mode":"Reallocated","labor_dist":"Expansive","Scenario":"Rapid AI · Reallocated shares · Expansive labor","r_ai_annual_target":"0.033","delta_rev_to_gdp_cbo_pp":"-0.56478195699525","prod_bump_pp_per_yr":"1.39235098398685","blsmm_gstar_year_pct":"3.45531061183704","blsmm_annualized_growth_horizon":"0.032999999986455","blsmm_year_real_growth":"0.0324497477140056","blsmm_rgfr_year_pct":"17.0782483103655","blsmm_rgfop_year_pct":"18.424875625104","blsmm_debt_year_B":"39875.7248889079","blsmm_gdp_nominal_year_B":"39992.0014999253","blsmm_debt_to_gdp_year_pct":"99.7092503334258","delta_debt_to_gdp_vs_baseline_pp":"-7.65402974955407"}],
+  eyebrow: /[?&]eyebrow=(off|0|false|none|hide)\b/i.test(location.search) ? undefined : "Appendix Figure 4",
+});
+}
+function renderUnavailable(el, title, eyebrow) {
+  var box = document.createElement("div");
+  box.setAttribute("role", "note");
+  box.style.cssText = "font:16px/1.5 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1c1c1c;border:1px solid #d9dce3;border-radius:4px;padding:20px";
+  if (eyebrow) {
+    var e = document.createElement("p");
+    e.textContent = eyebrow;
+    e.style.cssText = "margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a5f6b";
+    box.appendChild(e);
+  }
+  var h = document.createElement("p");
+  h.textContent = title;
+  h.style.cssText = "margin:0 0 12px;font-weight:600";
+  box.appendChild(h);
+  var p = document.createElement("p");
+  p.style.cssText = "margin:0;color:#5a5f6b";
+  p.appendChild(document.createTextNode("An error occurred, please try reloading this page. If this problem persists please contact "));
+  var a = document.createElement("a");
+  a.href = "mailto:budgetlab@yale.edu";
+  a.textContent = "budgetlab@yale.edu";
+  a.style.color = "inherit";
+  p.appendChild(a);
+  p.appendChild(document.createTextNode("."));
+  box.appendChild(p);
+  el.appendChild(box);
+}
+</script>
+<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script><script>(function(){if(window.self===window.top)return;function fit(){try{if(window.parentIFrame&&window.parentIFrame.size)window.parentIFrame.size();}catch(e){}}var t;function soon(){clearTimeout(t);t=setTimeout(fit,60);}if(window.ResizeObserver){try{new ResizeObserver(soon).observe(document.body);}catch(e){}}window.addEventListener("load",function(){setTimeout(fit,200);setTimeout(fit,800);});if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}})();</script>
+</body>
+</html>
