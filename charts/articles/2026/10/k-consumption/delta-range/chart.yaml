@@ -1,6 +1,6 @@
 chartType: dumbbell
 title: "The necessary differences in the spending shares necessary for the K-shape to appear are not present in the CE, even across groups that are vastly different."
-subtitle: "Spending different across different categories in average household spending units"
+subtitle: "Spending difference in average household spending units"
 xAxisType: categorical
 orientation: horizontal
 columns:
