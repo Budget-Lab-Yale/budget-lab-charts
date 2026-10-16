@@ -35,12 +35,10 @@
  *     to revisit. (The redundant-ramp warning below does stay silent when a selector is present,
  *     since the accent means the engine would NOT assign the ramp colours.)
  *   - Narrowing `bar_color`/`category_colors` to the chart types that actually paint them was
- *     argued for on the grounds that a grouped bar ignores both. Declined: the applicability rule
- *     is documented WRONG — ENGINE-CONFIG-SPEC calls `category_colors` single-series-bar-only, yet
- *     `waterfall.ts` honours it and a published waterfall relies on it, and `validate.ts` has no
- *     chart-type gate at all. Inferring "inert" from the doc would itself be a false-positive
- *     source, and an off-palette value in a governed field is worth surfacing even when it happens
- *     to paint nothing. PALETTE_EXCEPTIONS covers a genuine case.
+ *     argued for on the grounds that a grouped bar ignores both. Declined: `category_colors` paints
+ *     single-series bars AND waterfalls (a published waterfall relies on it), and an off-palette
+ *     value in a governed field is worth surfacing even when it happens to paint nothing.
+ *     PALETTE_EXCEPTIONS covers a genuine case.
  */
 
 import { readFileSync } from "node:fs";

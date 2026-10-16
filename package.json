@@ -6,7 +6,7 @@
   "description": "Budget Lab chart archive — versioned chart specs + data, built and published by budget-lab-chart-engine.",
   "license": "UNLICENSED",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "scripts": {
     "validate": "node scripts/validate-all.mjs",
@@ -22,7 +22,7 @@
     "slides:preflight": "node scripts/slides/preflight.mjs"
   },
   "dependencies": {
-    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v1.18.0",
+    "budget-lab-chart-engine": "github:Budget-Lab-Yale/budget-lab-chart-engine#v1.19.0",
     "yaml": "^2.9.0"
   },
   "devDependencies": {
