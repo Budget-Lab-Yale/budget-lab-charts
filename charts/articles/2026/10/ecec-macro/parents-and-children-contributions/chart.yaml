@@ -9,7 +9,6 @@ series_labels:
   children: "Children’s adult earnings"
 barStack: { netDisplay: text, hover: tooltip }
 legendPosition: top
-yAxisPolicy: { min: 0 }
 valueLabels: { show: false, decimals: 2 }
 title: "Parents’ and Children’s Contributions to Long-Run Potential GDP"
 subtitle: "Percent change from baseline once every worker aged 27–65 has grown up under the policy"
