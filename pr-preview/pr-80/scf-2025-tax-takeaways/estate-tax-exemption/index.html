@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Households age 75+ and their wealth above the estate tax exemption</title>
+<link rel="stylesheet" href="../../embed/v1/chart-1.19.0.css">
+<style>html.tbl-embedded body{margin:0 !important}html.tbl-embedded #chart{margin:0 !important;max-width:none !important;padding:0 !important}</style><script>try{if(window.self!==window.top)document.documentElement.classList.add("tbl-embedded")}catch(e){document.documentElement.classList.add("tbl-embedded")}</script>
+</head>
+<body>
+<div id="chart" style="max-width:760px;margin:32px auto;padding:0 16px"></div>
+<script src="../../embed/v1/engine-1.19.0.js"></script>
+<script>
+var el = document.getElementById("chart");
+if (typeof BudgetLabChart === "undefined") {
+  renderUnavailable(el, "Households age 75+ and their wealth above the estate tax exemption", "Figure 1");
+} else {
+BudgetLabChart.mountChart(el, {
+  spec: {"chartType":"line","title":"Households age 75+ and their wealth above the estate tax exemption","source":"The Budget Lab analysis of the Federal Reserve Survey of Consumer Finances.","note":"Exemption in effect in the survey year; married couples are compared against twice the per-person exemption. Indexed exemption is the 1998 exemption ($625,000) adjusted with CPI-U-RS. SCF excludes the Forbes 400. Age is of the household head. Shaded areas are 95 percent confidence intervals.","xAxisType":"temporal","x_ticks":["2001","2007","2013","2019","2025"],"columns":{"x":"year","value":"value","series":"series","facet":"panel"},"small_multiples":{"columns":2,"mode":"per-pane","pane_order":["Share of households above the exemption","Share of their net worth above the exemption"]},"series_order":["Actual exemption","1998 exemption indexed to inflation"],"confidence_bands":[{"series":"Actual exemption","lower":"lower","upper":"upper"},{"series":"1998 exemption indexed to inflation","lower":"lower","upper":"upper"}],"value_suffix":"%","yAxisPolicy":{"min":0},"tooltip_decimals":1,"data":"data.csv"},
+  rows: [{"year":"1998","panel":"Share of households above the exemption","series":"Actual exemption","value":"4.3","lower":"1.86","upper":"6.73"},{"year":"2001","panel":"Share of households above the exemption","series":"Actual exemption","value":"8.21","lower":"5.89","upper":"10.53"},{"year":"2004","panel":"Share of households above the exemption","series":"Actual exemption","value":"3.6","lower":"1.81","upper":"5.39"},{"year":"2007","panel":"Share of households above the exemption","series":"Actual exemption","value":"3.4","lower":"2.47","upper":"4.34"},{"year":"2010","panel":"Share of households above the exemption","series":"Actual exemption","value":"1.42","lower":"0.81","upper":"2.02"},{"year":"2013","panel":"Share of households above the exemption","series":"Actual exemption","value":"0.91","lower":"0.32","upper":"1.5"},{"year":"2016","panel":"Share of households above the exemption","series":"Actual exemption","value":"1.41","lower":"0.92","upper":"1.9"},{"year":"2019","panel":"Share of households above the exemption","series":"Actual exemption","value":"0.6","lower":"0.3","upper":"0.9"},{"year":"2022","panel":"Share of households above the exemption","series":"Actual exemption","value":"1.01","lower":"0.58","upper":"1.45"},{"year":"2025","panel":"Share of households above the exemption","series":"Actual exemption","value":"0.88","lower":"0.51","upper":"1.25"},{"year":"1998","panel":"Share of households above the exemption","series":"1998 exemption indexed to inflation","value":"4.3","lower":"1.86","upper":"6.73"},{"year":"2001","panel":"Share of households above the exemption","series":"1998 exemption indexed to inflation","value":"8.15","lower":"5.83","upper":"10.46"},{"year":"2004","panel":"Share of households above the exemption","series":"1998 exemption indexed to inflation","value":"10.72","lower":"7.95","upper":"13.48"},{"year":"2007","panel":"Share of households above the exemption","series":"1998 exemption indexed to inflation","value":"10.21","lower":"7.64","upper":"12.78"},{"year":"2010","panel":"Share of households above the exemption","series":"1998 exemption indexed to inflation","value":"10.42","lower":"8.26","upper":"12.57"},{"year":"2013","panel":"Share of households above the exemption","series":"1998 exemption indexed to inflation","value":"6.44","lower":"4.85","upper":"8.02"},{"year":"2016","panel":"Share of households above the exemption","series":"1998 exemption indexed to inflation","value":"14.39","lower":"11.96","upper":"16.82"},{"year":"2019","panel":"Share of households above the exemption","series":"1998 exemption indexed to inflation","value":"12.49","lower":"10.18","upper":"14.79"},{"year":"2022","panel":"Share of households above the exemption","series":"1998 exemption indexed to inflation","value":"14.16","lower":"11.54","upper":"16.77"},{"year":"2025","panel":"Share of households above the exemption","series":"1998 exemption indexed to inflation","value":"22.45","lower":"19.42","upper":"25.48"},{"year":"1998","panel":"Share of their net worth above the exemption","series":"Actual exemption","value":"34.09","lower":"26.27","upper":"41.9"},{"year":"2001","panel":"Share of their net worth above the exemption","series":"Actual exemption","value":"36.81","lower":"30.38","upper":"43.24"},{"year":"2004","panel":"Share of their net worth above the exemption","series":"Actual exemption","value":"27.42","lower":"20.56","upper":"34.28"},{"year":"2007","panel":"Share of their net worth above the exemption","series":"Actual exemption","value":"32.9","lower":"26.81","upper":"38.98"},{"year":"2010","panel":"Share of their net worth above the exemption","series":"Actual exemption","value":"18.59","lower":"13.7","upper":"23.49"},{"year":"2013","panel":"Share of their net worth above the exemption","series":"Actual exemption","value":"21.41","lower":"14.36","upper":"28.45"},{"year":"2016","panel":"Share of their net worth above the exemption","series":"Actual exemption","value":"24.23","lower":"19.59","upper":"28.86"},{"year":"2019","panel":"Share of their net worth above the exemption","series":"Actual exemption","value":"16.04","lower":"11.53","upper":"20.56"},{"year":"2022","panel":"Share of their net worth above the exemption","series":"Actual exemption","value":"22.98","lower":"17.08","upper":"28.87"},{"year":"2025","panel":"Share of their net worth above the exemption","series":"Actual exemption","value":"15.35","lower":"10.62","upper":"20.07"},{"year":"1998","panel":"Share of their net worth above the exemption","series":"1998 exemption indexed to inflation","value":"34.09","lower":"26.27","upper":"41.9"},{"year":"2001","panel":"Share of their net worth above the exemption","series":"1998 exemption indexed to inflation","value":"36.65","lower":"30.21","upper":"43.08"},{"year":"2004","panel":"Share of their net worth above the exemption","series":"1998 exemption indexed to inflation","value":"40.19","lower":"33.36","upper":"47.02"},{"year":"2007","panel":"Share of their net worth above the exemption","series":"1998 exemption indexed to inflation","value":"47.01","lower":"41.35","upper":"52.67"},{"year":"2010","panel":"Share of their net worth above the exemption","series":"1998 exemption indexed to inflation","value":"47.68","lower":"41.72","upper":"53.63"},{"year":"2013","panel":"Share of their net worth above the exemption","series":"1998 exemption indexed to inflation","value":"46.28","lower":"39.08","upper":"53.49"},{"year":"2016","panel":"Share of their net worth above the exemption","series":"1998 exemption indexed to inflation","value":"56.02","lower":"51.71","upper":"60.34"},{"year":"2019","panel":"Share of their net worth above the exemption","series":"1998 exemption indexed to inflation","value":"52.88","lower":"48.22","upper":"57.55"},{"year":"2022","panel":"Share of their net worth above the exemption","series":"1998 exemption indexed to inflation","value":"63.52","lower":"59.39","upper":"67.66"},{"year":"2025","panel":"Share of their net worth above the exemption","series":"1998 exemption indexed to inflation","value":"58.5","lower":"54.3","upper":"62.69"}],
+  eyebrow: /[?&]eyebrow=(off|0|false|none|hide)\b/i.test(location.search) ? undefined : "Figure 1",
+});
+}
+function renderUnavailable(el, title, eyebrow) {
+  var box = document.createElement("div");
+  box.setAttribute("role", "note");
+  box.style.cssText = "font:16px/1.5 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;color:#1c1c1c;border:1px solid #d9dce3;border-radius:4px;padding:20px";
+  if (eyebrow) {
+    var e = document.createElement("p");
+    e.textContent = eyebrow;
+    e.style.cssText = "margin:0 0 4px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#5a5f6b";
+    box.appendChild(e);
+  }
+  var h = document.createElement("p");
+  h.textContent = title;
+  h.style.cssText = "margin:0 0 12px;font-weight:600";
+  box.appendChild(h);
+  var p = document.createElement("p");
+  p.style.cssText = "margin:0;color:#5a5f6b";
+  p.appendChild(document.createTextNode("An error occurred, please try reloading this page. If this problem persists please contact "));
+  var a = document.createElement("a");
+  a.href = "mailto:budgetlab@yale.edu";
+  a.textContent = "budgetlab@yale.edu";
+  a.style.color = "inherit";
+  p.appendChild(a);
+  p.appendChild(document.createTextNode("."));
+  box.appendChild(p);
+  el.appendChild(box);
+}
+</script>
+<script src="../../embed/v1/iframeResizer.contentWindow.min.js"></script><script>(function(){if(window.self===window.top)return;function fit(){try{if(window.parentIFrame&&window.parentIFrame.size)window.parentIFrame.size();}catch(e){}}var t;function soon(){clearTimeout(t);t=setTimeout(fit,60);}if(window.ResizeObserver){try{new ResizeObserver(soon).observe(document.body);}catch(e){}}window.addEventListener("load",function(){setTimeout(fit,200);setTimeout(fit,800);});if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(fit,50);});}})();</script>
+</body>
+</html>

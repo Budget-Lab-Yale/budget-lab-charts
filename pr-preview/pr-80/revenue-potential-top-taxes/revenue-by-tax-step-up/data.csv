@@ -1,0 +1,46 @@
+bar,policy,stage,tax,revenue_billions
+Capital gains: before response,Capital gains,Before response,"Income tax, excluding gains",-3
+Capital gains: before response,Capital gains,Before response,Tax on capital gains,550
+Capital gains: before response,Capital gains,Before response,Payroll tax,0
+Capital gains: before response,Capital gains,Before response,Corporate tax,0
+Capital gains: before response,Capital gains,Before response,Estate tax,0
+Capital gains: after mechanical adjustments,Capital gains,After mechanical income adjustments,"Income tax, excluding gains",-8
+Capital gains: after mechanical adjustments,Capital gains,After mechanical income adjustments,Tax on capital gains,544
+Capital gains: after mechanical adjustments,Capital gains,After mechanical income adjustments,Payroll tax,0
+Capital gains: after mechanical adjustments,Capital gains,After mechanical income adjustments,Corporate tax,0
+Capital gains: after mechanical adjustments,Capital gains,After mechanical income adjustments,Estate tax,-1
+Capital gains: after behavioral response,Capital gains,After behavioral response,"Income tax, excluding gains",33
+Capital gains: after behavioral response,Capital gains,After behavioral response,Tax on capital gains,266
+Capital gains: after behavioral response,Capital gains,After behavioral response,Payroll tax,4
+Capital gains: after behavioral response,Capital gains,After behavioral response,Corporate tax,-30
+Capital gains: after behavioral response,Capital gains,After behavioral response,Estate tax,-1
++ Corporate: before response,+ Corporate,Before response,"Income tax, excluding gains",0
++ Corporate: before response,+ Corporate,Before response,Tax on capital gains,0
++ Corporate: before response,+ Corporate,Before response,Payroll tax,0
++ Corporate: before response,+ Corporate,Before response,Corporate tax,948
++ Corporate: before response,+ Corporate,Before response,Estate tax,0
++ Corporate: after mechanical adjustments,+ Corporate,After mechanical income adjustments,"Income tax, excluding gains",-50
++ Corporate: after mechanical adjustments,+ Corporate,After mechanical income adjustments,Tax on capital gains,-70
++ Corporate: after mechanical adjustments,+ Corporate,After mechanical income adjustments,Payroll tax,0
++ Corporate: after mechanical adjustments,+ Corporate,After mechanical income adjustments,Corporate tax,948
++ Corporate: after mechanical adjustments,+ Corporate,After mechanical income adjustments,Estate tax,-4
++ Corporate: after behavioral response,+ Corporate,After behavioral response,"Income tax, excluding gains",85
++ Corporate: after behavioral response,+ Corporate,After behavioral response,Tax on capital gains,-68
++ Corporate: after behavioral response,+ Corporate,After behavioral response,Payroll tax,22
++ Corporate: after behavioral response,+ Corporate,After behavioral response,Corporate tax,681
++ Corporate: after behavioral response,+ Corporate,After behavioral response,Estate tax,-4
+Package: before response,Package,Before response,"Income tax, excluding gains",-3
+Package: before response,Package,Before response,Tax on capital gains,550
+Package: before response,Package,Before response,Payroll tax,0
+Package: before response,Package,Before response,Corporate tax,948
+Package: before response,Package,Before response,Estate tax,0
+Package: after mechanical adjustments,Package,After mechanical income adjustments,"Income tax, excluding gains",-58
+Package: after mechanical adjustments,Package,After mechanical income adjustments,Tax on capital gains,474
+Package: after mechanical adjustments,Package,After mechanical income adjustments,Payroll tax,0
+Package: after mechanical adjustments,Package,After mechanical income adjustments,Corporate tax,948
+Package: after mechanical adjustments,Package,After mechanical income adjustments,Estate tax,-5
+Package: after behavioral response,Package,After behavioral response,"Income tax, excluding gains",118
+Package: after behavioral response,Package,After behavioral response,Tax on capital gains,198
+Package: after behavioral response,Package,After behavioral response,Payroll tax,25
+Package: after behavioral response,Package,After behavioral response,Corporate tax,651
+Package: after behavioral response,Package,After behavioral response,Estate tax,-5
