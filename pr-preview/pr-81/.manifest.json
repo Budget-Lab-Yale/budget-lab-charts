@@ -1,0 +1,237 @@
+{
+  "renderVersion": "engine:git+ssh://git@github.com/Budget-Lab-Yale/budget-lab-chart-engine.git#13a42208051cf78e85473d4e2ff86ac1e49f7375|thumbs:1|fonts:1",
+  "engineVersion": "1.20.0",
+  "charts": {
+    "ai-fiscal/atr-by-decile": {
+      "hash": "d440d76a2317715722da0221178b90496b7d9c32137ba567f4dffb74422c1913"
+    },
+    "ai-fiscal/debt-to-gdp": {
+      "hash": "62c252a6a1420f1affef2df40ba6fb24ee681a8fd9339b46369f9947f1604d1c"
+    },
+    "ai-fiscal/gdp-growth-history": {
+      "hash": "f6f57a2d310956a85ca4f1c1ef0ca7e2ee58c97fd4edb218365329168ce547b0"
+    },
+    "ai-fiscal/inequality-gini": {
+      "hash": "6ab8bf87666672a9ab6391713c4a024e164378f7320a888700f792dcd8097076"
+    },
+    "ai-fiscal/key-parameters": {
+      "hash": "596d517f30c3da1f0bfb9351b717b92429eb28fe367456a51ff8d02ef926d423"
+    },
+    "ai-fiscal/key-parameters-symbols": {
+      "hash": "98e65d4f47e359245b1da74fe2d3e9a8ab31d2450539f3d44078ac1ab4ea4383"
+    },
+    "ai-fiscal/labor-share-history": {
+      "hash": "bc36623cff0212d5f856f18d59edc7825dde9a2cbabd87cad5937c48b04cffdc"
+    },
+    "ai-fiscal/revenue-by-income-type": {
+      "hash": "66dd7cd33ddd11b050048e652bd6b80a4ad8c0acb19bb28a54c5b59bb5764117"
+    },
+    "ai-fiscal/revenue-by-instrument": {
+      "hash": "5b2d9d11f182ef97d859d32c8bd8841ee66bf3347527d255bb894e468cebe92f"
+    },
+    "ai-fiscal/revenue-fixed-vs-reallocated": {
+      "hash": "23c315d7d4321de16395b036eacedeb4a33c1106189010a988c8e151becee5f9"
+    },
+    "ai-fiscal/revenue-headline": {
+      "hash": "343285ac1a563f0c238e22e5057672c26886bfa4c77cd90a274f1ac43afd605c"
+    },
+    "ai-fiscal/revenue-vs-factor-income": {
+      "hash": "7cb07a5e67b82f53ec9d227b3df68e34343c6b04f3686880b1e5a0f398aa8468"
+    },
+    "ai-fiscal/revenue-vs-pretax-income": {
+      "hash": "dfa0b3909036f4b5eab09c807b809f7494b7023f9c7cf758387aa68d2ee4d474"
+    },
+    "atus-childcare/childcare-by-activity": {
+      "hash": "900d5f28cd4e8939463405c90e078c5be1986826f5e9b19afc510b400d0dbe78"
+    },
+    "atus-childcare/childcare-by-cohort-all-adults": {
+      "hash": "29e6e267da90e8e1b5b7090498d8b97dfc667e1031597cd905919466c0ae08a5"
+    },
+    "atus-childcare/childcare-by-cohort-parents": {
+      "hash": "4f69f1dfc6e3093bde815af64ffd1b1586e5087d8a206a30101e1785cd2600f3"
+    },
+    "atus-childcare/childcare-by-household-type": {
+      "hash": "44c294c3cbd2f26362bb40616ac225ab095989bdbbcbf7b838621793c4835603"
+    },
+    "atus-childcare/childcare-by-household-type-and-child-age": {
+      "hash": "46121edbb651051430382803cc816579462577632d57fe8dcfc6196b775793cb"
+    },
+    "atus-childcare/childcare-by-sex-and-child-age": {
+      "hash": "ee3fe0d38c2daaf077f6ed9b976704f9761812f6b767868c058484bcce3be57e"
+    },
+    "atus-childcare/leisure-by-cohort": {
+      "hash": "29ad63570da174a7decb5594a08e55d324d53a5b3a3cc37ce762d813b0c09fad"
+    },
+    "atus-childcare/leisure-by-household-type": {
+      "hash": "203cae161835580eeef8273cb4d11b4359a6f4823eec5f0e24d4711ff5920778"
+    },
+    "atus-childcare/work-by-cohort-parents": {
+      "hash": "e4d68f8bd1528b354923fc8efd816d302b1805dcdc440ed143dcc801bede39cc"
+    },
+    "atus-childcare/work-by-household-type": {
+      "hash": "83894f3b66123976ff02335c6d0a596f0e863cf0994466039d386efc9e12d942"
+    },
+    "atus-childcare/work-by-youngest-child-age": {
+      "hash": "9c5983a99e1182e58b4e259d6e0fd287664d1901b77e7d491a97a40517ce2512"
+    },
+    "ces-qcew-benchmark-revisions/final-v-prelim": {
+      "hash": "57bd5cee008cb6e36fdb026116c18bcda9d39571b31fd331b69adf080cd25f46"
+    },
+    "ces-qcew-benchmark-revisions/regressions": {
+      "hash": "daf832d2ecbfe34479d00a3dfb9f380724ce07b370cd4c50edf80bd701a581cc"
+    },
+    "ces-qcew-benchmark-revisions/revisions-since-2015": {
+      "hash": "3a65b0526233e21fb605bf7dcad5410f2b0476e55189b4d2c7fbbedc3687b767"
+    },
+    "deficit-management-scorecard/deviation-distribution": {
+      "hash": "67140042e632df8f86427fea3e14e71309b91217b44048ab6f3168871a1e8fbf"
+    },
+    "deficit-management-scorecard/required-deficit-reduction": {
+      "hash": "9937ee092e0e79013a474b9e8e2035757b5ff39a3262533f94dc4313bd4ae1c9"
+    },
+    "deficit-management-scorecard/scorecard-scatter": {
+      "hash": "992dacbf1fab5020880c263655c6f359831bcc0c4f450dc8e2873de812be2fe5"
+    },
+    "ecec-macro/full-workforce-gdp-by-estimate": {
+      "hash": "88abf42ec087265a99ce644499d3aeea9a531ed22fc49f6b9dff4224d3a4006a"
+    },
+    "ecec-macro/full-workforce-gdp-universal": {
+      "hash": "07cc093d022d90e4c4201244cbc91cdeb8d1c7763737179faab5c8cdc44eb48f"
+    },
+    "ecec-macro/funding-requirement-by-policy": {
+      "hash": "ea0431d724843440a7b4d50167743e163fcf506e50c159ec970bb8c7bcfee8a8"
+    },
+    "ecec-macro/funding-requirement-universal": {
+      "hash": "36d1c3cf47a45d8ccfaf00e3390b26813af7b721874c4e1139580210ff1772b7"
+    },
+    "ecec-macro/methods-macro-assumptions": {
+      "hash": "b16149daa381ac630abaf239830b4b5d74e2ed018bf66a6435b58073fe4f5ca9"
+    },
+    "ecec-macro/methods-parental-assumptions": {
+      "hash": "684b06bc91e266d563db94cd20cb6bef49197f54700331f26ffba868d8e1daad"
+    },
+    "ecec-macro/methods-receipt-assumptions": {
+      "hash": "2f1070b32692cd16a78dd0ad9174ba085b370a923262fe018024686f5f5d6e6d"
+    },
+    "ecec-macro/parental-contributions-by-policy": {
+      "hash": "091e7d37c83aff87277b15bc7eaa4165f319ea4b8eeec0f07d43c9abbebeffa4"
+    },
+    "ecec-macro/parental-contributions-universal": {
+      "hash": "5df85cf721681c8f0be2c501581783066e531d132b2e48522fefade859dde833"
+    },
+    "ecec-macro/parents-and-children-contributions": {
+      "hash": "fe412f843ffd1476bb564e33c36d891e653dce247f9f10609307be2f67e16dd8"
+    },
+    "ecec-macro/potential-gdp-2055-by-financing": {
+      "hash": "57775369f41030a5996047d734b0ff9ea75eb405ead362be6eab09b63c0c4037"
+    },
+    "ecec-macro/potential-gdp-financing-paths": {
+      "hash": "b7a87c685ab5eab9c090be7c5193b3b61892a5b093f9b721bbfb8d236c5902f5"
+    },
+    "ecec-macro/work-response-2030": {
+      "hash": "af3cdce81fc264b86ef236238d75d06982a3712a0a2a86a0a5576ed492a9d039"
+    },
+    "ecec-macro/workforce-timing": {
+      "hash": "97c0dc9f3fcd2f8a9dd57a8a7320c7f6d1eb60d72fe597814748d91ff0f88afc"
+    },
+    "emp-dispersion/lfp-by-education": {
+      "hash": "e2798ddcf58c6a206d8e0ea4ec748aab815b96af4adaf157963e019971a7a8db"
+    },
+    "emp-dispersion/lfp-quintiles-rf": {
+      "hash": "8f3bcd68987bb36ac642ea17b2ed35d086aad0cd18b642d03b5c63588badbe03"
+    },
+    "emp-dispersion/lfp-quintiles-rf-contemporaneous": {
+      "hash": "0a5ae827aacf5436faa37a4e0648a5b54d8c955f3ee4f5443326544388ce5ae0"
+    },
+    "emp-dispersion/quintile-characteristics": {
+      "hash": "5444208a8349b30b6716b4032c5366fc22757e01ef5b768f8d03075f1f5e9b36"
+    },
+    "emp-dispersion/unemployment-quintiles-rf": {
+      "hash": "850fadca02e9a96200a659343a4e883956b5c562ce0e40463cba612e4258353c"
+    },
+    "emp-dispersion/unemployment-quintiles-rf-contemporaneous": {
+      "hash": "e8427e0c9411d6b6101bf743e9caebec682a6d52d60d10fc2de3deffb4e5187f"
+    },
+    "recession-indicators/cfnai": {
+      "hash": "a0153372e1e443fdb99ed54d8fa23dcd8e4558bed711752c95aa28a8d04561af"
+    },
+    "recession-indicators/michez-rule": {
+      "hash": "32f1cb069220c5c2d55e4363569825d966f58da8898c792af1f0c85276515b82"
+    },
+    "recession-indicators/news-sentiment": {
+      "hash": "64cdfdb3e0df32c284b8f18d913fe6c502f0972f9d6a0e4a45bd44067aec2caa"
+    },
+    "recession-indicators/sahm-rule": {
+      "hash": "d3d24d797eb2ee3592e1be5934f9d1b8befd306e85fb6e4349ed523ba5157718"
+    },
+    "recession-indicators/ui-percent": {
+      "hash": "99b8c91c391dc152bf51c5f6426ff16ffe3507f2302e48134a6a90c148305d94"
+    },
+    "recession-indicators/ui-pp": {
+      "hash": "f7ddae8bf81063dcbb6cfdc1bbe1d28fcc0de255b7f82cd1538c169d8630547e"
+    },
+    "recession-indicators/yield-curve": {
+      "hash": "8924686b4de9484ca90c428a0f2f5466b3cde573ce5fdafa0db8d4082bace7c8"
+    },
+    "revenue-potential-top-taxes/appendix-parameters": {
+      "hash": "6193038d2b14d99d1715eec6d3955b2df61fcd130477d6dd5bbeb7d36c2d27f7"
+    },
+    "revenue-potential-top-taxes/appendix-tax-base-interactions": {
+      "hash": "30b5bc6c5a136499d98b2cc0aa25c2387235e539292b6628c856703939697312"
+    },
+    "revenue-potential-top-taxes/capital-gains-laffer-curve": {
+      "hash": "b747e6f097d9452272405db439282d0b68b4247ffbf2535050df972019c4d99e"
+    },
+    "revenue-potential-top-taxes/effective-tax-rates-top-groups": {
+      "hash": "22ac84c0377ea1b73e2c79afb886745c37f15135a76ed0f938683d1452020456"
+    },
+    "revenue-potential-top-taxes/income-above-top-thresholds": {
+      "hash": "24b352165cf2a259bf17f53c773e9ad0f17873be25e36628937d4509b6e6d8df"
+    },
+    "revenue-potential-top-taxes/revenue-by-tax-deemed-realization": {
+      "hash": "204c194a5bbfe7cae7a4ef04a82e3f3f1b0442adf61ba57927df22a3e5d25038"
+    },
+    "revenue-potential-top-taxes/revenue-by-tax-step-up": {
+      "hash": "e797669d924d1307a99735262d21d0ff7b7c0a193af52a6119191aa1d78d2041"
+    },
+    "scf-2025-tax-takeaways/estate-tax-exemption": {
+      "hash": "83ed65df366c043b12b9c193a5567097730d2d0c0070fe7eaf9b52223cc29f40"
+    },
+    "scf-2025-tax-takeaways/home-sale-exclusion": {
+      "hash": "ea448cc0b6d90effa74ea5b9aa6955d4040a633712b181dd05ed751564d30ab2"
+    },
+    "scf-2025-tax-takeaways/roth-ira": {
+      "hash": "2341aa0aff0cdcf2ef450e5a7bc17f12cb952f417758af15dbb8227dc0b68427"
+    },
+    "tariff-model-update-july2026/eta-effect": {
+      "hash": "083dbf388b54199097d0cf1e2cc0a4d67c98b1ee365ac91f76dc235b9e68a3f1"
+    },
+    "tariff-model-update-july2026/etas": {
+      "hash": "a866a673b4e4619adf04e2c88f679914723f3a3f0b80b55a5f48d88532a21f6b"
+    },
+    "tariff-model-update-july2026/etr-vintages": {
+      "hash": "de414137454a2ba6749f5309d616984ddb1a3e03f016408078bca9c1ce9ea232"
+    },
+    "tariff-model-update-july2026/headline-results": {
+      "hash": "13815735aa2726acf162cd8b796f22913760d32bf89d0c97b2e7bd6ff72d4e8f"
+    },
+    "tariff-model-update-july2026/price-waterfall": {
+      "hash": "190811fb5ef8ade1ccd127e1b3aac3cad861b8fdf88bab06a87cc37e588f1ef2"
+    },
+    "tariff-model-update-july2026/update-decomposition": {
+      "hash": "51639addc04a5eac53dc109f15448d29db38c45a643824a5b5d3933ca78d2d8a"
+    },
+    "ui-recipiency/appendix-figure-1-job-losers-share": {
+      "hash": "747a161dfbb28f16711c62f6427170ade34b4f4fdf8c62a2d148c240d47781bf"
+    },
+    "ui-recipiency/figure-1-insured-vs-total-unemployment": {
+      "hash": "7624e9f36ff00ce7db2c550a984a1fe533352d175907d5443f87621e00b8cb58"
+    },
+    "ui-recipiency/figure-2-long-term-unemployment-share": {
+      "hash": "52d6d716b58af31224643315d44b46cf204c6aac30256b3f4e96f4011168475b"
+    },
+    "ui-recipiency/figure-3-indexed-claims-vs-unemployment": {
+      "hash": "92c082402df8922351be4a2318f428b788bcd5fa8a12cc4f443354ddb523bcb0"
+    }
+  }
+}
