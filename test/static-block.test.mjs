@@ -151,10 +151,10 @@ test("parseCsvRows: BOM, quotes, embedded comma/newline, CRLF", () => {
   assert.ok(b.includes("<thead><tr><th>a,b</th><th>2024</th><th>c</th></tr></thead>"), b);
 });
 
-test("parseCsvRows: LF, CR, no trailing newline, untrimmed cells, empty cells", () => {
+test("parseCsvRows: LF, CR, no trailing newline, trimmed headers, untrimmed and empty cells", () => {
   assert.deepEqual(parseCsvRows("a,b\n1,2"), [["a", "b"], ["1", "2"]]);
   assert.deepEqual(parseCsvRows("a,b\r1,2\r"), [["a", "b"], ["1", "2"]]);
-  assert.deepEqual(parseCsvRows(" a , b \n,\n"), [[" a ", " b "], ["", ""]]);
+  assert.deepEqual(parseCsvRows(" a , b \n x ,\n"), [["a", "b"], [" x ", ""]]);
   assert.deepEqual(parseCsvRows(""), []);
 });
 
@@ -250,4 +250,19 @@ test("collection url with a disallowed scheme is not linked", () => {
   const html = buildStaticBlock({ title: "T", collectionTitle: "Art", collectionUrl: "javascript:alert(1)" });
   assert.ok(!html.includes("javascript:"), html);
   assert.ok(html.includes("<p>From Art.</p>"), html);
+});
+
+test("parseCsvRows matches the engine: quotes only open a field, blank rows skipped, headers trimmed", () => {
+  assert.deepEqual(parseCsvRows('a, b \n12" pipe,5\n\nx,6\n'), [["a", "b"], ['12" pipe', "5"], ["x", "6"]]);
+});
+
+test("table notes (string or array) appear as the note line", () => {
+  const dir = mkdtempSync(join(tmpdir(), "static-block-notes-"));
+  try {
+    writeFileSync(join(dir, "table.yaml"), 'title: "T"\nnotes:\n  - "First."\n  - "See [BLS](https://www.bls.gov/)."\n');
+    const html = staticBlockForChart({ dir, specPath: join(dir, "table.yaml"), chartSlug: "t", collection: {} });
+    assert.ok(html.includes('<p>Note: First. See <a href="https://www.bls.gov/">BLS</a>.</p>'), html);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

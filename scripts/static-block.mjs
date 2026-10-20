@@ -56,6 +56,7 @@ export function parseCsvRows(text) {
   let field = "";
   let quoted = false; // current row contains a quoted field (so [""] is real, not a blank line)
   let inQuotes = false;
+  let fieldStart = true; // like the engine, a quote only opens a field; mid-field it is literal
 
   const endRow = () => {
     row.push(field);
@@ -63,6 +64,7 @@ export function parseCsvRows(text) {
     row = [];
     field = "";
     quoted = false;
+    fieldStart = true;
   };
 
   for (let i = 0; i < s.length; i++) {
@@ -78,12 +80,14 @@ export function parseCsvRows(text) {
       } else {
         field += c;
       }
-    } else if (c === '"') {
+    } else if (c === '"' && fieldStart) {
       inQuotes = true;
       quoted = true;
+      fieldStart = false;
     } else if (c === ",") {
       row.push(field);
       field = "";
+      fieldStart = true;
     } else if (c === "\r") {
       if (s[i + 1] === "\n") i++;
       endRow();
@@ -91,13 +95,16 @@ export function parseCsvRows(text) {
       endRow();
     } else {
       field += c;
+      fieldStart = false;
     }
   }
   endRow();
 
-  const last = rows[rows.length - 1];
-  if (last && !last.quoted && last.cells.length === 1 && last.cells[0] === "") rows.pop();
-  return rows.map((r) => r.cells);
+  // Blank lines are skipped and headers trimmed, as the engine's parseCsv does, so the table shows
+  // the rows the chart was drawn from.
+  const out = rows.filter((r) => r.quoted || r.cells.length > 1 || r.cells[0] !== "").map((r) => r.cells);
+  if (out.length) out[0] = out[0].map((h) => h.trim());
+  return out;
 }
 
 const present = (v) => v != null && String(v).trim() !== "";
@@ -150,7 +157,8 @@ export function staticBlockForChart(chart) {
   return buildStaticBlock({
     title: spec.title,
     subtitle: spec.subtitle,
-    note: spec.note,
+    // Charts have `note`; tables have `notes`, a string or an array the engine joins into one note.
+    note: spec.note ?? (Array.isArray(spec.notes) ? spec.notes.join(" ") : spec.notes),
     source: spec.source,
     eyebrow: collection?.figures?.[chartSlug],
     collectionTitle: collection?.title,
