@@ -2,7 +2,7 @@
  * build-catalog.mjs — generate catalog/index.json from all charts in charts/.
  *
  * Each entry: { id, kind, collection, collectionTitle, title, eyebrow, date, created,
- *               path, dataPath, tags }
+ *               path, dataPath, hasData, tags }
  * `id` is the composed <collection.slug>/<chart-folder-name>; `path`/`dataPath` are the
  * (mutable) on-disk locations. Consumers key on `id`.
  *
@@ -13,7 +13,7 @@
  * can still assert the catalog *constructs* without writing anything.
  */
 
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
 import { parse as parseYaml } from "yaml";
@@ -58,6 +58,7 @@ export function buildCatalog(charts, { onEntry } = {}) {
       order,
       path: relPath,
       dataPath,
+      hasData: existsSync(join(dir, "data.csv")),
       tags: spec.tags ?? [],
     });
 
