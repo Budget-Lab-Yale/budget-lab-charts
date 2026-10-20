@@ -304,11 +304,19 @@ a:hover { text-decoration: underline; }
   // ---- Embed snippet ----
   // Hardcoded production embed.js URL — so a snippet copied from a PR preview (or a local build)
   // is the final canonical embed code, not one pointing at the preview/localhost origin.
-  const EMBED_BASE = "https://charts.budgetlab.yale.edu/embed/v1/embed.js";
+  const CHARTS_ORIGIN = "https://charts.budgetlab.yale.edu/";
+  const EMBED_BASE = CHARTS_ORIGIN + "embed/v1/embed.js";
   const ICON_CODE = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6 2 12l6 6"/><path d="m16 6 6 6-6 6"/></svg>';
   const ICON_CHECK = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5 10 17.5 19.5 7"/></svg>';
   const embedLabel = (t) => `<span class="fl-card__embed-label">${t}</span>`;
-  function buildSnippet(id) { return `<script src="${EMBED_BASE}" chart="${id}"><\/script>`; }
+  // The fallback paragraph must sit directly before the script: embed.js hides its
+  // previousElementSibling when that element carries data-tbl-chart-fallback.
+  function buildSnippet(c) {
+    const label = esc((c.eyebrow ? c.eyebrow + " — " : "") + c.title);
+    const dataPart = c.hasData ? ` (<a href="${CHARTS_ORIGIN}${c.id}/data.csv">data</a>)` : "";
+    return `<p data-tbl-chart-fallback><a href="${CHARTS_ORIGIN}${c.id}/">${label}</a>${dataPart}</p>\n`
+      + `<script src="${EMBED_BASE}" chart="${c.id}"><\/script>`;
+  }
 
   let DATA = [];
   const state = { q: "", order: "newest" };
@@ -457,7 +465,9 @@ a:hover { text-decoration: underline; }
     e.preventDefault();
     const id = btn.dataset.embedId;
     if (!id) return;
-    Promise.resolve(copyText(buildSnippet(id))).then((ok) => { if (ok) flashCopied(btn); });
+    const entry = DATA.find((c) => c.id === id);
+    if (!entry) return;
+    Promise.resolve(copyText(buildSnippet(entry))).then((ok) => { if (ok) flashCopied(btn); });
   }
 
   function apply() {

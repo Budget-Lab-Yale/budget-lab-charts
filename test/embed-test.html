@@ -18,6 +18,8 @@
     auto-resizing iframe; there should be <strong>no inner scrollbar</strong> and the height should
     track the content as you resize the window. To test a local build instead, serve <code>_site/</code>
     over HTTP and change the <code>src</code> below to <code>http://localhost:PORT/embed/v1/embed.js</code>.
+    The last three sections cover the two-element article snippet (fallback paragraph hidden by the
+    loader) and confirm that an old one-element snippet leaves the preceding paragraph alone.
   </p>
 
   <h2>Eyebrow on (default)</h2>
@@ -32,5 +34,29 @@
           chart="atus-childcare/childcare-by-sex-and-child-age"
           data-eyebrow="off"
           data-title="Childcare time falls as the youngest child ages"></script>
+
+  <hr>
+
+  <h2>New snippet with fallback</h2>
+  <div id="sec-a">
+    <p id="fb-a" data-tbl-chart-fallback><a href="https://charts.budgetlab.yale.edu/scf-2025-tax-takeaways/estate-tax-exemption/">Figure 1 — Households age 75+ and their wealth above the estate tax exemption</a> (<a href="https://charts.budgetlab.yale.edu/scf-2025-tax-takeaways/estate-tax-exemption/data.csv">data</a>)</p>
+    <script src="https://charts.budgetlab.yale.edu/embed/v1/embed.js" chart="scf-2025-tax-takeaways/estate-tax-exemption"></script>
+  </div>
+
+  <hr>
+
+  <h2>Old snippet after an unrelated paragraph</h2>
+  <div id="sec-b">
+    <p id="keep">Unrelated paragraph that must stay visible.</p>
+    <script src="https://charts.budgetlab.yale.edu/embed/v1/embed.js" chart="scf-2025-tax-takeaways/estate-tax-exemption"></script>
+  </div>
+
+  <hr>
+
+  <h2>New snippet, eyebrow off</h2>
+  <div id="sec-c">
+    <p id="fb-c" data-tbl-chart-fallback><a href="https://charts.budgetlab.yale.edu/scf-2025-tax-takeaways/estate-tax-exemption/">Figure 1 — Households age 75+ and their wealth above the estate tax exemption</a> (<a href="https://charts.budgetlab.yale.edu/scf-2025-tax-takeaways/estate-tax-exemption/data.csv">data</a>)</p>
+    <script src="https://charts.budgetlab.yale.edu/embed/v1/embed.js" chart="scf-2025-tax-takeaways/estate-tax-exemption" data-eyebrow="off"></script>
+  </div>
 </body>
 </html>

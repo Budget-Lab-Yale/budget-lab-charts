@@ -34,6 +34,8 @@ test("GET /preview/<known-good> renders an embeddable chart page", async () => {
     const html = await res.text();
     assert.match(html, /id="chart"/, "rendered page should contain the chart mount node");
     assert.match(html, /iframeResizer\.contentWindow/, "embed resizer child script should be injected");
+    assert.match(html, /<!-- tbl-static-head:start -->/, "static fallback hide rule should be injected");
+    assert.match(html, /<\/div><!-- tbl-static:start --><section id="tbl-static"><h1>Figure 1 — /, "static fallback should follow the chart div");
   } finally {
     close();
   }

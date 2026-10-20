@@ -59,8 +59,10 @@ jobs:
       # dev-server.test.mjs boots a real HTTP server and has never been a required check. Widening
       # the gate to all tests is a separate decision. The slides files gate the CLAUDE.md invariant
       # that scripts/slides/ never touches charts/ (assertOutsideArchive) and the frame geometry.
-      - name: Unit tests (palette lint, slides archive guard and frames)
-        run: node --test --test-concurrency=1 scripts/palette-lint.test.mjs scripts/slides/paths.test.mjs scripts/slides/frames.test.mjs
+      # static-block.test.mjs gates the no-JS fallback's escaping, link allowlist and idempotent
+      # strip-and-insert on every chart page.
+      - name: Unit tests (palette lint, slides archive guard and frames, static fallback)
+        run: node --test --test-concurrency=1 scripts/palette-lint.test.mjs scripts/slides/paths.test.mjs scripts/slides/frames.test.mjs test/static-block.test.mjs
       - run: npm run validate
 
   # ── Per-PR live preview ───────────────────────────────────────────────────
