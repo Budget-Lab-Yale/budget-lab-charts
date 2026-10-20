@@ -1,7 +1,10 @@
 /**
  * Budget Lab Charts — embed loader
- * @version 1.1.0
+ * @version 1.2.0
  * Snippet: <script src=".../budget-lab-charts/embed/v1/embed.js" chart="<collection>/<chart>"></script>
+ * Article form (two elements; the paragraph is the no-JS fallback and the loader hides it):
+ *   <p data-tbl-chart-fallback><a href=".../<id>/">Figure 1 — Title</a> (<a href=".../<id>/data.csv">data</a>)</p>
+ *   <script src=".../embed/v1/embed.js" chart="<id>"></script>
  * Auto-sizes the chart iframe to content height via iframe-resizer v4 (MIT, vendored alongside).
  * Mirrors the budget-lab-interactives embed loader; the only differences are that charts are
  * addressed by their durable id (chart = "<collection-slug>/<chart-folder>") and served at the
@@ -66,6 +69,18 @@
   }
 
   wrapper.appendChild(iframe);
+
+  // A paragraph marked data-tbl-chart-fallback directly before this script is the no-JS version
+  // (title link + data link) for readers and fetchers that never run the loader; hide it here.
+  // The inline !important is needed because the UA stylesheet's [hidden] rule loses to any host
+  // CSS that sets display on <p>. Anything without the attribute is left alone, so old
+  // one-element snippets are unaffected.
+  var fallback = me.previousElementSibling;
+  if (fallback && fallback.hasAttribute('data-tbl-chart-fallback')) {
+    fallback.hidden = true;
+    fallback.style.setProperty('display', 'none', 'important');
+  }
+
   me.parentNode.insertBefore(wrapper, me);
 
   // Strip width-dependent height from host-CMS wrapper classes (e.g., Drupal's

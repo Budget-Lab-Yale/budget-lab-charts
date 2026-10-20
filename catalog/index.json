@@ -13,6 +13,7 @@
     "order": 6,
     "path": "charts/articles/2026/07/ai-fiscal/atr-by-decile/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/atr-by-decile/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -29,6 +30,7 @@
     "order": 10,
     "path": "charts/articles/2026/07/ai-fiscal/debt-to-gdp/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/debt-to-gdp/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -45,6 +47,7 @@
     "order": 7,
     "path": "charts/articles/2026/07/ai-fiscal/gdp-growth-history/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/gdp-growth-history/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -61,6 +64,7 @@
     "order": 5,
     "path": "charts/articles/2026/07/ai-fiscal/inequality-gini/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/inequality-gini/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -77,6 +81,7 @@
     "order": 11,
     "path": "charts/articles/2026/07/ai-fiscal/key-parameters/table.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/key-parameters/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -93,6 +98,7 @@
     "order": 12,
     "path": "charts/articles/2026/07/ai-fiscal/key-parameters-symbols/table.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/key-parameters-symbols/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -109,6 +115,7 @@
     "order": 8,
     "path": "charts/articles/2026/07/ai-fiscal/labor-share-history/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/labor-share-history/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -125,6 +132,7 @@
     "order": 1,
     "path": "charts/articles/2026/07/ai-fiscal/revenue-by-income-type/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/revenue-by-income-type/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -141,6 +149,7 @@
     "order": 2,
     "path": "charts/articles/2026/07/ai-fiscal/revenue-by-instrument/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/revenue-by-instrument/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -157,6 +166,7 @@
     "order": 4,
     "path": "charts/articles/2026/07/ai-fiscal/revenue-fixed-vs-reallocated/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/revenue-fixed-vs-reallocated/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -173,6 +183,7 @@
     "order": 0,
     "path": "charts/articles/2026/07/ai-fiscal/revenue-headline/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/revenue-headline/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -189,6 +200,7 @@
     "order": 3,
     "path": "charts/articles/2026/07/ai-fiscal/revenue-vs-factor-income/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/revenue-vs-factor-income/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -205,6 +217,7 @@
     "order": 9,
     "path": "charts/articles/2026/07/ai-fiscal/revenue-vs-pretax-income/chart.yaml",
     "dataPath": "charts/articles/2026/07/ai-fiscal/revenue-vs-pretax-income/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -221,6 +234,7 @@
     "order": 0,
     "path": "charts/articles/2026/06/atus-childcare/childcare-by-activity/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/childcare-by-activity/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -237,6 +251,7 @@
     "order": 1,
     "path": "charts/articles/2026/06/atus-childcare/childcare-by-cohort-all-adults/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/childcare-by-cohort-all-adults/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -253,6 +268,7 @@
     "order": 2,
     "path": "charts/articles/2026/06/atus-childcare/childcare-by-cohort-parents/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/childcare-by-cohort-parents/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -269,6 +285,7 @@
     "order": 5,
     "path": "charts/articles/2026/06/atus-childcare/childcare-by-household-type/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/childcare-by-household-type/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -285,6 +302,7 @@
     "order": 8,
     "path": "charts/articles/2026/06/atus-childcare/childcare-by-household-type-and-child-age/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/childcare-by-household-type-and-child-age/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -301,6 +319,7 @@
     "order": 7,
     "path": "charts/articles/2026/06/atus-childcare/childcare-by-sex-and-child-age/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/childcare-by-sex-and-child-age/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -317,6 +336,7 @@
     "order": 9,
     "path": "charts/articles/2026/06/atus-childcare/leisure-by-cohort/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/leisure-by-cohort/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -333,6 +353,7 @@
     "order": 10,
     "path": "charts/articles/2026/06/atus-childcare/leisure-by-household-type/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/leisure-by-household-type/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -349,6 +370,7 @@
     "order": 3,
     "path": "charts/articles/2026/06/atus-childcare/work-by-cohort-parents/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/work-by-cohort-parents/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -365,6 +387,7 @@
     "order": 6,
     "path": "charts/articles/2026/06/atus-childcare/work-by-household-type/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/work-by-household-type/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -381,6 +404,7 @@
     "order": 4,
     "path": "charts/articles/2026/06/atus-childcare/work-by-youngest-child-age/chart.yaml",
     "dataPath": "charts/articles/2026/06/atus-childcare/work-by-youngest-child-age/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -397,6 +421,7 @@
     "order": 1,
     "path": "charts/articles/2026/08/ces-qcew-benchmark-revisions/final-v-prelim/chart.yaml",
     "dataPath": "charts/articles/2026/08/ces-qcew-benchmark-revisions/final-v-prelim/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -413,6 +438,7 @@
     "order": 2,
     "path": "charts/articles/2026/08/ces-qcew-benchmark-revisions/regressions/chart.yaml",
     "dataPath": "charts/articles/2026/08/ces-qcew-benchmark-revisions/regressions/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -429,6 +455,7 @@
     "order": 0,
     "path": "charts/articles/2026/08/ces-qcew-benchmark-revisions/revisions-since-2015/chart.yaml",
     "dataPath": "charts/articles/2026/08/ces-qcew-benchmark-revisions/revisions-since-2015/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -445,6 +472,7 @@
     "order": 1,
     "path": "charts/trackers/deficit-management-scorecard/deviation-distribution/chart.yaml",
     "dataPath": "charts/trackers/deficit-management-scorecard/deviation-distribution/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -461,6 +489,7 @@
     "order": 2,
     "path": "charts/trackers/deficit-management-scorecard/required-deficit-reduction/table.yaml",
     "dataPath": "charts/trackers/deficit-management-scorecard/required-deficit-reduction/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -477,6 +506,7 @@
     "order": 0,
     "path": "charts/trackers/deficit-management-scorecard/scorecard-scatter/chart.yaml",
     "dataPath": "charts/trackers/deficit-management-scorecard/scorecard-scatter/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -493,6 +523,7 @@
     "order": 10,
     "path": "charts/articles/2026/10/ecec-macro/full-workforce-gdp-by-estimate/chart.yaml",
     "dataPath": "charts/articles/2026/10/ecec-macro/full-workforce-gdp-by-estimate/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -509,6 +540,7 @@
     "order": 7,
     "path": "charts/articles/2026/10/ecec-macro/full-workforce-gdp-universal/chart.yaml",
     "dataPath": "charts/articles/2026/10/ecec-macro/full-workforce-gdp-universal/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -525,6 +557,7 @@
     "order": 9,
     "path": "charts/articles/2026/10/ecec-macro/funding-requirement-by-policy/chart.yaml",
     "dataPath": "charts/articles/2026/10/ecec-macro/funding-requirement-by-policy/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -541,6 +574,7 @@
     "order": 4,
     "path": "charts/articles/2026/10/ecec-macro/funding-requirement-universal/chart.yaml",
     "dataPath": "charts/articles/2026/10/ecec-macro/funding-requirement-universal/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -557,6 +591,7 @@
     "order": 13,
     "path": "charts/articles/2026/10/ecec-macro/methods-macro-assumptions/table.yaml",
     "dataPath": "charts/articles/2026/10/ecec-macro/methods-macro-assumptions/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -573,6 +608,7 @@
     "order": 11,
     "path": "charts/articles/2026/10/ecec-macro/methods-parental-assumptions/table.yaml",
     "dataPath": "charts/articles/2026/10/ecec-macro/methods-parental-assumptions/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -589,6 +625,7 @@
     "order": 12,
     "path": "charts/articles/2026/10/ecec-macro/methods-receipt-assumptions/table.yaml",
     "dataPath": "charts/articles/2026/10/ecec-macro/methods-receipt-assumptions/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -605,6 +642,7 @@
     "order": 3,
     "path": "charts/articles/2026/10/ecec-macro/parental-contributions-by-policy/chart.yaml",
     "dataPath": "charts/articles/2026/10/ecec-macro/parental-contributions-by-policy/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -621,6 +659,7 @@
     "order": 2,
     "path": "charts/articles/2026/10/ecec-macro/parental-contributions-universal/chart.yaml",
     "dataPath": "charts/articles/2026/10/ecec-macro/parental-contributions-universal/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -637,6 +676,7 @@
     "order": 1,
     "path": "charts/articles/2026/10/ecec-macro/parents-and-children-contributions/chart.yaml",
     "dataPath": "charts/articles/2026/10/ecec-macro/parents-and-children-contributions/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -653,6 +693,7 @@
     "order": 0,
     "path": "charts/articles/2026/10/ecec-macro/potential-gdp-2055-by-financing/chart.yaml",
     "dataPath": "charts/articles/2026/10/ecec-macro/potential-gdp-2055-by-financing/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -669,6 +710,7 @@
     "order": 5,
     "path": "charts/articles/2026/10/ecec-macro/potential-gdp-financing-paths/chart.yaml",
     "dataPath": "charts/articles/2026/10/ecec-macro/potential-gdp-financing-paths/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -685,6 +727,7 @@
     "order": 8,
     "path": "charts/articles/2026/10/ecec-macro/work-response-2030/table.yaml",
     "dataPath": "charts/articles/2026/10/ecec-macro/work-response-2030/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -701,6 +744,7 @@
     "order": 6,
     "path": "charts/articles/2026/10/ecec-macro/workforce-timing/chart.yaml",
     "dataPath": "charts/articles/2026/10/ecec-macro/workforce-timing/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -717,6 +761,7 @@
     "order": 0,
     "path": "charts/articles/2026/09/emp-dispersion-graphs/lfp-by-education/chart.yaml",
     "dataPath": "charts/articles/2026/09/emp-dispersion-graphs/lfp-by-education/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -733,6 +778,7 @@
     "order": 1,
     "path": "charts/articles/2026/09/emp-dispersion-graphs/lfp-quintiles-rf/chart.yaml",
     "dataPath": "charts/articles/2026/09/emp-dispersion-graphs/lfp-quintiles-rf/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -749,6 +795,7 @@
     "order": 2,
     "path": "charts/articles/2026/09/emp-dispersion-graphs/lfp-quintiles-rf-contemporaneous/chart.yaml",
     "dataPath": "charts/articles/2026/09/emp-dispersion-graphs/lfp-quintiles-rf-contemporaneous/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -765,6 +812,7 @@
     "order": 5,
     "path": "charts/articles/2026/09/emp-dispersion-graphs/quintile-characteristics/table.yaml",
     "dataPath": "charts/articles/2026/09/emp-dispersion-graphs/quintile-characteristics/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -781,6 +829,7 @@
     "order": 3,
     "path": "charts/articles/2026/09/emp-dispersion-graphs/unemployment-quintiles-rf/chart.yaml",
     "dataPath": "charts/articles/2026/09/emp-dispersion-graphs/unemployment-quintiles-rf/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -797,6 +846,7 @@
     "order": 4,
     "path": "charts/articles/2026/09/emp-dispersion-graphs/unemployment-quintiles-rf-contemporaneous/chart.yaml",
     "dataPath": "charts/articles/2026/09/emp-dispersion-graphs/unemployment-quintiles-rf-contemporaneous/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -813,6 +863,7 @@
     "order": 4,
     "path": "charts/articles/2026/08/recession-indicators/cfnai/chart.yaml",
     "dataPath": "charts/articles/2026/08/recession-indicators/cfnai/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -829,6 +880,7 @@
     "order": 1,
     "path": "charts/articles/2026/08/recession-indicators/michez-rule/chart.yaml",
     "dataPath": "charts/articles/2026/08/recession-indicators/michez-rule/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -845,6 +897,7 @@
     "order": 5,
     "path": "charts/articles/2026/08/recession-indicators/news-sentiment/chart.yaml",
     "dataPath": "charts/articles/2026/08/recession-indicators/news-sentiment/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -861,6 +914,7 @@
     "order": 0,
     "path": "charts/articles/2026/08/recession-indicators/sahm-rule/chart.yaml",
     "dataPath": "charts/articles/2026/08/recession-indicators/sahm-rule/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -877,6 +931,7 @@
     "order": 6,
     "path": "charts/articles/2026/08/recession-indicators/ui-percent/chart.yaml",
     "dataPath": "charts/articles/2026/08/recession-indicators/ui-percent/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -893,6 +948,7 @@
     "order": 3,
     "path": "charts/articles/2026/08/recession-indicators/ui-pp/chart.yaml",
     "dataPath": "charts/articles/2026/08/recession-indicators/ui-pp/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -909,6 +965,7 @@
     "order": 2,
     "path": "charts/articles/2026/08/recession-indicators/yield-curve/chart.yaml",
     "dataPath": "charts/articles/2026/08/recession-indicators/yield-curve/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -925,6 +982,7 @@
     "order": 6,
     "path": "charts/articles/2026/10/revenue-potential-top-taxes/appendix-parameters/table.yaml",
     "dataPath": "charts/articles/2026/10/revenue-potential-top-taxes/appendix-parameters/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -941,6 +999,7 @@
     "order": 5,
     "path": "charts/articles/2026/10/revenue-potential-top-taxes/appendix-tax-base-interactions/table.yaml",
     "dataPath": "charts/articles/2026/10/revenue-potential-top-taxes/appendix-tax-base-interactions/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -957,6 +1016,7 @@
     "order": 4,
     "path": "charts/articles/2026/10/revenue-potential-top-taxes/capital-gains-laffer-curve/chart.yaml",
     "dataPath": "charts/articles/2026/10/revenue-potential-top-taxes/capital-gains-laffer-curve/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -973,6 +1033,7 @@
     "order": 0,
     "path": "charts/articles/2026/10/revenue-potential-top-taxes/effective-tax-rates-top-groups/chart.yaml",
     "dataPath": "charts/articles/2026/10/revenue-potential-top-taxes/effective-tax-rates-top-groups/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -989,6 +1050,7 @@
     "order": 1,
     "path": "charts/articles/2026/10/revenue-potential-top-taxes/income-above-top-thresholds/table.yaml",
     "dataPath": "charts/articles/2026/10/revenue-potential-top-taxes/income-above-top-thresholds/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1005,6 +1067,7 @@
     "order": 3,
     "path": "charts/articles/2026/10/revenue-potential-top-taxes/revenue-by-tax-deemed-realization/chart.yaml",
     "dataPath": "charts/articles/2026/10/revenue-potential-top-taxes/revenue-by-tax-deemed-realization/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1021,6 +1084,7 @@
     "order": 2,
     "path": "charts/articles/2026/10/revenue-potential-top-taxes/revenue-by-tax-step-up/chart.yaml",
     "dataPath": "charts/articles/2026/10/revenue-potential-top-taxes/revenue-by-tax-step-up/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1037,6 +1101,7 @@
     "order": 0,
     "path": "charts/articles/2026/10/scf-2025-tax-takeaways/estate-tax-exemption/chart.yaml",
     "dataPath": "charts/articles/2026/10/scf-2025-tax-takeaways/estate-tax-exemption/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1053,6 +1118,7 @@
     "order": 1,
     "path": "charts/articles/2026/10/scf-2025-tax-takeaways/home-sale-exclusion/chart.yaml",
     "dataPath": "charts/articles/2026/10/scf-2025-tax-takeaways/home-sale-exclusion/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1069,6 +1135,7 @@
     "order": 2,
     "path": "charts/articles/2026/10/scf-2025-tax-takeaways/roth-ira/chart.yaml",
     "dataPath": "charts/articles/2026/10/scf-2025-tax-takeaways/roth-ira/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1085,6 +1152,7 @@
     "order": 1,
     "path": "charts/articles/2026/07/tariff-model-update-july2026/eta-effect/chart.yaml",
     "dataPath": "charts/articles/2026/07/tariff-model-update-july2026/eta-effect/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1101,6 +1169,7 @@
     "order": 3,
     "path": "charts/articles/2026/07/tariff-model-update-july2026/etas/chart.yaml",
     "dataPath": "charts/articles/2026/07/tariff-model-update-july2026/etas/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1117,6 +1186,7 @@
     "order": 0,
     "path": "charts/articles/2026/07/tariff-model-update-july2026/etr-vintages/chart.yaml",
     "dataPath": "charts/articles/2026/07/tariff-model-update-july2026/etr-vintages/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1133,6 +1203,7 @@
     "order": 4,
     "path": "charts/articles/2026/07/tariff-model-update-july2026/headline-results/table.yaml",
     "dataPath": "charts/articles/2026/07/tariff-model-update-july2026/headline-results/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1149,6 +1220,7 @@
     "order": 2,
     "path": "charts/articles/2026/07/tariff-model-update-july2026/price-waterfall/chart.yaml",
     "dataPath": "charts/articles/2026/07/tariff-model-update-july2026/price-waterfall/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1165,6 +1237,7 @@
     "order": 5,
     "path": "charts/articles/2026/07/tariff-model-update-july2026/update-decomposition/table.yaml",
     "dataPath": "charts/articles/2026/07/tariff-model-update-july2026/update-decomposition/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1181,6 +1254,7 @@
     "order": 3,
     "path": "charts/articles/2026/08/ui-recipiency/appendix-figure-1-job-losers-share/chart.yaml",
     "dataPath": "charts/articles/2026/08/ui-recipiency/appendix-figure-1-job-losers-share/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1197,6 +1271,7 @@
     "order": 0,
     "path": "charts/articles/2026/08/ui-recipiency/figure-1-insured-vs-total-unemployment/chart.yaml",
     "dataPath": "charts/articles/2026/08/ui-recipiency/figure-1-insured-vs-total-unemployment/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1213,6 +1288,7 @@
     "order": 1,
     "path": "charts/articles/2026/08/ui-recipiency/figure-2-long-term-unemployment-share/chart.yaml",
     "dataPath": "charts/articles/2026/08/ui-recipiency/figure-2-long-term-unemployment-share/data.csv",
+    "hasData": true,
     "tags": []
   },
   {
@@ -1229,6 +1305,7 @@
     "order": 2,
     "path": "charts/articles/2026/08/ui-recipiency/figure-3-indexed-claims-vs-unemployment/chart.yaml",
     "dataPath": "charts/articles/2026/08/ui-recipiency/figure-3-indexed-claims-vs-unemployment/data.csv",
+    "hasData": true,
     "tags": []
   }
 ]
