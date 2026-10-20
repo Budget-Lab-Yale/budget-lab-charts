@@ -424,13 +424,15 @@ Publications embed a chart with **one `<script>` tag** — only `chart` is requi
 | `data-log` | _(off)_ | Any value enables iframe-resizer verbose logging. |
 | `data-strip-host-classes` | `paragraph-embed-code` | Comma-separated host-wrapper classes whose width-proportional height should be overridden. |
 
-**No-JS fallback (optional).** A `<script>` can't run when JavaScript is disabled, so a fallback
-link can't be auto-injected. For accessibility-strict hosts, add a static `<noscript>` next to the
-script:
+**No-JS fallback.** The gallery's Embed button copies the script with a plain paragraph in front of
+it, so readers and fetchers that don't run JavaScript still get the figure's title and links:
 
 ```html
-<noscript><a href="https://charts.budgetlab.yale.edu/atus-childcare/childcare-by-activity/">Open the chart</a></noscript>
+<p data-tbl-chart-fallback><a href="https://charts.budgetlab.yale.edu/atus-childcare/childcare-by-activity/">Figure 1 — Parents of young children spend much more time on childcare than parents of older children</a> (<a href="https://charts.budgetlab.yale.edu/atus-childcare/childcare-by-activity/data.csv">data</a>)</p>
+<script src="https://charts.budgetlab.yale.edu/embed/v1/embed.js" chart="atus-childcare/childcare-by-activity"></script>
 ```
+
+The fallback must come directly before the script; the loader hides it.
 
 **How it's wired:** each rendered chart page includes the iframe-resizer *child* script (injected by
 `build-all`, before `</body>`), so it reports its height to the loader; the accessible title is read
