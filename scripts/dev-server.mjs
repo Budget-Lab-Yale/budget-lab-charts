@@ -15,6 +15,7 @@ import { join, resolve, dirname, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import { parse as parseYaml } from "yaml";
 import { listCharts, REPO_ROOT, buildTblChartCmd } from "./lib.mjs";
+import { staticBlockForChart, injectStaticBlock } from "./static-block.mjs";
 
 function readTitle(specPath) {
   try {
@@ -25,7 +26,8 @@ function readTitle(specPath) {
   }
 }
 
-// Internal chart objects carry specPath (server-side only); the /api/charts response strips it.
+// Internal chart objects carry specPath and the listCharts entry (server-side only); the
+// /api/charts response strips both.
 async function buildChartList(chartsRoot) {
   const charts = await listCharts(chartsRoot);
   return charts.map((c) => ({
@@ -36,10 +38,11 @@ async function buildChartList(chartsRoot) {
     chartSlug: c.chartSlug,
     eyebrowLabel: c.collection?.figures?.[c.chartSlug] ?? null,
     specPath: c.specPath,
+    listed: c,
   }));
 }
 
-function publicChart({ specPath, ...pub }) {
+function publicChart({ specPath, listed, ...pub }) {
   return pub;
 }
 
@@ -123,7 +126,12 @@ async function renderChartHtml(chart, { eyebrow }) {
   } finally {
     unlink(tmpFile).catch(() => {});
   }
-  return { ok: true, html: injectEmbedAssets(html) };
+  try {
+    // Same fallback the published page carries (scripts/static-block.mjs), so the preview matches.
+    return { ok: true, html: injectStaticBlock(injectEmbedAssets(html), staticBlockForChart(chart.listed)) };
+  } catch (err) {
+    return { ok: false, html: errorPage(chart.id, err.message) };
+  }
 }
 
 const EMBED_TYPES = {

@@ -56,6 +56,7 @@ const EMBED_HEAD =
 
 import { listCharts, buildTblChartCmd, REPO_ROOT } from "./lib.mjs";
 import { runPool } from "./pool.mjs";
+import { staticBlockForChart, injectStaticBlock } from "./static-block.mjs";
 import {
   THUMBS_EPOCH,
   FONTS_EPOCH,
@@ -138,7 +139,8 @@ let allPassed = true;
 
 // --- Render worker (preserves the previous serial-loop behavior) -----------
 function renderChart(id) {
-  const { dir, specPath, chartSlug, collection } = chartById.get(id);
+  const chart = chartById.get(id);
+  const { dir, specPath, chartSlug, collection } = chart;
   const outDir = join(REPO_ROOT, "dist", id);
   const outFile = join(outDir, "index.html");
 
@@ -168,11 +170,7 @@ function renderChart(id) {
     function finish(status) {
       if (settled) return;
       settled = true;
-      const passed = status === 0;
-      const icon = passed ? "BUILT" : "FAIL";
-      console.log(`[${icon}] ${id} -> dist/${id}/index.html`);
-      if (stdout.trim()) console.log(stdout.trimEnd());
-      if (stderr.trim()) console.error(stderr.trimEnd());
+      let passed = status === 0;
 
       if (passed) {
         // Make the page embed-ready: inject the iframe-resizer child script before </body>.
@@ -188,6 +186,23 @@ function renderChart(id) {
           // non-fatal: page still renders, just won't auto-resize when embedded
         }
 
+        // The no-JS fallback is not optional like the resizer: a page without it is a defect, so a
+        // failure fails the build. It runs after EMBED_HEAD so its head piece lands where reuseChart's
+        // strip-and-insert puts it (right before </head>), keeping reused pages byte-identical.
+        try {
+          writeFileSync(outFile, injectStaticBlock(readFileSync(outFile, "utf8"), staticBlockForChart(chart)));
+        } catch (err) {
+          stderr += `static fallback: ${err.message}`;
+          passed = false;
+        }
+      }
+
+      const icon = passed ? "BUILT" : "FAIL";
+      console.log(`[${icon}] ${id} -> dist/${id}/index.html`);
+      if (stdout.trim()) console.log(stdout.trimEnd());
+      if (stderr.trim()) console.error(stderr.trimEnd());
+
+      if (passed) {
         // Copy data.csv alongside the HTML
         try {
           copyFileSync(join(dir, "data.csv"), join(outDir, "data.csv"));
@@ -203,10 +218,14 @@ function renderChart(id) {
 }
 
 // --- Reuse: copy prior outputs from the gh-pages checkout -------------------
+// The static fallback is rebuilt from the current source on reuse too. Reused pages are never
+// re-rendered, so this is the only way a fallback change (or a collection title/url edit, which is
+// not in the chart hash) reaches them without an epoch bump.
 function reuseChart(id) {
   const outDir = join(REPO_ROOT, "dist", id);
   mkdirSync(outDir, { recursive: true });
-  copyFileSync(join(ghPagesDir, id, "index.html"), join(outDir, "index.html"));
+  const priorHtml = readFileSync(join(ghPagesDir, id, "index.html"), "utf8");
+  writeFileSync(join(outDir, "index.html"), injectStaticBlock(priorHtml, staticBlockForChart(chartById.get(id))));
   const srcData = join(ghPagesDir, id, "data.csv");
   if (existsSync(srcData)) copyFileSync(srcData, join(outDir, "data.csv"));
   console.log(`[REUSE] ${id} -> dist/${id}/index.html`);
