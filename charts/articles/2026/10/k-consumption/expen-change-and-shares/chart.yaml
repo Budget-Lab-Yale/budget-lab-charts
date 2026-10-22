@@ -1,6 +1,6 @@
 chartType: line
 title: "Spending has grown at similar rates across deciles, and shares of total spending have stayed flat for roughly 20 years"
-subtitle: "Left: spending index, 2014 = 100. Right: share of total expenditure, percent"
+subtitle: "Left: spending index, 2004 = 100. Right: share of total expenditure, percent"
 xAxisType: temporal
 columns:
   x: year
@@ -13,7 +13,7 @@ series_order:
   - Decile 10
 annotations:
   xAxis:
-    - { x: "2014" }          # base year
+    - { x: "2004" }          # base year
   # yAxis y: 100 intentionally omitted: it would sit far off the shares panel (3-23%) and could stretch its axis.
 note: "Left panel measures the indexed change in spending for deciles 1, 5, and 10. Right panel measures total consumption for each decile relative to total consumption across all deciles."
 source: "BLS Consumer Expenditure Survey"
