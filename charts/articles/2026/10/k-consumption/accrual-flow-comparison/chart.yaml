@@ -1,6 +1,6 @@
 chartType: line
 title: " Financial Accounts data from the Federal Reserve shows us that there is more volatility in asset holdings that the CE does not capture."                 
-subtitle: "Index: 2014 = 100"
+subtitle: "Index: 2004 = 100"
 
 xAxisType: temporal
 columns:
@@ -13,9 +13,9 @@ series_order:
   - Net worth              
 annotations:
   xAxis:
-    - { x: "2014" }        
+    - { x: "2004" }        
   yAxis:
     - { y: 100 }
-note: "Household income is from the Consumer Expenditure Survey. Corporate equities and net worth show the annual flow of accrued holding gains (revaluations) on household corporate equities and on total household net worth, from the Financial Accounts. All series are indexed to 2014 = 100."           
+note: "Household income is from the Consumer Expenditure Survey. Corporate equities and net worth show the annual flow of accrued holding gains (revaluations) on household corporate equities and on total household net worth, from the Financial Accounts. All series are indexed to 2004 = 100."           
 source: " BLS Consumer Expenditure Survey, Federal Reserve Financial Accounts (S1M.s and S1M.r)"   
 data: data.csv
