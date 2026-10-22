@@ -1,14 +1,13 @@
 title: ""                    # FILL IN: article title (should match the published title exactly)
-slug: k-consumption       # FILL IN: lowercase-hyphenated, unique repo-wide, must equal this folder's name; permanent
+slug: k-consumption          # must equal this folder's name; permanent
 date: ""                     # FILL IN: "YYYY-MM-DD" -- and move this folder to charts/articles/<yyyy>/<mm>/ to match
 url: ""                      # leave empty until the article is live
 
-figures:                
-  expen-year-change: "Figure 1"
-  share-expen-decile: "Figure 2"
-  accrual-flow-comparison: "Figure 3"
-  sigma-combined: "Figure 4"
-  delta-range: "Figure 5"
+figures:
+  expen-change-and-shares: "Figure 1"
+  accrual-flow-comparison: "Figure 2"
+  sigma-combined: "Figure 3"
+  delta-range: "Figure 4"
   gap-consump-type: "Appendix Figure 1"
   summary-stats-by-group: "Appendix Table 1a"
   summary-stats-by-group-accrued-portfolio: "Appendix Table 1b"
