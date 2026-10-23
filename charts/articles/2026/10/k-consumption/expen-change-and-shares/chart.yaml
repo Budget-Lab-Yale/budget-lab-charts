@@ -11,6 +11,12 @@ series_order:
   - Decile 1
   - Decile 5
   - Decile 10
+small_multiples:
+  columns: 2
+  mode: per-pane
+  pane_order:
+    - "Indexed spending (2004 = 100)"
+    - "Share of total expenditure (%)"
 annotations:
   xAxis:
     - { x: "2004" }          # base year
