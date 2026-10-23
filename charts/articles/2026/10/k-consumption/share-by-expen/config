@@ -1,0 +1,18 @@
+chartType: line
+title: "Appendix Figure 2"
+subtitle: "Share of total expenditure, percent"
+xAxisType: temporal
+columns:
+  x: year
+  series: series
+  value: value
+series_order:
+  - Decile 1
+  - Decile 5
+  - Decile 10
+yAxisPolicy:
+  includeZero: true
+value_suffix: "%"
+note: "Measures total consumption for each decile relative to total consumption across all deciles. Deciles are ranked by total expentiture."
+source: "BLS Consumer Expenditure Survey and authors' calculations"
+data: data.csv
