@@ -1,6 +1,6 @@
 chartType: dumbbell
 title: "The necessary differences in the spending shares necessary for the K-shape to appear are not present in the CE, even across groups that are vastly different."
-subtitle: "Spending difference in average household spending units"
+subtitle: "Spending difference between groups, thousands of dollars"
 xAxisType: categorical
 orientation: horizontal
 columns:
@@ -13,17 +13,17 @@ x_order:                     # top -> bottom, as in the script
   - "Decile 10 vs. 9"
   - "Decile 10 vs. 1 (expenditure)"
   - "Owners vs. renters"
-x_labels:                    
+x_labels:
   "Ages 45-54 vs. Ages 55-65": "Ages 45-54 vs. Ages 55-65 (min: 2013, max: 2024)"
-  "Decile 10 vs. 1": "Decile 10 vs. 1 (min: 2000, max: 2006)"
-  "Decile 10 vs. 9": "Decile 10 vs. 9 (min: 2024, max: 2006)"
-  "Decile 10 vs. 1 (expenditure)": "Decile 10 vs. 1 (expenditure) (min: 2008, max: 2003)"
-  "Owners vs. renters": "Owners vs. renters (min: 2020, max: 2005)"
+  "Decile 10 vs. 1": "Decile 10 vs. 1 (min: 2013, max: 2023)"
+  "Decile 10 vs. 9": "Decile 10 vs. 9 (min: 2004, max: 2006)"
+  "Decile 10 vs. 1 (expenditure)": "Decile 10 vs. 1 (expenditure) (min: 2011, max: 2023)"
+  "Owners vs. renters": "Owners vs. renters (min: 2020, max: 2007)"
 series_order: [Min, Max]
 series_marker: { Min: hollow, Max: filled }
-value_axis_title: "Delta"
-value_format: { decimals: 2 }
-tooltip_decimals: 2
-note: "Shows the spending differences for the designated groups above in average household spending units. Calculates the difference between the groups then divides by the average household spending. Open dot = minimum, filled dot = maximum."
+value_axis_title: "Difference ($ thousands)"
+value_format: { decimals: 1 }
+tooltip_decimals: 1
+note: "Shows the spending differences between the designated groups above, in thousands of dollars. Open dot = minimum, filled dot = maximum, 2004-2024."
 source: " BLS Consumer Expenditure Survey and authors’ calculations"
 data: data.csv
