@@ -80,6 +80,7 @@ time,series,value
 2025-07-01,no_college,3.9
 2025-08-01,no_college,3.9
 2025-09-01,no_college,3.8
+2025-10-01,no_college, 
 2025-11-01,no_college,3.9
 2025-12-01,no_college,3.8
 2026-01-01,no_college,3.8
@@ -172,6 +173,7 @@ time,series,value
 2025-07-01,college,4.7
 2025-08-01,college,4.6
 2025-09-01,college,4.6
+2025-10-01,college,
 2025-11-01,college,4.5
 2025-12-01,college,4.4
 2026-01-01,college,4.3

@@ -1,18 +1,18 @@
 chartType: line
-title: "TODO: add title (Figure 1)"
-source: The Budget Lab
-y_axis_title: "Year-over-year change (%)"
+title: "Spiking energy inflation has caught up with wage growth in 2026"
+subtitle: "Year-over-year change (%)"
 tooltip_decimals: 1
 
 xAxisType: temporal
 series_order: [ahe, atlanta_fed, cpiu]
 series_labels:
-  ahe: "AHE"
-  atlanta_fed: "Atlanta Fed"
-  cpiu: "CPI-U"
+  ahe: "Average Hourly Earning"
+  atlanta_fed: "Atlanta Fed wage measure"
+  cpiu: "Overall Inflation"
 
 annotations:
   bands:
     - { start: "2024-09-01", end: "2026-09-01", color: grey }
-
+note: "Series are the year-over-year change for the following: Average Hourly Earnings for all private sector employees; the Consumer Price Index for All Urban Consumers for all items in U.S. City Average (CPI-U); and monthly median hourly wage growth for all workers, smoothed using a 3-month moving average. There is a gap in October 2025 because no data was collected that month. The gray rectangle denotes the time period of interest."
+source: "Bureau of Labor Statistics, Federal Reserve Bank of Atlanta, and authors’ calculations."
 data: data.csv
