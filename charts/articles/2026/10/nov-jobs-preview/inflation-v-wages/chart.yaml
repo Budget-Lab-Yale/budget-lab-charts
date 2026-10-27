@@ -13,6 +13,6 @@ series_labels:
 annotations:
   bands:
     - { start: "2024-09-01", end: "2026-09-01", color: grey }
-note: "Series are the year-over-year change for the following: Average Hourly Earnings for all private sector employees; the Consumer Price Index for All Urban Consumers for all items in U.S. City Average (CPI-U); and monthly median hourly wage growth for all workers. Then applies a 3-month moving average. The gap in October 2025 is due to no data collection in that month. The gray rectangle denotes the time period of interest."
+note: "Series are the year-over-year change for the following: Average Hourly Earnings for all private sector employees; the Consumer Price Index for All Urban Consumers for all items in U.S. City Average (CPI-U); and monthly median hourly wage growth for all workers, smoothed using a 3-month moving average. There is a gap in October 2025 because no data was collected that month. The gray rectangle denotes the time period of interest."
 source: "Bureau of Labor Statistics, Federal Reserve Bank of Atlanta, and authors’ calculations."
 data: data.csv
