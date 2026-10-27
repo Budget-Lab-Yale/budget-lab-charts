@@ -1,0 +1,17 @@
+chartType: line
+title: "TODO: add title (Figure 4)"
+source: The Budget Lab
+y_axis_title: "Nominal wage growth (%)"
+tooltip_decimals: 1
+
+xAxisType: temporal
+series_order: [no_college, college]
+series_labels:
+  no_college: "No college"
+  college: "College"
+
+annotations:
+  bands:
+    - { start: "2024-09-01", end: "2026-09-01", color: grey }
+
+data: data.csv

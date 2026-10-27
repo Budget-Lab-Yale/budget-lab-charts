@@ -1,0 +1,12 @@
+chartType: bar
+title: "TODO: add title (Figure 3)"
+source: The Budget Lab
+y_axis_title: "Difference (No college - College)"
+
+xAxisType: categorical
+columns:
+  x: category
+  value: diff
+x_order: [Transportation, Food, Reading, Alcohol, Tobacco, Entertainment, Miscellaneous, Housing, Education, Apparel, Healthcare]
+
+data: data.csv

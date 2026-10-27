@@ -1,0 +1,20 @@
+chartType: line
+title: "TODO: add title (Figure 2)"
+source: The Budget Lab
+y_axis_title: "CPI-U + EHI group gap (%)"
+tooltip_decimals: 1
+
+xAxisType: temporal
+yAxisPolicy:
+  min: 0
+  max: 5
+series_order: [college, no_college]
+series_labels:
+  college: "College inflation"
+  no_college: "No college inflation"
+
+annotations:
+  bands:
+    - { start: "2024-09-01", end: "2026-09-01", color: grey }
+
+data: data.csv
