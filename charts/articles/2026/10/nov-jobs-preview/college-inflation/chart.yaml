@@ -1,8 +1,7 @@
 chartType: line
-title: " Inflation for noncollege graduates has exceeded that for college graduates in 2026"
-subtitle: "CPI-U + EHI group gap (%)"
-
-
+title: "TODO: add title (Figure 2)"
+source: The Budget Lab
+y_axis_title: "CPI-U + EHI group gap (%)"
 tooltip_decimals: 1
 
 xAxisType: temporal
@@ -11,13 +10,11 @@ yAxisPolicy:
   max: 5
 series_order: [college, no_college]
 series_labels:
-  college: "College"
-  no_college: "No college"
+  college: "College inflation"
+  no_college: "No college inflation"
 
 annotations:
   bands:
     - { start: "2024-09-01", end: "2026-09-01", color: grey }
 
-note: "Series are the year-over-year growth in the CPI-U added to the inflation differential provided in the Economic Heterogeneity Indicators then smoothed using a 3-month moving average. Noncollege includes those with an associate’s degree or less; college includes those with at least a bachelor’s degree. There is a gap in October 2025 because no data was collected that month. The gray rectangle denotes the time period of interest. "
-source: "Bureau of Labor Statistics, Federal Reserve Bank of New York, and authors' calculations."
 data: data.csv
