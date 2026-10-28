@@ -1,5 +1,5 @@
 chartType: line
-title: "Spending has grown at similar rates across deciles, and shares of total spending have stayed flat for roughly 20 years"
+title: "Spending has grown at similar rates across deciles, and spending shares have been approximately flat for 20 years"
 subtitle: "Left: spending index, 2004 = 100. Right: share of total expenditure, percent"
 xAxisType: temporal
 columns:
