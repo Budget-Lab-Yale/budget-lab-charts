@@ -8,6 +8,6 @@ columns:
   value: diff
 x_order: [Transportation, Food, Reading, Alcohol, Tobacco, Entertainment, Miscellaneous, Housing, Education, Apparel, Healthcare]
 
-note: "Calculates the noncollege minus the college share for each consumption category in 2021. A group’s share equals its total consumption in a spending category divided by consumption across the entire basket. Positive values indicate that noncollege graduates spend a larger share of their budget in a given category."
+note: "Calculates the noncollege minus the college share for each consumption category in 2021. A group’s share equals its total consumption in a spending category divided by consumption across the entire basket. Positive values indicate that noncollege graduates spend a larger share of their budget in a given category. Noncollege includes those with an associate degree or less; college includes those with at least a 4-year bachelor’s degree."
 source: "Bureau of Labor Statistics, Federal Reserve Bank of New York, and authors' calculations."
 data: data.csv
