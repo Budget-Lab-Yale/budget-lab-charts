@@ -14,6 +14,6 @@ series_labels:
   college: "College"
   no_college: "No college"
 
-note: "Series are the year-over-year growth in the CPI-U added to the inflation differential provided in the Economic Heterogeneity Indicators then smoothed using a 3-month moving average. Noncollege includes those with an associate degree or less; college includes those with at least a 4-year bachelor’s degree. There is a gap in October 2025 because no data was collected that month. The gray rectangle denotes the time period of interest. "
+note: "Series are the three-month average of year-over-year growth in the CPI-U added to the inflation differential provided in the Economic Heterogeneity Indicators. Noncollege includes those with an associate degree or less; college includes those with at least a 4-year bachelor’s degree. There is a gap in October 2025 because no CPI-U data were collected that month."
 source: "Bureau of Labor Statistics, Federal Reserve Bank of New York, and authors' calculations."
 data: data.csv
