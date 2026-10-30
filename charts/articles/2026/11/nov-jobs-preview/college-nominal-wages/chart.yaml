@@ -9,10 +9,6 @@ series_labels:
   no_college: "No college"
   college: "College"
 
-annotations:
-  bands:
-    - { start: "2024-09-01", end: "2026-09-01", color: grey }
-
 note: "Series are the year-over-year nominal wage growth for college and noncollege workers then smoothed using a 12-month moving average. Noncollege includes those with a high school degree or less; college includes those with at least a 4-year bachelor’s degree. There is a gap in October 2025 because no data was collected that month. The gray rectangle denotes the time period of interest."
 source: "Federal Rexerve Bank of Atlanta."
 data: data.csv
