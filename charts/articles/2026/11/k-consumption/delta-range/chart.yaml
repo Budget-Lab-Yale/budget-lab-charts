@@ -24,6 +24,6 @@ series_marker: { Min: hollow, Max: filled }
 value_axis_title: "Difference ($ thousands)"
 value_format: { decimals: 1 }
 tooltip_decimals: 1
-note: "Shows the spending differences between the designated groups above, in thousands of dollars. Open dot = minimum, filled dot = maximum, 2004-2024."
+note: "Shows the spending differences between the designated groups above, in thousands of dollars. Open dot = minimum, filled dot = maximum, 2004-2025."
 source: " BLS Consumer Expenditure Survey and authors’ calculations"
 data: data.csv
