@@ -5,7 +5,7 @@ stub: [variable]
 header: [group, statistic]
 value: value
 stub_header: ""
-column_group_order: [Entrants, Exiters, Overlap]
+column_group_order: [Reranked into the top decile, Reranked out of the top decile, Always in the top decile]
 column_order: [Mean, Median]
 row_order:
   - income
