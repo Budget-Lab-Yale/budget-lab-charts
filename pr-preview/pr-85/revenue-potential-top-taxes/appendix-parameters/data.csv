@@ -1,0 +1,29 @@
+group,parameter,column,value
+Capital gains realization,"Long-run response (\(\eta\)), the exponent on one minus the net tax cost of selling a dollar of assets",Value,5.49
+Capital gains realization,"Long-run response (\(\eta\)), the exponent on one minus the net tax cost of selling a dollar of assets",Source,Calibrated to a permanent realization elasticity of −0.6 (TBL preferred elasticity)
+Capital gains realization,Share of realizations that can retime ±1 year,Value,0.26
+Capital gains realization,Share of realizations that can retime ±1 year,Source,"Calibrated to a short-run elasticity of 1.2 (Dowd, McClelland, and Muthitacharoen 2015)"
+Capital gains realization,Valuation of pass-through interests at death,Value,0.612
+Capital gains realization,Valuation of pass-through interests at death,Source,Estate tax calibration to SOI filings (Section 1)
+Income reporting and form,"Income conversion, percent of eligible pool per percentage point change in the rate gap",Value,0.15
+Income reporting and form,"Income conversion, percent of eligible pool per percentage point change in the rate gap",Source,"Mortenson (2016), halved to reflect potential overlap with entity shifting"
+Income reporting and form,"Entity shifting, percent of pass-through income per percentage point change in the rate differential",Value,0.63
+Income reporting and form,"Entity shifting, percent of pass-through income per percentage point change in the rate differential",Source,"Prisinzano and Pearce (2018), 0.38, divided by the 60 percent pass-through share of business income"
+Income reporting and form,Underreporting elasticities: self-employment / partnership and S corporation / rent,Value,0.046 / 0.052 / 0.040
+Income reporting and form,Underreporting elasticities: self-employment / partnership and S corporation / rent,Source,"DeBacker, Heim, and Yuskavage (2025)"
+Income reporting and form,Charitable giving price elasticity (cash),Value,−0.5
+Income reporting and form,Charitable giving price elasticity (cash),Source,Randolph (1995)
+Wealth and estates,Reported-wealth semi-elasticities: marketable / closely held,Value,−7 / −17
+Wealth and estates,Reported-wealth semi-elasticities: marketable / closely held,Source,"Assumption from the Budget Lab's standalone wealth tax model, checked against the international evidence"
+Wealth and estates,Concealment share of the wealth tax response: marketable / closely held,Value,100% / 50%
+Wealth and estates,Concealment share of the wealth tax response: marketable / closely held,Source,Assumption
+Wealth and estates,Reported-estate elasticity with respect to the net-of-tax rate,Value,0.16
+Wealth and estates,Reported-estate elasticity with respect to the net-of-tax rate,Source,Kopczuk and Slemrod (2001)
+Corporate,Corporate taxable income elasticity with respect to the statutory net-of-tax rate,Value,0.367
+Corporate,Corporate taxable income elasticity with respect to the statutory net-of-tax rate,Source,Coles et al. (2022)
+Corporate,Normal-return share of the change in corporate profits,Value,0.375
+Corporate,Normal-return share of the change in corporate profits,Source,Cronin et al. (2013); Nunns (2012)
+Corporate,"Other corporate feedback constants (corporate share of normal capital, payout and exposure shares, equity premium)",Value,various
+Corporate,"Other corporate feedback constants (corporate share of normal capital, payout and exposure shares, equity premium)",Source,Provisional assumptions
+Dissaving,"Share of new tax paid out of saving, bottom to top of the wealth distribution",Value,0.04 → 0.80
+Dissaving,"Share of new tax paid out of saving, bottom to top of the wealth distribution",Source,"Straub (2019); Mian, Straub, and Sufi (2020)"

@@ -1,0 +1,22 @@
+top_rate,treatment_at_death,revenue_billions
+20,Step-up,0
+25,Step-up,184
+30,Step-up,292
+35,Step-up,331
+40,Step-up,312
+45,Step-up,247
+50,Step-up,146
+20,Carryover,99
+25,Carryover,298
+30,Carryover,416
+35,Carryover,460
+40,Carryover,440
+45,Carryover,368
+50,Carryover,255
+20,Deemed realization,682
+25,Deemed realization,1023
+30,Deemed realization,1294
+35,Deemed realization,1502
+40,Deemed realization,1651
+45,Deemed realization,1750
+50,Deemed realization,1808
