@@ -1,46 +1,46 @@
 variable,group,statistic,value
-income,Entrants,Mean,297941.76
-income,Entrants,Median,224592.62
-income,Exiters,Mean,159674.48
-income,Exiters,Median,141921.76
-income,Overlap,Mean,423595.03
-income,Overlap,Median,238688.39
-inc_no_kg,Entrants,Mean,114764.16
-inc_no_kg,Entrants,Median,107886.76
-inc_no_kg,Exiters,Mean,179233.38
-inc_no_kg,Exiters,Median,159058.58
-inc_no_kg,Overlap,Mean,382760.4
-inc_no_kg,Overlap,Median,233070.83
-kginc,Entrants,Mean,183177.59
-kginc,Entrants,Median,93981.65
-kginc,Exiters,Mean,-19558.9
-kginc,Exiters,Median,0
-kginc,Overlap,Mean,40834.64
-kginc,Overlap,Median,0
-networth,Entrants,Mean,3350000
-networth,Entrants,Median,1460000
-networth,Exiters,Mean,1370000
-networth,Exiters,Median,647838.06
-networth,Overlap,Mean,3820000
-networth,Overlap,Median,1240000
-age,Entrants,Mean,61.16
-age,Entrants,Median,62
-age,Exiters,Mean,51.29
-age,Exiters,Median,52
-age,Overlap,Mean,52.66
-age,Overlap,Median,52
-occat1,Entrants,Mean,2.06
-occat1,Entrants,Median,2
-occat1,Exiters,Mean,1.42
-occat1,Exiters,Median,1
-occat1,Overlap,Mean,1.55
-occat1,Overlap,Median,1
-self_emp_mark,Entrants,Mean,0.2
-self_emp_mark,Entrants,Median,0
-self_emp_mark,Exiters,Mean,0.16
-self_emp_mark,Exiters,Median,0
-self_emp_mark,Overlap,Mean,0.26
-self_emp_mark,Overlap,Median,0
-Households,Entrants,Mean,355
-Households,Exiters,Mean,225
-Households,Overlap,Mean,12993
+income,Reranked into the top decile,Mean,297941.76
+income,Reranked into the top decile,Median,224592.62
+income,Reranked out of the top decile,Mean,159674.48
+income,Reranked out of the top decile,Median,141921.76
+income,Always in the top decile,Mean,423595.03
+income,Always in the top decile,Median,238688.39
+inc_no_kg,Reranked into the top decile,Mean,114764.16
+inc_no_kg,Reranked into the top decile,Median,107886.76
+inc_no_kg,Reranked out of the top decile,Mean,179233.38
+inc_no_kg,Reranked out of the top decile,Median,159058.58
+inc_no_kg,Always in the top decile,Mean,382760.4
+inc_no_kg,Always in the top decile,Median,233070.83
+kginc,Reranked into the top decile,Mean,183177.59
+kginc,Reranked into the top decile,Median,93981.65
+kginc,Reranked out of the top decile,Mean,-19558.9
+kginc,Reranked out of the top decile,Median,0
+kginc,Always in the top decile,Mean,40834.64
+kginc,Always in the top decile,Median,0
+networth,Reranked into the top decile,Mean,3350000
+networth,Reranked into the top decile,Median,1460000
+networth,Reranked out of the top decile,Mean,1370000
+networth,Reranked out of the top decile,Median,647838.06
+networth,Always in the top decile,Mean,3820000
+networth,Always in the top decile,Median,1240000
+age,Reranked into the top decile,Mean,61.16
+age,Reranked into the top decile,Median,62
+age,Reranked out of the top decile,Mean,51.29
+age,Reranked out of the top decile,Median,52
+age,Always in the top decile,Mean,52.66
+age,Always in the top decile,Median,52
+occat1,Reranked into the top decile,Mean,2.06
+occat1,Reranked into the top decile,Median,2
+occat1,Reranked out of the top decile,Mean,1.42
+occat1,Reranked out of the top decile,Median,1
+occat1,Always in the top decile,Mean,1.55
+occat1,Always in the top decile,Median,1
+self_emp_mark,Reranked into the top decile,Mean,0.2
+self_emp_mark,Reranked into the top decile,Median,0
+self_emp_mark,Reranked out of the top decile,Mean,0.16
+self_emp_mark,Reranked out of the top decile,Median,0
+self_emp_mark,Always in the top decile,Mean,0.26
+self_emp_mark,Always in the top decile,Median,0
+Households,Reranked into the top decile,Mean,355
+Households,Reranked out of the top decile,Mean,225
+Households,Always in the top decile,Mean,12993
