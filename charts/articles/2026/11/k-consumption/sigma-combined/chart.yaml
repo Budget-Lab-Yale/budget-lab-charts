@@ -13,8 +13,8 @@ series_order:                # bottom -> top
   - Reranked Population (Realized gains)
   - Everyone else
 series_colors:
-  "Entrants and exiters (Portfolio)": red
-  "Entrants and exiters (Realized gains)": navy
+  "Reranked Population (Accrued gains)": red
+  "Reranked Population (Realized gains)": navy
   "Everyone else": "#BBBBBB"
 yAxisPolicy:
   min: 0
