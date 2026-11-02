@@ -1,0 +1,13 @@
+chartType: bar
+title: "Transportation is a larger share of noncollege graduate spending than it is for college graduates"
+subtitle: "Difference (No college - College)"
+
+xAxisType: categorical
+columns:
+  x: category
+  value: diff
+x_order: [Transportation, Food, Reading, Alcohol, Tobacco, Entertainment, Miscellaneous, Housing, Education, Apparel, Healthcare]
+
+note: "Bars are the noncollege minus the college expenditure share for each category in 2021. Positive values indicate that noncollege graduates allocate a larger share of their consumption to a given category. Noncollege includes those with an associate degree or less; college includes those with at least a 4-year bachelor’s degree."
+source: "Bureau of Labor Statistics, Federal Reserve Bank of New York, and authors' calculations."
+data: data.csv
