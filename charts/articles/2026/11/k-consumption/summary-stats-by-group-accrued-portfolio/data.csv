@@ -1,58 +1,58 @@
 variable,group,statistic,value
-income,Entrants,Mean,149718.07
-income,Entrants,Median,117746.67
-income,Exiters,Mean,223671.9
-income,Exiters,Median,144704.54
-income,Overlap,Mean,432567.45
-income,Overlap,Median,243029.43
-inc_accrued_portfolio,Entrants,Mean,273519.51
-inc_accrued_portfolio,Entrants,Median,182717.02
-inc_accrued_portfolio,Exiters,Mean,154371.43
-inc_accrued_portfolio,Exiters,Median,139923.19
-inc_accrued_portfolio,Overlap,Mean,479429.15
-inc_accrued_portfolio,Overlap,Median,272181.19
-accrued_income_portfolio,Entrants,Mean,155952.5
-accrued_income_portfolio,Entrants,Median,76231.15
-accrued_income_portfolio,Exiters,Mean,-22220.3
-accrued_income_portfolio,Exiters,Median,5111.88
-accrued_income_portfolio,Overlap,Mean,84370.61
-accrued_income_portfolio,Overlap,Median,23582.3
-stock_tm1_portfolio,Entrants,Mean,1180000
-stock_tm1_portfolio,Entrants,Median,784302.5
-stock_tm1_portfolio,Exiters,Mean,700089.26
-stock_tm1_portfolio,Exiters,Median,222287.73
-stock_tm1_portfolio,Overlap,Mean,1070000
-stock_tm1_portfolio,Overlap,Median,532925.19
-portfolio_stock_t,Entrants,Mean,1340000
-portfolio_stock_t,Entrants,Median,900000
-portfolio_stock_t,Exiters,Mean,677868.96
-portfolio_stock_t,Exiters,Median,228440.17
-portfolio_stock_t,Overlap,Mean,1150000
-portfolio_stock_t,Overlap,Median,555000
-networth,Entrants,Mean,2670000
-networth,Entrants,Median,1440000
-networth,Exiters,Mean,1760000
-networth,Exiters,Median,467114.47
-networth,Overlap,Mean,3920000
-networth,Overlap,Median,1300000
-age,Entrants,Mean,58.61
-age,Entrants,Median,59
-age,Exiters,Mean,50.16
-age,Exiters,Median,50
-age,Overlap,Mean,52.86
-age,Overlap,Median,52
-occat1,Entrants,Mean,2
-occat1,Entrants,Median,2
-occat1,Exiters,Mean,1.5
-occat1,Exiters,Median,1
-occat1,Overlap,Mean,1.55
-occat1,Overlap,Median,1
-self_emp_mark,Entrants,Mean,0.23
-self_emp_mark,Entrants,Median,0
-self_emp_mark,Exiters,Mean,0.18
-self_emp_mark,Exiters,Median,0
-self_emp_mark,Overlap,Mean,0.26
-self_emp_mark,Overlap,Median,0
-Households,Entrants,Mean,788
-Households,Exiters,Mean,647
-Households,Overlap,Mean,12571
+income,Reranked into the top decile,,Mean,149718.07
+income,Reranked into the top decile,,Median,117746.67
+income,Reranked out of the top decile,,Mean,223671.9
+income,Reranked out of the top decile,,Median,144704.54
+income,Always in the top decile,,Mean,432567.45
+income,Always in the top decile,,Median,243029.43
+inc_accrued_portfolio,Reranked into the top decile,,Mean,273519.51
+inc_accrued_portfolio,Reranked into the top decile,,Median,182717.02
+inc_accrued_portfolio,Reranked out of the top decile,,Mean,154371.43
+inc_accrued_portfolio,Reranked out of the top decile,,Median,139923.19
+inc_accrued_portfolio,Always in the top decile,,Mean,479429.15
+inc_accrued_portfolio,Always in the top decile,,Median,272181.19
+accrued_income_portfolio,Reranked into the top decile,,Mean,155952.5
+accrued_income_portfolio,Reranked into the top decile,,Median,76231.15
+accrued_income_portfolio,Reranked out of the top decile,,Mean,-22220.3
+accrued_income_portfolio,Reranked out of the top decile,,Median,5111.88
+accrued_income_portfolio,Always in the top decile,,Mean,84370.61
+accrued_income_portfolio,Always in the top decile,,Median,23582.3
+stock_tm1_portfolio,Reranked into the top decile,,Mean,1180000
+stock_tm1_portfolio,Reranked into the top decile,,Median,784302.5
+stock_tm1_portfolio,Reranked out of the top decile,,Mean,700089.26
+stock_tm1_portfolio,Reranked out of the top decile,,Median,222287.73
+stock_tm1_portfolio,Always in the top decile,,Mean,1070000
+stock_tm1_portfolio,Always in the top decile,,Median,532925.19
+portfolio_stock_t,Reranked into the top decile,,Mean,1340000
+portfolio_stock_t,Reranked into the top decile,,Median,900000
+portfolio_stock_t,Reranked out of the top decile,,Mean,677868.96
+portfolio_stock_t,Reranked out of the top decile,,Median,228440.17
+portfolio_stock_t,Always in the top decile,,Mean,1150000
+portfolio_stock_t,Always in the top decile,,Median,555000
+networth,Reranked into the top decile,,Mean,2670000
+networth,Reranked into the top decile,,Median,1440000
+networth,Reranked out of the top decile,,Mean,1760000
+networth,Reranked out of the top decile,,Median,467114.47
+networth,Always in the top decile,,Mean,3920000
+networth,Always in the top decile,,Median,1300000
+age,Reranked into the top decile,,Mean,58.61
+age,Reranked into the top decile,,Median,59
+age,Reranked out of the top decile,,Mean,50.16
+age,Reranked out of the top decile,,Median,50
+age,Always in the top decile,,Mean,52.86
+age,Always in the top decile,,Median,52
+occat1,Reranked into the top decile,,Mean,2
+occat1,Reranked into the top decile,,Median,2
+occat1,Reranked out of the top decile,,Mean,1.5
+occat1,Reranked out of the top decile,,Median,1
+occat1,Always in the top decile,,Mean,1.55
+occat1,Always in the top decile,,Median,1
+self_emp_mark,Reranked into the top decile,,Mean,0.23
+self_emp_mark,Reranked into the top decile,,Median,0
+self_emp_mark,Reranked out of the top decile,,Mean,0.18
+self_emp_mark,Reranked out of the top decile,,Median,0
+self_emp_mark,Always in the top decile,,Mean,0.26
+self_emp_mark,Always in the top decile,,Median,0
+Households,Reranked into the top decile,,Mean,788
+Households,Reranked out of the top decile,,Mean,647
+Households,Always in the top decile,,Mean,12571
