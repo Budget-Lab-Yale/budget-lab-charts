@@ -7,7 +7,7 @@ columns:
   series: series
   value: value
   facet: year
-x_order: ["Portfolio", "Realized"]
+x_order: ["Accrued", "Realized"]
 series_order:                # bottom -> top
   - Entrants and exiters (Portfolio)
   - Entrants and exiters (Realized gains)
