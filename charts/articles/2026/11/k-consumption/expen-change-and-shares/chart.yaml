@@ -8,9 +8,8 @@ columns:
   value: value
   facet: panel
 series_order:
-  - Decile 1
-  - Decile 5
-  - Decile 10
+  - Bottom Decile
+  - Top Decile
 small_multiples:
   columns: 2
   mode: per-pane
@@ -21,6 +20,6 @@ annotations:
   xAxis:
     - { x: "2004" }          # base year
   # yAxis y: 100 intentionally omitted: it would sit far off the shares panel (3-23%) and could stretch its axis.
-note: "Left panel measures the indexed change in spending for deciles 1, 5, and 10. Right panel measures total consumption for each decile relative to total consumption across all deciles."
+note: "Left panel measures the indexed change in spending for top and bottom decile. Right panel measures total consumption for each decile relative to total consumption across all deciles."
 source: "BLS Consumer Expenditure Survey"
 data: data.csv
