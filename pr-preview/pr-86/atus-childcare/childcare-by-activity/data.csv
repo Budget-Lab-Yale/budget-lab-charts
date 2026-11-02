@@ -1,0 +1,21 @@
+activity,child_age,sex_label,mean_hours
+Total,Youngest under 6,Fathers,1.66
+Total,Youngest 6–12,Fathers,0.64
+Total,Youngest under 6,Mothers,2.53
+Total,Youngest 6–12,Mothers,1.44
+Physical care,Youngest under 6,Fathers,0.70
+Physical care,Youngest 6–12,Fathers,0.18
+Physical care,Youngest under 6,Mothers,1.25
+Physical care,Youngest 6–12,Mothers,0.48
+Reading,Youngest under 6,Fathers,0.04
+Reading,Youngest 6–12,Fathers,0.02
+Reading,Youngest under 6,Mothers,0.09
+Reading,Youngest 6–12,Mothers,0.06
+Playing,Youngest under 6,Fathers,0.48
+Playing,Youngest 6–12,Fathers,0.12
+Playing,Youngest under 6,Mothers,0.66
+Playing,Youngest 6–12,Mothers,0.06
+Education,Youngest under 6,Fathers,0.06
+Education,Youngest 6–12,Fathers,0.05
+Education,Youngest under 6,Mothers,0.08
+Education,Youngest 6–12,Mothers,0.27

@@ -1,0 +1,25 @@
+row,column,value
+Capital share of output,c1,\(\alpha\)
+Capital share of output,c2,0.36
+Capital share of output,c3,"A 1% capital increase raises output by approximately 0.36%, holding other inputs fixed."
+Baseline capital-to-potential-output ratio,c1,
+Baseline capital-to-potential-output ratio,c2,2.431
+Baseline capital-to-potential-output ratio,c3,Private residential and nonresidential fixed assets relative to potential output.
+Annual depreciation,c1,\(\delta\)
+Annual depreciation,c2,5.9%
+Annual depreciation,c3,Share of the preceding year’s capital stock that depreciates.
+Capital adjustment parameter,c1,\(\lambda\)
+Capital adjustment parameter,c2,0.10
+Capital adjustment parameter,c3,Implies about 6.6% annual gap closure and a roughly ten-year half-life.
+Domestic investment displaced per dollar borrowed,c1,\(c\)
+Domestic investment displaced per dollar borrowed,c2,"0.33, or 33 cents per dollar"
+Domestic investment displaced per dollar borrowed,c3,Residual after 43 cents of private saving and 24 cents of foreign financing.
+10-year Treasury response to projected policy debt,c1,\(\theta\)
+10-year Treasury response to projected policy debt,c2,"0.0002, or 2 basis points per percentage point of GDP"
+10-year Treasury response to projected policy debt,c3,Applied to policy-attributable debt projected five years ahead; rates in the equations are decimals.
+Treasury response to the capital-return channel,c1,\(\kappa\)
+Treasury response to the capital-return channel,c2,One-for-one
+Treasury response to the capital-return channel,c3,Uses the preceding year’s change in the marginal product of capital; excludes the direct borrowing component already priced through debt.
+Average federal interest-rate persistence,c1,\(\rho\)
+Average federal interest-rate persistence,c2,0.833
+Average federal interest-rate persistence,c3,Approximately one-sixth of outstanding debt reprices annually.
