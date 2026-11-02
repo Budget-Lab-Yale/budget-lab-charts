@@ -152,6 +152,18 @@
     "emp-dispersion/unemployment-quintiles-rf-contemporaneous": {
       "hash": "e8427e0c9411d6b6101bf743e9caebec682a6d52d60d10fc2de3deffb4e5187f"
     },
+    "nov-jobs-preview/college-inflation": {
+      "hash": "238228f90de3cb506bd825150a4921675c6a3a6244f14f96ce5d822ea54146d8"
+    },
+    "nov-jobs-preview/college-nominal-wages": {
+      "hash": "001eb83403e13dd70a5b5af2985e9981c60299d7886b554250cf0a867a5446a7"
+    },
+    "nov-jobs-preview/inflation-v-wages": {
+      "hash": "246f6bd5bb081d22546ea6692062a2e4444db7ed76ed16b095e50b4edb2bb6fe"
+    },
+    "nov-jobs-preview/shares-difference": {
+      "hash": "634753600c1beffa84a65709f45fcf12181ffc1375af49da3108c4e1bcb066cf"
+    },
     "recession-indicators/cfnai": {
       "hash": "a0153372e1e443fdb99ed54d8fa23dcd8e4558bed711752c95aa28a8d04561af"
     },
