@@ -7,9 +7,8 @@ columns:
   series: series
   value: value
 series_order:
-  - Decile 1
-  - Decile 5
-  - Decile 10
+  - Bottom Decile
+  - Top Decile
 yAxisPolicy:
   includeZero: true
 value_suffix: "%"
