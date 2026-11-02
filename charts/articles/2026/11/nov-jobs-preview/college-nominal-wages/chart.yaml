@@ -10,5 +10,5 @@ series_labels:
   college: "College"
 
 note: "Series are the 12-month averages of year-over-year nominal wage growth for college and noncollege workers. Noncollege includes those with a high school degree or less; college includes those with at least a 4-year bachelor’s degree. There is a gap in October 2025 because no Current Population Survey data were collected that month."
-source: "Federal Rexerve Bank of Atlanta."
+source: "Federal Reserve Bank of Atlanta."
 data: data.csv
