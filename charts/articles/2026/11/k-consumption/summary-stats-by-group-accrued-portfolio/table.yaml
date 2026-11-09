@@ -8,7 +8,7 @@ stub_header: ""
 column_group_order: [Reranked into the top decile, Reranked out of the top decile, Always in the top decile]
 column_order: [Mean, Median]
 row_order:
-  - income
+  - inc_no_kg
   - inc_accrued_portfolio
   - accrued_income_portfolio
   - stock_tm1_portfolio
@@ -19,7 +19,7 @@ row_order:
   - self_emp_mark
   - Observations
 row_labels:             
-  income: "Income"
+  inc_no_kg: "Income"
   inc_accrued_portfolio: "Income incl. accrued portfolio income"
   accrued_income_portfolio: "Accrued portfolio income"
   stock_tm1_portfolio: "Portfolio value (t-1)"
