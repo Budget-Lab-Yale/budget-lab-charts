@@ -1,10 +1,10 @@
 variable,group,statistic,value
-income,Reranked into the top decile,Mean,149718.07
-income,Reranked into the top decile,Median,117746.67
-income,Reranked out of the top decile,Mean,223671.9
-income,Reranked out of the top decile,Median,144704.54
-income,Always in the top decile,Mean,432567.45
-income,Always in the top decile,Median,243029.43
+inc_no_kg,Reranked into the top decile,Mean,117567.01
+inc_no_kg,Reranked into the top decile,Median,111312.12
+inc_no_kg,Reranked out of the top decile,Mean,176591.73
+inc_no_kg,Reranked out of the top decile,Median,143526.50
+inc_no_kg,Always in the top decile,Mean,395058.54
+inc_no_kg,Always in the top decile,Median,237238.62
 inc_accrued_portfolio,Reranked into the top decile,Mean,273519.51
 inc_accrued_portfolio,Reranked into the top decile,Median,182717.02
 inc_accrued_portfolio,Reranked out of the top decile,Mean,154371.43
