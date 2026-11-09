@@ -1,5 +1,5 @@
 chartType: line
-title: "Appendix Chart 1"        
+title: "Appendix Figure 1"        
 subtitle: "Values = decile 10 minus decile 1, in shares (0-1)"                  
 xAxisType: temporal
 columns:
