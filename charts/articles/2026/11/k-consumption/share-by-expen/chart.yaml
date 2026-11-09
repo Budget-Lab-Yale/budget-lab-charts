@@ -12,6 +12,6 @@ series_order:
 yAxisPolicy:
   includeZero: true
 value_suffix: "%"
-note: "Measures total consumption for each decile relative to total consumption across all deciles. Deciles are ranked by total expentiture."
+note: "Measures total consumption for each decile relative to total consumption across all deciles. Deciles are ranked by total expenditure."
 source: "BLS Consumer Expenditure Survey and authors' calculations"
 data: data.csv
